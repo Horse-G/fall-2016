@@ -22,11 +22,13 @@ Time | Monday   | Tuesday  | Wednesday | Thursday | Friday
 - PHED1001 - [Beginner Swimming](https://github.com/radamadah/fall-2016/tree/master/PHED1001)
 - COMS3102 - [Dev Tech Linux](https://github.com/radamadah/fall-2016/tree/master/COMS3102)
 - STAT4001 - [Probability & Statisitics](https://github.com/radamadah/fall-2016/tree/master/STAT4001)
+
 ### First Potentials
 Taking 2 of 3:
 - COMS4160 - [Computer Graphics](https://github.com/radamadah/fall-2016/tree/master/COMS4160)
 - COMS4167 - [Computer Animation](https://github.com/radamadah/fall-2016/tree/master/COMS4167)
 - COMS4731 - [Computer Vision](https://github.com/radamadah/fall-2016/tree/master/COMS4731)
+
 ### Second Potentials
 Taking either COMS4771, or two 1 pointers
 - COMS4771 - [Machine Learning](https://github.com/radamadah/fall-2016/tree/master/COMS4771)
