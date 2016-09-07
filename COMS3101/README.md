@@ -10,7 +10,7 @@ ramana@cs.columbia.edu
 - 30% final
 
 ## Links
-[Notes](https://github.com/radamadah/fall-2016/blob/master/COMS3101/notes.md)
-[Lectures](https://github.com/radamadah/fall-2016/blob/master/COMS3101/lectures.md)
-[Homeworks]()
-[Finals prep](https://github.com/radamadah/fall-2016/blob/master/COMS3101/final-prep.md)
+- [Notes](https://github.com/radamadah/fall-2016/blob/master/COMS3101/notes.md)
+- [Lectures](https://github.com/radamadah/fall-2016/blob/master/COMS3101/lectures.md)
+- [Homeworks](https://github.com/radamadah/fall-2016/blob/master/COMS3101/homeworks.md)
+- [Finals prep](https://github.com/radamadah/fall-2016/blob/master/COMS3101/final-prep.md)
