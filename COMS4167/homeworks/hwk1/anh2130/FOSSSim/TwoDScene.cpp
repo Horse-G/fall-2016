@@ -203,7 +203,14 @@ void TwoDScene::insertForce( Force* newforce )
 scalar TwoDScene::computeKineticEnergy() const
 {
         scalar T = 0.0;
-        for(int i = 0; i < m_x.size(); i = i + 2) { T += m_x.segment<2>(i).dot(m_x.segment<2>(i))/2; }
+        int part_count = getNumParticles();
+        int i = 0;
+
+        for(; i < part_count; i++)
+        {
+                int _i = 2*i;
+                T += m_m(_i)*m_v.segment<2>(_i).dot(m_v.segment<2>(_i));
+        }
         return T;
 }
 
