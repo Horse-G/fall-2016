@@ -1,0 +1,60 @@
+-------------------------------------------------------------------------------
+1. anh2130
+
+-------------------------------------------------------------------------------
+2. COMS3102-HW1
+
+-------------------------------------------------------------------------------
+3. ABOUT YOU
+[anh2130@coms3102server ~]$ cat myhw1text
+1. My first computer was when I was ~10 years old. It was a Microsoft desktop, I think an HP.
+It's been so long at this point, that I don't remember any other specifics about it.
+
+2. I've had to learn just the bare minimum of Linux/Unix commands to get through a couple courses.
+'ls' and 'cd', to name a few. I have also recently installed Ubuntu on an old computer, so I have
+been dealing with 'sudo apt-get install' a bit.
+
+3. At some point I do plan to migrate entirely to Linux, and the one thing that precludes me is
+not knowing how to use Linux.
+
+4. To know a critical mass of Linux terminal commands to be an efficient user and, more importantly,
+not be scared of using terminal commands.
+[anh2130@coms3102server ~]$
+
+-------------------------------------------------------------------------------
+4.
+[anh2130@coms3102server ~]$ cat myhw1src
+id
+hostname
+uptime
+[anh2130@coms3102server ~]$
+
+[anh2130@coms3102server ~]$ source myhw1src
+uid=526(anh2130) gid=527(anh2130) groups=527(anh2130) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+coms3102server
+ 19:50:04 up 4 days,  7:45,  4 users,  load average: 0.00, 0.00, 0.00
+[anh2130@coms3102server ~]$
+
+-------------------------------------------------------------------------------
+5. Report echo bugs to bug-coreutils@gnu.org
+
+-------------------------------------------------------------------------------
+6. ABOUT OUR SERVER
+	1. Description:    CentOS release 6.8 (Final)
+	2. /home/anh2130
+	3. coms3102server
+	4. uid=526(anh2130)
+	5. gid=527(anh2130)
+	6. Sat Sep 10 19:47:14 EDT 2016
+	7. 19:47:31 up 4 days,  7:42,  4 users,  load average: 0.00, 0.00, 0.00
+
+-------------------------------------------------------------------------------
+7. EXTRA CEDIT
+[anh2130@coms3102server ~]$ cat hw1extra
+echo -n "This machine is "
+hostname
+date
+[anh2130@coms3102server ~]$ source hw1extra
+This machine is coms3102server
+Sat Sep 10 19:56:02 EDT 2016
+[anh2130@coms3102server ~]$
