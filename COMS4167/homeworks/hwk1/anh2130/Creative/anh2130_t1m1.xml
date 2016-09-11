@@ -1,0 +1,47 @@
+<!-- A number of particles under gravity with initial conditions that produce a rainbow-like shape -->
+<scene>
+  <duration time="10.0"/>
+  <integrator type="explicit-euler" dt="0.01"/>
+  <maxsimfreq max="500.0"/>
+  <!-- Particles that form the rainbow -->
+  <particle m="1.0" px="-25.0" py="0.0" vx="5.0" vy="5.0" fixed="0" radius="0.1"/>
+  <particle m="1.0" px="-24.66" py="0.0" vx="4.8" vy="4.8" fixed="0" radius="0.1"/>
+  <particle m="1.0" px="-24.33" py="0.0" vx="4.6" vy="4.6" fixed="0" radius="0.1"/>
+  <particle m="1.0" px="-24.0" py="0.0" vx="4.4" vy="4.4" fixed="0" radius="0.1"/>
+  <particle m="1.0" px="-23.66" py="0.0" vx="4.2" vy="4.2" fixed="0" radius="0.1"/>
+  <particle m="1.0" px="-23.33" py="0.0" vx="4.0" vy="4.0" fixed="0" radius="0.1"/>
+  <particle m="1.0" px="-23.0" py="0.0" vx="3.8" vy="3.8" fixed="0" radius="0.1"/>
+  <particle m="1.0" px="-22.66" py="0.0" vx="3.6" vy="3.6" fixed="0" radius="0.1"/>
+  <particle m="1.0" px="-22.33" py="0.0" vx="3.4" vy="3.4" fixed="0" radius="0.1"/>
+  <particle m="1.0" px="-22.0" py="0.0" vx="3.2" vy="3.2" fixed="0" radius="0.1"/>
+  <!-- Two particles and an edge to form the ground -->
+  <particle m="1.0" px="-25.0" py="0.0" vx="0.0" vy="0.0" fixed="1" radius="0.1"/>
+  <particle m="1.0" px="0.0" py="0.0" vx="0.0" vy="0.0" fixed="1" radius="0.1"/>
+  <edge i="10" j="11"/>
+  <!-- Constant gravitational force -->
+  <simplegravity fx="-1.5" fy="-1.5"/>
+  <!-- Particle colors -->
+  <particlecolor i="0" r="1.0" g="0.0" b="1.0"/>
+  <particlecolor i="1" r="1.0" g="1.0" b="0.0"/>
+  <particlecolor i="2" r="1.0" g="1.0" b="0.0"/>
+  <particlecolor i="3" r="1.0" g="1.0" b="0.0"/>
+  <particlecolor i="4" r="1.0" g="1.0" b="0.0"/>
+  <particlecolor i="5" r="1.0" g="1.0" b="0.0"/>
+  <particlecolor i="6" r="1.0" g="1.0" b="0.0"/>
+  <particlecolor i="7" r="1.0" g="1.0" b="0.0"/>
+  <particlecolor i="8" r="1.0" g="1.0" b="0.0"/>
+  <particlecolor i="9" r="1.0" g="1.0" b="0.0"/>
+  <!-- Particle path colors -->
+  <particlepath i="0" duration="10.0" r="1.0" g="0.0" b="1.0"/>
+  <particlepath i="1" duration="10.0" r="1.0" g="1.0" b="0.0"/>
+  <particlepath i="2" duration="10.0" r="1.0" g="1.0" b="0.0"/>
+  <particlepath i="3" duration="10.0" r="1.0" g="1.0" b="0.0"/>
+  <particlepath i="4" duration="10.0" r="1.0" g="1.0" b="0.0"/>
+  <particlepath i="5" duration="10.0" r="1.0" g="1.0" b="0.0"/>
+  <particlepath i="6" duration="10.0" r="1.0" g="1.0" b="0.0"/>
+  <particlepath i="7" duration="10.0" r="1.0" g="1.0" b="0.0"/>
+  <particlepath i="8" duration="10.0" r="1.0" g="1.0" b="0.0"/>
+  <particlepath i="9" duration="10.0" r="1.0" g="1.0" b="0.0"/>
+  <!-- Background color of the scene -->
+  <backgroundcolor r="0.1" g="0.1" b="0.1"/>
+</scene>

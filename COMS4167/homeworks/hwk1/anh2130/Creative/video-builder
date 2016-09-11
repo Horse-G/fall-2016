@@ -1,0 +1,1 @@
+mencoder mf://pngs/*.png -mf fps=24 -ovc lavc -lavcopts vcodec=msmpeg4v2 -oac copy -o anh2130_t1m1.avi
