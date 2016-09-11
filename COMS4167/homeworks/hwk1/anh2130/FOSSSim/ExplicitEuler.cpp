@@ -11,20 +11,17 @@ bool ExplicitEuler::stepScene( TwoDScene& scene, scalar dt )
 {
         VectorXs& x = scene.getX();
         VectorXs& v = scene.getV();
-        const VectorXs& m = scene.getM();
+        const VectorXs& m = scene.getM(); 
         VectorXs F = VectorXs::Zero(x.size());
-        int part_count = scene.getNumParticles();
-        int i = 0;
 
         scene.accumulateGradU(F,x,v);
-        F = -F;
-
-        for(; i < part_count; i++)
+        for(int i = scene.getNumParticles() - 1; i >= 0; i--)
                 if(scene.isFixed(i))
                         F.segment<2>(2*i).setZero();
-        x += dt * v;
         F.array() /= m.array();
-        v += dt * F;
+        
+        x += dt * v;
+        v -= dt * F;
 
         return true;
 }
