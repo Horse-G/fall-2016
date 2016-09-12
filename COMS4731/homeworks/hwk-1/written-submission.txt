@@ -1,0 +1,28 @@
+Problem 1: Considering a pinhole camera with perspective projection.
+	a.
+	b. Since the area(A) is 1 mm^2, it's radius must be sqrt(A/PI). From now on we will call this number PHI.
+		The diameter is therefore 2*PHI.
+		With an arbitrary value Q, and all units in mm, we can define:
+		Two points equidistant from each other on the circumference (marking the diameter) of this image would then be (Q,Q) and (Q,Q+2*PHI).
+		Knowing the relations 'xi/f = xo/zo' and 'yi/f = yo/zo', where subscript i stand for image dimensions, and subscript o stand for object dimensions,
+		And knowing that zo = 1 m = 1000 mm
+		We can compute the same positions along the circumference for the actual disk:
+			Q/f = xo1/zo -> xo1 = Q*zo/f
+			Q/f = yo1/zo -> yo1 = Q*zo/f
+			Q/f = xo2/zo -> xo2 = Q*zo/f
+			(Q+2*PHI)/f = yo2/zo -> yo2 = (Q+2*PHI)*zo/f
+		And find them to be: ( (Q*zo/f),(Q*zo/f) ) and ( (Q*zo/f),((Q+2*PHI)*zo/f) ).
+		
+		If then zo is doubled, we can reverse the process to find the corresponding points on the new image.
+			xi1/f = (Q*2*zo/f)/(2*zo) -> xi1 = Q
+			yi1/f = (Q*2*zo/f)/(2*zo) -> yi1 = Q
+			xi2/f = (Q*2*zo/f)/(2*zo) -> xi2 = Q
+			yi2/f = ((Q+2*PHI)*2*zo/f)/(2*zo) -> yi2 = Q+2*PHI
+		
+		The new image points are (Q,Q) and (Q,Q+2*PHI).
+		The diameter of the new circle is the vector (Q,Q)-(Q,Q+2*PHI) = (0,2*PHI). The vector's length can then be computed as 2*PHI.
+		The radius of the new circle is PHI.
+		The area of the new circle = PI*(PHI^2) = PI*(sqrt(A/PI)^2) = PI*(A/PI) = A.
+		The are of the new circle is the same as the area of the old circle.
+		
+	c.
