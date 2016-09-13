@@ -111,3 +111,61 @@ If you have this entire collection of vectors, it is called the **Hamiltonian fl
 
 The vector space is notated as _.y_ = _\_X(\_y)_ = _(.q, ..q)_.
 
+## Lecture 03, 2016-09-13
+Recap of last lecture.
+
+### Adding Forces
+For homework we added gravity.
+
+We assumed that the acceleration due to gravity was constant, because it is a simple system.
+
+The change in distances within the system is so small compared to the size of the earth that we can assume that the force gravity stays constant.
+
+The degrees of freedom of a configuration is 1, because you only need to know the "position" to know the position of the object.
+However, this is not enough information to predict future configurations.
+
+_.y = d(\_q/.q)/dt = .q/..q_
+
+When working with a constant gravity, _..q = \_g_.
+
+Even something as simple as a gravity force will make the Hamiltonian flow way more complicated/interesting.
+
+Any conifguration in the vector field has the same vector space (under constant gravity).
+
+Any given configuration over time will develop into a backwards 'c' (an orbit).
+
+### Explicit Euler
+To simulate this in a computer, we need a numerical method that changes the state over time (a time integration).
+
+1. Poll the vector space for the velocity for a given configuration.
+2. Add that velocity to the configuration to get the next configuration.
+3. Repeat.
+
+_\_y(k+1) = \_y(k) + \_X(\_y(k))_
+
+To include a variable time step (not necessarily the unit), change the function like so:
+
+_\_y(k+1) = \_y(k) + h*\_X(\_y(k))_
+
+Where _h = dt_. To implement this in the homework, let's spell out our positions and velocities:
+
+_(\_q(k+1) , .q(k+1)) = (\_q(k) , .q(k)) + h*(.q(k) , \_g)_
+
+This is an explicit method because everything on the right hand side is dependent on the current time step.
+This is because, at a more general level, _\_g = ..q(k)_.
+
+### Symplectic Euler
+Symplectic and Explicit develop the same trajectories in the special case where the only force is gravity and it is constant.
+
+_\_q(k+1) = \_q(k) + f(.q)_
+
+_.q(k+1) = .q(k) + f(..q)_
+
+If the forces are in any way different, then Symplectic generates differently.
+
+### Drag / Friction
+Drag points in the opposite direction of the direction of motion (it makes the size of the direction vector smaller). A simple model of this:
+
+_F = - s * .q_
+
+
