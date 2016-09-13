@@ -25,4 +25,8 @@ Problem 1: Considering a pinhole camera with perspective projection.
 		The area of the new circle = PI*(PHI^2) = PI*(sqrt(A/PI)^2) = PI*(A/PI) = A.
 		The are of the new circle is the same as the area of the old circle.
 		
-	c.
+	c. 
+	
+Problem 2:
+
+Problem 3:
