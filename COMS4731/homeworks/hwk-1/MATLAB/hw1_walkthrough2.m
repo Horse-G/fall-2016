@@ -2,53 +2,18 @@
 % Part 2 - Create a Vincent van Gogh collage
 % -------------------------------------------------------------------------
 
-% Load the image "Vincent_van_Gogh.png" into memory
-% img = imread(???);
-
-% Note the image is of the type uint8, 
-% and the maximum pixel value of the image is 255.
-class(img)
-max(img(:))
-
-% uint8 is memory efficient. Since we will perform some arithmetic operations
-% on the image, uint8 needs to be used with caution. Let's cast the image
-% to double.
-img = im2double(img);
-
-class(img)
-max(img(:))
-
-
-% Display the image
-figure, imshow(img);
-
-% Separate the image into three color channels and store each channel into
-% a new image
-
-red_channel = img(:, :, 1); figure, imshow(red_channel);
-red_image = zeros(size(img)); red_image(:, :, 1) = red_channel; figure, imshow(red_image);
-
-%
-% Similarly extract green_channel and blue_channel and create green_image
-% and blue_image
-
-%green_image = ???;
-%blue_image = ???;
-
-% Create a 1 x 4 image collage in the following arrangement
-% 
-% original image | red channel | green channel  | blue channel
-collage_1x2 = [img, red_image, green_image, blue_image]; 
-imshow(collage_1x2);
-
-% Create a 2 x 2 image collage in the following arrangement
-% 
-% original image | red channel
-% green channel  | blue channel
-
-%collage_2x2 = ???
-% imshow(collage_2x2);
-
-% Save the collage as collage.png
-% imwrite(???, ???);
+% load image from file, convert to double type
+img = im2double(imread('Vincent_van_Gogh.png'));
+% make collage struct
+collage_2x2 = reshape(repmat(zeros(size(img)), 2), 2*size(img,1), 2*size(img,2), 3);
+% fill red channel
+collage_2x2(1:size(img,1),:,1) = repmat(img(:,:,1),1,2);
+% fill green channel
+collage_2x2(:,1:size(img,2),2) = repmat(img(:,:,2),2,1);
+% fill blue channel
+collage_2x2(:,:,3) = [img(:,:,3) zeros(size(img(:,:,3))); zeros(size(img(:,:,3))) img(:,:,3)];
+% display collage
+imshow(collage_2x2);
+% save collage to file
+imwrite(collage_2x2,'collage.png');
 

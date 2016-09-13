@@ -1,87 +1,47 @@
 % -------------------------------------------------------------------------
 % Part 3 - Create a I <3 NY image
 % -------------------------------------------------------------------------
+% LOAD images into memory
+is_all_red = 1;
 
-% Load the image "I_Love_New_York.png" into memory
-%iheartny_img = imread(???);
+iheartny_img = im2double(imread('I_Love_New_York.png'));
+nyc_img      = im2double(imread('nyc.png'));
 
-% Display the image
-figure, imshow(iheartny_img);
+%SCALE images as requested in prompt, CONVERT color logo to binary mask
+final_img = imresize(nyc_img, 500/size(nyc_img,1));
+resized_logo = imresize(iheartny_img(), 400/size(iheartny_img,1));
+% im2bw.threshold left at the default of 0.5 - on testing I found it worked
+%   on the range [0.385,1)
+resized_mask = imresize(im2bw(rgb2gray(iheartny_img)), 400/size(iheartny_img,1));
 
-% Convert the color image into a grayscale image
-gray_iheartny_img = rgb2gray(iheartny_img);
+% CONVERT iheartny to fit small_nyc
+pad_diff = (size(final_img(:,:,1)) - size(resized_mask))/2;
+padded_logo = padarray(resized_logo, pad_diff);
+padded_mask = padarray(~logical(resized_mask), pad_diff);
 
-% Display the image
-figure, imshow(gray_iheartny_img);
+% BURN I <3 NY logo onto the Manhattan scene
+if is_all_red
+    % image that fulfills prompt requirements
+    rgb = [255,0,0];
+    for j=1:3
+        img_channel = final_img(:,:,j);
+        img_channel(padded_mask) = rgb(j);
+        final_img(:,:,j) = img_channel;
+    end
+else
+    % image that copies contents of the logo
+    for j=1:3
+        img_channel = final_img(:,:,j);
+        logo_channel = padded_logo(:,:,j);
+        img_channel(padded_mask) = logo_channel(padded_mask);
+        final_img(:,:,j) = img_channel;
+    end
+end
 
-% Convert the grayscale image into a binary mask using a threshold value
-%threshold = ???;
-
-binary_mask = im2bw(gray_iheartny_img, threshold);
-
-% Load the image "nyc.png" into memory
-%nyc_img = imread(???);
-
-% Resize nyc_img so the image height is 500 pixels
-%height = size(nyc_img, ???);
-
-scale = 500/height;
-small_nyc = imresize(nyc_img, scale);
-
-% Resize ILoveNY binary_mask so that its height is 400 pixels
-%scale = ???;
-resized_mask = imresize(binary_mask, scale);
-
-imshow(resized_mask);
-
-% Invert the mask
-iresized_mask = ~resized_mask; imshow(iresized_mask);
-
-% Note small_nyc and iresized_mask are of different height and width
-size(small_nyc)
-size(iresized_mask)
-
-% No worries. Let's used the collage technique learned in Part 2 to make 
-% iresized_mask with the same height and width as small_nyc
-height_diff = size(small_nyc, 1) - size(iresized_mask, 1);
-width_diff = size(small_nyc, 2) - size(iresized_mask, 2);
-mask_height = size(iresized_mask, 1); mask_width = size(iresized_mask, 2);
-imshow(iresized_mask); 
-
-% Pad left and right
-iresized_mask = [zeros(mask_height, width_diff/2),...
-    iresized_mask, zeros(mask_height, width_diff/2)];
-imshow(iresized_mask); 
-
-% Pad top and bottom
-%iresized_mask = ???
-% Cast the mask to logical
-iresized_mask = logical(iresized_mask);
-imshow(iresized_mask);
-
-
-% MATLAB has many conveninent functions. The above code can actually be done
-% with single line of MATLAB code. 
-% The MATLAB documentation is a good place to discover what tools are
-% available to you!
-
-% ipadded_mask = padarray(iresized_mask, [height_diff/2 width_diff/2]);
-
-% Now, let's burn the I <3 NY logo into the Manhattan scene
-red = [255, 0, 0];
-love_small_nyc = small_nyc;
-
-red_channel = love_small_nyc(:, :, 1);
-red_channel(iresized_mask) = red(1);
-love_small_nyc(:, :, 1) = red_channel;
-
-%???
-%love_small_nyc(:, :, 2) = ???;
-
-%???
-%love_small_nyc(:, :, 2) = ???;
-
-figure, imshow(love_small_nyc);
-
-% Save the collage as output_nyc.png
-%imwrite(???, ???);
+% PRINT to screen and file
+figure, imshow(final_img);
+if is_all_red
+    imwrite(final_img, 'output_nyc.png');
+else
+    imwrite(final_img, 'output_nyc_extended.png');
+end
