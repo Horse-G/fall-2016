@@ -106,7 +106,16 @@ void TwoDSceneRenderer::renderScene() const
         }
         glEnd();
     }
-    
+    // Render particles
+    const std::vector<scalar>& radii = m_scene.getRadii();
+    assert( (int) radii.size() == m_scene.getNumParticles() );
+    for( int i = 0; i < m_scene.getNumParticles(); ++i ) 
+    {
+        glColor3d(m_particle_colors[i].r,m_particle_colors[i].g,m_particle_colors[i].b);
+        renderSolidCircle( x.segment<2>(2*i), radii[i] );
+    }  
+   
+
     // Render edges
     //glColor3d(0.0,0.388235294117647,0.388235294117647);
     const std::vector<std::pair<int,int> >& edges = m_scene.getEdges();
@@ -120,14 +129,6 @@ void TwoDSceneRenderer::renderScene() const
         renderSweptEdge( x.segment<2>(2*edges[i].first), x.segment<2>(2*edges[i].second), edgeradii[i] );
     }
     
-    // Render particles
-    const std::vector<scalar>& radii = m_scene.getRadii();
-    assert( (int) radii.size() == m_scene.getNumParticles() );
-    for( int i = 0; i < m_scene.getNumParticles(); ++i ) 
-    {
-        glColor3d(m_particle_colors[i].r,m_particle_colors[i].g,m_particle_colors[i].b);
-        renderSolidCircle( x.segment<2>(2*i), radii[i] );
-    }  
 }
 
 void TwoDSceneRenderer::circleMajorResiduals( const TwoDScene& oracle_scene, const TwoDScene& testing_scene, scalar eps ) const

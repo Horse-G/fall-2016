@@ -26,7 +26,7 @@ DEFINE_TESTS;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Rendering State
-TwoDimensionalDisplayController g_display_controller(512,512);
+TwoDimensionalDisplayController g_display_controller(1280,720);
 TwoDSceneRenderer* g_scene_renderer = NULL;
 renderingutils::Color g_bgcolor(1.0,1.0,1.0);
 bool g_rendering_enabled = true;

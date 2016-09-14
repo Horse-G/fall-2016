@@ -3,45 +3,79 @@
   <duration time="10.0"/>
   <integrator type="explicit-euler" dt="0.01"/>
   <maxsimfreq max="500.0"/>
-  <!-- Particles that form the rainbow -->
-  <particle m="1.0" px="-25.0" py="0.0" vx="5.0" vy="5.0" fixed="0" radius="0.1"/>
-  <particle m="1.0" px="-24.66" py="0.0" vx="4.8" vy="4.8" fixed="0" radius="0.1"/>
-  <particle m="1.0" px="-24.33" py="0.0" vx="4.6" vy="4.6" fixed="0" radius="0.1"/>
-  <particle m="1.0" px="-24.0" py="0.0" vx="4.4" vy="4.4" fixed="0" radius="0.1"/>
-  <particle m="1.0" px="-23.66" py="0.0" vx="4.2" vy="4.2" fixed="0" radius="0.1"/>
-  <particle m="1.0" px="-23.33" py="0.0" vx="4.0" vy="4.0" fixed="0" radius="0.1"/>
-  <particle m="1.0" px="-23.0" py="0.0" vx="3.8" vy="3.8" fixed="0" radius="0.1"/>
-  <particle m="1.0" px="-22.66" py="0.0" vx="3.6" vy="3.6" fixed="0" radius="0.1"/>
-  <particle m="1.0" px="-22.33" py="0.0" vx="3.4" vy="3.4" fixed="0" radius="0.1"/>
-  <particle m="1.0" px="-22.0" py="0.0" vx="3.2" vy="3.2" fixed="0" radius="0.1"/>
-  <!-- Two particles and an edge to form the ground -->
-  <particle m="1.0" px="-25.0" py="0.0" vx="0.0" vy="0.0" fixed="1" radius="0.1"/>
-  <particle m="1.0" px="0.0" py="0.0" vx="0.0" vy="0.0" fixed="1" radius="0.1"/>
-  <edge i="10" j="11"/>
-  <!-- Constant gravitational force -->
   <simplegravity fx="-1.5" fy="-1.5"/>
-  <!-- Particle colors -->
-  <particlecolor i="0" r="1.0" g="0.0" b="1.0"/>
-  <particlecolor i="1" r="1.0" g="1.0" b="0.0"/>
-  <particlecolor i="2" r="1.0" g="1.0" b="0.0"/>
-  <particlecolor i="3" r="1.0" g="1.0" b="0.0"/>
-  <particlecolor i="4" r="1.0" g="1.0" b="0.0"/>
-  <particlecolor i="5" r="1.0" g="1.0" b="0.0"/>
-  <particlecolor i="6" r="1.0" g="1.0" b="0.0"/>
-  <particlecolor i="7" r="1.0" g="1.0" b="0.0"/>
-  <particlecolor i="8" r="1.0" g="1.0" b="0.0"/>
-  <particlecolor i="9" r="1.0" g="1.0" b="0.0"/>
-  <!-- Particle path colors -->
-  <particlepath i="0" duration="10.0" r="1.0" g="0.0" b="1.0"/>
-  <particlepath i="1" duration="10.0" r="1.0" g="1.0" b="0.0"/>
-  <particlepath i="2" duration="10.0" r="1.0" g="1.0" b="0.0"/>
-  <particlepath i="3" duration="10.0" r="1.0" g="1.0" b="0.0"/>
-  <particlepath i="4" duration="10.0" r="1.0" g="1.0" b="0.0"/>
-  <particlepath i="5" duration="10.0" r="1.0" g="1.0" b="0.0"/>
-  <particlepath i="6" duration="10.0" r="1.0" g="1.0" b="0.0"/>
-  <particlepath i="7" duration="10.0" r="1.0" g="1.0" b="0.0"/>
-  <particlepath i="8" duration="10.0" r="1.0" g="1.0" b="0.0"/>
-  <particlepath i="9" duration="10.0" r="1.0" g="1.0" b="0.0"/>
-  <!-- Background color of the scene -->
   <backgroundcolor r="0.1" g="0.1" b="0.1"/>
+  <!-- 00-03: corners for size of image -->
+  <particle m= "1.0" px="0.0"    py="0.0"   vx="0.0" vy="0.0"  fixed="1" radius= "2.0"/>
+  <particle m= "1.0" px="0.0"    py="-720.0" vx="0.0" vy="0.0"  fixed="1" radius= "2.0"/>
+  <particle m= "1.0" px="1280.0" py="-720.0" vx="0.0" vy="0.0"  fixed="1" radius= "2.0"/>
+  <particle m= "1.0" px="1280.0" py="0.0"   vx="0.0" vy="0.0"  fixed="1" radius= "2.0"/>
+  <particlecolor i= "0" r="0.1"   g="0.1"   b="0.1"  />
+  <particlecolor i= "1" r="0.1"   g="0.1"   b="0.1"  />
+  <particlecolor i= "2" r="0.1"   g="0.1"   b="0.1"  />
+  <particlecolor i= "3" r="0.1"   g="0.1"   b="0.1"  />
+  <!-- 04-04: the disk -->
+  <particle m= "1.0" px="640.0"  py="-360.0" vx="0.0" vy="0.0"  fixed="1" radius="360.0"/>
+  <particlecolor i= "4" r="1.0"   g="0.8"   b="0.0"  />
+  <!-- 05-19: Particles that form the explosion -->
+  <!-- 05: axis -->
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="0.0" vy="0.0"  fixed="1" radius="2.0"  />
+  <!-- 06-19: spokes --> 
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="20.0" vy="0.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="8.0"  vy="2.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="4.0"  vy="6.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="10.0"  vy="16.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="2.0"  vy="8.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="-2.0" vy="12.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="-8.0" vy="6.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="-12.0" vy="-1.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="-8.0" vy="-2.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="-6.0" vy="-6.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="-2.0" vy="-12.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="10.0"  vy="-16.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="6.0"  vy="-6.0"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="475.0"  py="-520.0" vx="12.0"  vy="-6.0"  fixed="1" radius="2.0"  />
+  <particlecolor i="5"  r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="6"  r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="7"  r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="8"  r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="9"  r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="10" r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="11" r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="12" r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="13" r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="14" r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="15" r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="16" r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="17" r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="18" r="1.0"   g="0.0"   b="1.0"  />
+  <particlecolor i="19" r="1.0"   g="0.0"   b="1.0"  />
+  <edge i="5" j="6"  radius="2.0"/>
+  <edge i="5" j="7"  radius="2.0"/>
+  <edge i="5" j="8"  radius="2.0"/>
+  <edge i="5" j="9"  radius="2.0"/>
+  <edge i="5" j="10" radius="2.0"/>
+  <edge i="5" j="11" radius="2.0"/>
+  <edge i="5" j="12" radius="2.0"/>
+  <edge i="5" j="13" radius="2.0"/>
+  <edge i="5" j="14" radius="2.0"/>
+  <edge i="5" j="15" radius="2.0"/>
+  <edge i="5" j="16" radius="2.0"/>
+  <edge i="5" j="17" radius="2.0"/>
+  <edge i="5" j="18" radius="2.0"/>
+  <edge i="5" j="19" radius="2.0"/>
+  <edgecolor i="0" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="1" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="2" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="3" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="4" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="5" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="6" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="7" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="8" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="9" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="10" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="11" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="12" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="13" r="1.0" g="1.0" b="1.0"/>
 </scene>
