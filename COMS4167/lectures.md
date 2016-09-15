@@ -166,6 +166,106 @@ If the forces are in any way different, then Symplectic generates differently.
 ### Drag / Friction
 Drag points in the opposite direction of the direction of motion (it makes the size of the direction vector smaller). A simple model of this:
 
-_F = - s * .q_
+_\_F = - s * .q_
+
+## Lecture 04, 2016-09-15
+### Forces recap
+Forces are typically written
+
+_\_F = m * a_
+
+where `F` is the force, `m` is the mass of the object, and `a` is the accelration applied.
+
+Under gravity, it can be rewritten
+
+_\_F = M * ..q_
+
+Mass is represented as a matrix because the force and the acceleration are not necessarily colinear.
+
+(Vectors and tensors exist independent of the configuration space. Once you have a new coordinate system, you can know its specifics.)
+
+You can rewrite the function as
+
+_M^(-1) * F = ..q_
+
+For now we will cop out by defining a *force* as the thing that accelerates objects.
+
+### Work
+**Work** was originally defined as force over a distance.
+Under sufficient conditions you can think of the rate of work (**power**) as:
+
+_W = .q^(T) * F_
+
+### Aside to conservative forces
+A **conversative force** exerts a total work of 0. This occurs when the object under the force
+returns to its original position (a closed loop in configuration space). Friction is not a conservative force. It is **dissipative**.
+
+!conservative != dissipative
+
+dissipative = !conservative
+
+Under a consersative force for the total work `W`, _W = W1 + W2 = 0_.
+
+And therefore, if there is a `W3` that has the same endpoints as `W1`, _W1 = W3_.
+
+The work done from A to B on a conversative force does not depend on the specific path from A to B.
+
+_W(A->B) = -W(B->A)_
+
+### Energy
+The **energy** at a specific point in configuration space is the work it takes to get from the origin to that point.
+
+_E(B) = W(O->B)_
+
+And therefore
+
+_W(A->B) = E(B) - E(A) = W(O->B) - W(O->A)_
+
+_E(q) = U(q) = V(q)_
+
+This does not work for friction because it is not a conservative force.
+
+For the energy of gravity: _G = m * g * \_x_
+
+It is conventional to draw forces as attempting to reduce energy.
+
+### Summary
+_F = -grad\_q(U(q))_
+
+Where gradient is the direction of steepest ascent, so it must be negative to point towards the reduction of energy.
+
+_delta (U) = (grad U)^(T) * delta(q)_
+
+For gravity,
+
+_9.8 = (grad U)^(T) * (0,1)_
+
+_0 = (grad U)^(T) * (-1,0)_
+
+If _gradU = (alpha, Beta)_, then _alpha = 0_, _Beta = 9.8_.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
