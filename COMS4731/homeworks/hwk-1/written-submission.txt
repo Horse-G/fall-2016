@@ -28,5 +28,29 @@ Problem 1: Considering a pinhole camera with perspective projection.
 	c. 
 	
 Problem 2:
+The prompt requests the we derive the equation for the hyperfocal distance 'H' of an imaging system.
+We know the following equation is true, and represents part of the Depth of Field of a system:
+
+c = (f^2 * (o2 - o))/(N * o2 * (o - f))
+
+Where 'c' is the blur circle diameter, 'f' is the focal length, 'o2' is the farthest distance in a system where objects are in focus, and 'N' is f-number of the lens in the system.
+
+We can identify 'o' as equivalent to 'H', and will therefore restructure our equation with 'H' on one side:
+
+H = ((f^2)/(N*c))* ((o2 - H)/o2) + f
+
+We know that in a hyperfocal system 'o2' must be an infinite value. To better understand how it can be represented in the function, let's take its limit of the function as o2 -> infinity:
+
+lim(o2->inf)[(o2 - H)/o2] = 1
+
+Therefore, our equation for 'H' can be simplified to:
+
+H = (f^2)/(N*c) + f
+
+Which we can identify as the equation we needed to prove.
+Given the general equation for the Depth of Field of an imaging system,
+	and given that the farthest distance in focus in a hyperfocal system is infinite,
+	we have deduced the specific equation for finding the hyperfocal distance in an imaging system.
+
 
 Problem 3:
