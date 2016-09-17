@@ -1,0 +1,1 @@
+I used 'which' to find that hello.coms3102 is located at '/usr/bin'.

@@ -1,0 +1,3 @@
+echo -n "This machine is "
+hostname
+date
