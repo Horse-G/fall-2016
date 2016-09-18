@@ -17,8 +17,8 @@ void SimpleGravityForce::addEnergyToTotal( const VectorXs& x, const VectorXs& v,
   assert( x.size() == m.size() );
   assert( x.size()%2 == 0 );
 
-  // Assume 0 potential is at origin
-  for( int i = 0; i < x.size()/2; ++i ) E -= m(2*i)*m_gravity.dot(x.segment<2>(2*i));
+  for(int i = x.size()/2 -1; i >= 0; --i)
+      E -= m(2*i) * m_gravity.dot(x.segment<2>(2*i));
 }
 
 void SimpleGravityForce::addGradEToTotal( const VectorXs& x, const VectorXs& v, const VectorXs& m, VectorXs& gradE )
@@ -28,7 +28,8 @@ void SimpleGravityForce::addGradEToTotal( const VectorXs& x, const VectorXs& v, 
   assert( x.size() == gradE.size() );
   assert( x.size()%2 == 0 );
   
-  for( int i = 0; i < x.size()/2; ++i ) gradE.segment<2>(2*i) -= m(2*i)*m_gravity;
+  for(int i = x.size()/2 - 1; i >= 0; --i)
+      gradE.segment<2>(2*i) -= m(2*i) * m_gravity;
 }
 
 void SimpleGravityForce::addHessXToTotal( const VectorXs& x, const VectorXs& v, const VectorXs& m, MatrixXs& hessE )
