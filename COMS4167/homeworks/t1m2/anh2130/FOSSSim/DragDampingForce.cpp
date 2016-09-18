@@ -25,8 +25,8 @@ void DragDampingForce::addGradEToTotal( const VectorXs& x, const VectorXs& v, co
   assert( x.size() == m.size() );
   assert( x.size() == gradE.size() );
   assert( x.size()%2 == 0 );
-  
-  // Add milestone 2 code here.
+        for(int i = x.size()/2-1; i >= 0; --i)
+            gradE.segment<2>(2*i) += m_b*v.segment<2>(2*i);
 }
 
 void DragDampingForce::addHessXToTotal( const VectorXs& x, const VectorXs& v, const VectorXs& m, MatrixXs& hessE )
