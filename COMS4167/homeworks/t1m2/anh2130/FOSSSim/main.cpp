@@ -124,22 +124,22 @@ void stepSystem()
 
 void headlessSimLoop()
 {
-  scalar nextpercent = 0.02;
-  std::cout << outputmod::startpink << "Progress: " << outputmod::endpink;
-  for( int i = 0; i < 50; ++i ) std::cout << "-";
-  //std::cout << "]" << std::endl;
-  std::cout << std::endl;
-  std::cout << "          ";
-  while( true )
-  {
-    scalar percent_done = ((double)g_current_step)/((double)g_num_steps);
-    if( percent_done >= nextpercent )
+    scalar nextpercent = 0.02;
+    std::cout << outputmod::startpink << "Progress: " << outputmod::endpink;
+    for( int i = 0; i < 50; ++i ) std::cout << "-";
+    //std::cout << "]" << std::endl;
+    std::cout << std::endl;
+    std::cout << "          ";
+    while( true )
     {
-      nextpercent += 0.02;
-      std::cout << "." << std::flush;
+        scalar percent_done = ((double)g_current_step)/((double)g_num_steps);
+        if( percent_done >= nextpercent )
+        {
+            nextpercent += 0.02;
+            std::cout << "." << std::flush;
+        }
+        stepSystem();
     }
-    stepSystem();
-  }
 }
 
 
@@ -541,33 +541,64 @@ void miscOutputFinalization()
 // Called at the end of each timestep. Intended for adding effects to creative scenes.
 void sceneScriptingCallback()
 {
-  // If the scene is one we wish to 'script'
-  if( g_scene_tag == "ParticleFountain" )
-  {
-    // Get the particle tags
-    const std::vector<std::string>& tags = g_scene.getParticleTags();
-    // Get the particle positions
-    VectorXs& x = g_scene.getX();
-    // Get the particle velocities
-    VectorXs& v = g_scene.getV();
-    // Get the particle colors
-    std::vector<renderingutils::Color>& pcolors = g_scene_renderer->getParticleColors();
-
-    // If any particles are tagged for teleportation and fall below -1.25
-    for( std::vector<std::string>::size_type i = 0; i < tags.size(); ++i ) if( tags[i] == "teleport" && x(2*i+1) < -1.25 )
+    // If the scene is one we wish to 'script'
+    if(g_scene_tag == "ParticleFountain")
     {
-      // Return this particle to the origin
-      x.segment<2>(2*i).setZero();
-      // Give this particle some random upward velocity
-      double vx = 0.2*(((double)rand())/((double)RAND_MAX)-0.5);
-      double vy = 0.15*((double)rand())/((double)RAND_MAX);
-      v.segment<2>(2*i) << vx, vy;
-      // Assign the particle a random color
-      pcolors[i].r = ((double)rand())/((double)RAND_MAX);
-      pcolors[i].g = ((double)rand())/((double)RAND_MAX);
-      pcolors[i].b = ((double)rand())/((double)RAND_MAX);
+        // Get the particle tags
+        const std::vector<std::string>& tags = g_scene.getParticleTags();
+        // Get the particle positions
+        VectorXs& x = g_scene.getX();
+        // Get the particle velocities
+        VectorXs& v = g_scene.getV();
+        // Get the particle colors
+        std::vector<renderingutils::Color>& pcolors = g_scene_renderer->getParticleColors();
+
+        // If any particles are tagged for teleportation and fall below -1.25
+        for(std::vector<std::string>::size_type i = 0; i < tags.size(); ++i)
+            if(tags[i] == "teleport" && x(2*i+1) < -1.25)
+            {
+                // Return this particle to the origin
+                x.segment<2>(2*i).setZero();
+                // Give this particle some random upward velocity
+                double vx = 0.2*(((double)rand())/((double)RAND_MAX)-0.5);
+                double vy = 0.15*((double)rand())/((double)RAND_MAX);
+                v.segment<2>(2*i) << vx, vy;
+                // Assign the particle a random color
+                pcolors[i].r = ((double)rand())/((double)RAND_MAX);
+                pcolors[i].g = ((double)rand())/((double)RAND_MAX);
+                pcolors[i].b = ((double)rand())/((double)RAND_MAX);
+            }
     }
-  }
+    else if(g_scene_tag == "Boids")
+    {
+        const std::vector<std::string>& tags = g_scene.getParticleTags();
+        VectorXs& x = g_scene.getX();
+        VectorXs& v = g_scene.getV();
+        VectorXs new_v = VectorXs::Zero(x.size());
+        std::vector<renderingutils::Color>& pcolors = g_scene_renderer->getParticleColors();
+        for(std::vector<std::string>::size_type i = 0; i < tags.size(); ++i)
+        {if(tags[i]=="boid"){
+            Vector2s accumulatedPos = Vector2s::Zero(2);
+            Vector2s distancerVec = Vector2s::Zero(2);
+            Vector2s rule2;
+            Vector2s matchingVec = Vector2s::Zero(2);
+            for(std::vector<std::string>::size_type j = 0; j < tags.size(); ++j)
+            {
+                if(i != j)
+                {
+                    accumulatedPos += x.segment<2>(2*j);
+                    rule2 = x.segment<2>(2*i) - x.segment<2>(2*j);
+                    if(rule2.norm() < 2)
+                        distancerVec -= 10*rule2;
+                    matchingVec += v.segment<2>(2*j);
+                }
+            }
+            new_v.segment<2>(2*i) += (accumulatedPos/tags.size() - x.segment<2>(2*i))/100;
+            new_v.segment<2>(2*i) += distancerVec;
+            new_v.segment<2>(2*i) += (matchingVec/tags.size() - v.segment<2>(2*i) )/8;
+        }}
+        v += new_v;
+    }
 }
 
 int main( int argc, char** argv )
@@ -617,7 +648,8 @@ int main( int argc, char** argv )
   std::cout << outputmod::startblue << "Integrator: " << outputmod::endblue << g_scene_stepper->getName() << std::endl;
   std::cout << outputmod::startblue << "Description: " << outputmod::endblue << g_description << std::endl;
   
-  if( g_save_to_binary ) std::cout << outputmod::startpink << "FOSSSim message: "  << outputmod::endpink << "Saving simulation to: " << g_binary_file_name << std::endl;
+  if(g_save_to_binary)
+      std::cout << outputmod::startpink << "FOSSSim message: "  << outputmod::endpink << "Saving simulation to: " << g_binary_file_name << std::endl;
   
   miscOutputInitialization();
   

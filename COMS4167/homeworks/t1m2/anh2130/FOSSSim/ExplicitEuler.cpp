@@ -15,7 +15,7 @@ bool ExplicitEuler::stepScene( TwoDScene& scene, scalar dt )
   VectorXs F = VectorXs::Zero(x.size());
   
   scene.accumulateGradU(F);
-  for(int i = getNumParticles()-1; i >= 0; --i)
+  for(int i = x.size()/2-1; i >= 0; --i)
       if(scene.isFixed(i))
           F.segment<2>(2*i).setZero();
   F.array() /= m.array();
