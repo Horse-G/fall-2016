@@ -1,5 +1,5 @@
 cd anh2130/Creative
-mencoder mf://pngs/*.png -mf fps=24 -ovc lavc -lavcopts vcodec=msmpeg4v2 -oac copy -o anh2130_t1m1_noAudio.avi
-mencoder anh2130_t1m1_noAudio.avi -o anh2130_t1m1.avi -ovc copy -oac copy -audiofile anh2130_t1m1_audio.mp3
-rm -f anh2130_t1m1_noAudio.avi
+mencoder mf://pngs/*.png -mf fps=24 -ovc lavc -lavcopts vcodec=msmpeg4v2 -oac copy -o anh2130_t1m2_noAudio.avi
+# mencoder anh2130_t1m2_noAudio.avi -o anh2130_t1m2.avi -ovc copy -oac copy -audiofile anh2130_t1m2_audio.mp3
+# rm -f anh2130_t1m2_noAudio.avi
 

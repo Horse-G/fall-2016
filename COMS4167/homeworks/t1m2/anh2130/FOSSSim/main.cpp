@@ -569,63 +569,46 @@ void sceneScriptingCallback()
                 pcolors[i].b = ((double)rand())/((double)RAND_MAX);
             }
     }
-    else if(g_scene_tag == "Boids")
+    else if(g_scene_tag == "Boids_t1m2")
     {
         const std::vector<std::string>& tags = g_scene.getParticleTags();
         VectorXs& x = g_scene.getX();
         VectorXs& v = g_scene.getV();
-        const VectorXs& m = g_scene.getM();
         const std::vector<scalar>& r = g_scene.getRadii();
-        scalar count = x.size()/2;
-        VectorXs new_v = VectorXs::Zero(count*2);
+        const scalar x_size = x.size();
+        VectorXs new_v = VectorXs::Zero(x_size);
         std::vector<renderingutils::Color>& pcolors = g_scene_renderer->getParticleColors();
+
         for(std::vector<std::string>::size_type i = 0; i < tags.size(); ++i){if(tags[i]=="boid")
         {
             Vector2s accumulatedPos = Vector2s::Zero(2);
             Vector2s distancerVec = Vector2s::Zero(2);
             Vector2s rule2;
             Vector2s matchingVec = Vector2s::Zero(2);
-            Vector2s randomness = Vector2s::Zero(2);
-            //Vector2s total_mass = Vector2s::Zero(2);
-            for(std::vector<std::string>::size_type j = 0; j < tags.size(); ++j)
+            for(std::vector<std::string>::size_type j = 0; j < tags.size(); ++j){if(j != i && tags[j]=="boid")
             {
-                if(j != i && tags[j]=="boid")
-                {
-                    Vector2s temp = x.segment<2>(2*j);
-                    //temp.array() *= m.segment<2>(2*j).array();
-                    accumulatedPos += temp;
-                    //total_mass += m.segment<2>(2*j);
+                    accumulatedPos += x.segment<2>(2*i);
                     rule2 = x.segment<2>(2*i) - x.segment<2>(2*j);
-                    if(rule2.norm() < 2*r[i]) distancerVec -= rule2;
+                    if(rule2.norm() < 2*r[i])
+                        distancerVec -= rule2;
                     matchingVec += v.segment<2>(2*j);
-                }
-                if(tags[j]=="lead")
-                {
-                    Vector2s temp = x.segment<2>(2*j);
-                    accumulatedPos += temp;
-                    rule2 = x.segment<2>(2*i) - x.segment<2>(2*j);
-                    if(rule2.norm() < 2*r[i]) distancerVec -= rule2;
-                    matchingVec += v.segment<2>(2*j);
-                }
-            }
-            randomness(0) =  (double)(rand()%100)/500.0 - 0.1;
-            randomness(1) =  (double)(rand()%100)/500.0 - 0.1;
-            new_v.segment<2>(2*i) = (accumulatedPos/(count-1) - x.segment<2>(2*i))/100;
-            //new_v.segment<2>(2*i).array() /= total_mass.array();
-            new_v.segment<2>(2*i) += distancerVec;
-            new_v.segment<2>(2*i) += (matchingVec/(count-1))/50;
-            new_v.segment<2>(2*i) += randomness;
-            if (new_v.segment<2>(2*i).norm() > 1)
-            {
-                new_v.segment<2>(2*i) /= new_v.segment<2>(2*i).norm();
-                //new_v.segment<2>(2*i) *= 2;
-            }
-            if(x(2*i) >  50)  v(2*i) -=1;
-            if(x(2*i) < -50)  v(2*i) +=1;
-            if(x(2*i+1) >  50)  v(2*i+1) -=1;
-            if(x(2*i+1) < -50)  v(2*i+1) +=1;
+            }}
+            new_v.segment<2>(2*i) = (accumulatedPos/(x_size/2-1) - x.segment<2>(2*i))/100 + distancerVec + (matchingVec/(x_size/2-1))/50;
+            // add randomness
+            new_v(2*i)   += (double)(rand()%100)/500.0 -0.1;
+            new_v(2*i+1) += (double)(rand()%100)/500.0 -0.1;
+            // keep boids on screen
+            if(x(2*i) >  128)  v(2*i) -=1;
+            if(x(2*i) < -128)  v(2*i) +=1;
+            if(x(2*i+1) >  72)  v(2*i+1) -=2;
+            if(x(2*i+1) < -72)  v(2*i+1) +=2;
         }}
         v += new_v;
+        for(std::vector<std::string>::size_type i = 0; i < tags.size(); ++i){if(tags[i]=="boid")
+        {
+            if(v.segment<2>(2*i).norm() > 8)
+                v.segment<2>(2*i) /= v.segment<2>(2*i).norm()/8;
+        }}
         x += v;
     }
 }
