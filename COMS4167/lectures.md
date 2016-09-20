@@ -244,6 +244,7 @@ _0 = (grad U)^(T) * (-1,0)_
 
 If _gradU = (alpha, Beta)_, then _alpha = 0_, _Beta = 9.8_.
 
+## Lecture 05, 2016-09-20
 
 
 

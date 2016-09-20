@@ -1,3 +1,0 @@
-cd anh2130/Creative
-../build/FOSSSim/FOSSSim -s ./anh2130_t1m1.xml
-cd ../..
