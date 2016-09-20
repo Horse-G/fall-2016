@@ -27,10 +27,10 @@
 
 \usepackage{fancyhdr} % Required for custom headers
 \usepackage{extramarks} % Required for headers and footers
-\usepackage[usenames,dvipsnames]{color} % Required for custom colors
-\usepackage{graphicx} % Required to insert images
-\usepackage{listings} % Required for insertion of code
-\usepackage{courier} % Required for the courier font
+%\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+%\usepackage{graphicx} % Required to insert images
+%\usepackage{listings} % Required for insertion of code
+%\usepackage{courier} % Required for the courier font
 
 % Margins
 \topmargin=-0.45in
@@ -46,7 +46,7 @@
 \pagestyle{fancy}
 \lhead{\hmwkAuthorName} % Top left header
 \chead{\hmwkClass: \hmwkTitle} % Top center head
-\rhead{\firstxmark} % Top right header
+\rhead{} % Top right header
 \lfoot{\lastxmark} % Bottom left footer
 \cfoot{} % Bottom center footer
 \rfoot{} % Bottom right footer
@@ -55,46 +55,46 @@
 
 \setlength\parindent{0pt} % Removes all indentation from paragraphs
 
-%----------------------------------------------------------------------------------------
-%	CODE INCLUSION CONFIGURATION
-%----------------------------------------------------------------------------------------
-
-\definecolor{MyDarkGreen}{rgb}{0.0,0.4,0.0} % This is the color used for comments
-\lstloadlanguages{Perl} % Load Perl syntax for listings, for a list of other languages supported see: ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/listings/listings.pdf
-\lstset{language=Perl, % Use Perl in this example
-        frame=single, % Single frame around code
-        basicstyle=\small\ttfamily, % Use small true type font
-        keywordstyle=[1]\color{Blue}\bf, % Perl functions bold and blue
-        keywordstyle=[2]\color{Purple}, % Perl function arguments purple
-        keywordstyle=[3]\color{Blue}\underbar, % Custom functions underlined and blue
-        identifierstyle=, % Nothing special about identifiers                                         
-        commentstyle=\usefont{T1}{pcr}{m}{sl}\color{MyDarkGreen}\small, % Comments small dark green courier font
-        stringstyle=\color{Purple}, % Strings are purple
-        showstringspaces=false, % Don't put marks in string spaces
-        tabsize=5, % 5 spaces per tab
-        %
-        % Put standard Perl functions not included in the default language here
-        morekeywords={rand},
-        %
-        % Put Perl function parameters here
-        morekeywords=[2]{on, off, interp},
-        %
-        % Put user defined functions here
-        morekeywords=[3]{test},
-       	%
-        morecomment=[l][\color{Blue}]{...}, % Line continuation (...) like blue comment
-        numbers=left, % Line numbers on left
-        firstnumber=1, % Line numbers start with line 1
-        numberstyle=\tiny\color{Blue}, % Line numbers are blue and small
-        stepnumber=5 % Line numbers go in steps of 5
-}
-
-% Creates a new command to include a perl script, the first parameter is the filename of the script (without .pl), the second parameter is the caption
-\newcommand{\perlscript}[2]{
-\begin{itemize}
-\item[]\lstinputlisting[caption=#2,label=#1]{#1.pl}
-\end{itemize}
-}
+%%----------------------------------------------------------------------------------------
+%%	CODE INCLUSION CONFIGURATION
+%%----------------------------------------------------------------------------------------
+%
+%\definecolor{MyDarkGreen}{rgb}{0.0,0.4,0.0} % This is the color used for comments
+%\lstloadlanguages{Perl} % Load Perl syntax for listings, for a list of other languages supported see: ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/listings/listings.pdf
+%\lstset{language=Perl, % Use Perl in this example
+%        frame=single, % Single frame around code
+%        basicstyle=\small\ttfamily, % Use small true type font
+%        keywordstyle=[1]\color{Blue}\bf, % Perl functions bold and blue
+%        keywordstyle=[2]\color{Purple}, % Perl function arguments purple
+%        keywordstyle=[3]\color{Blue}\underbar, % Custom functions underlined and blue
+%        identifierstyle=, % Nothing special about identifiers                                         
+%        commentstyle=\usefont{T1}{pcr}{m}{sl}\color{MyDarkGreen}\small, % Comments small dark green courier font
+%        stringstyle=\color{Purple}, % Strings are purple
+%        showstringspaces=false, % Don't put marks in string spaces
+%        tabsize=5, % 5 spaces per tab
+%        %
+%        % Put standard Perl functions not included in the default language here
+%        morekeywords={rand},
+%        %
+%        % Put Perl function parameters here
+%        morekeywords=[2]{on, off, interp},
+%        %
+%        % Put user defined functions here
+%        morekeywords=[3]{test},
+%       	%
+%        morecomment=[l][\color{Blue}]{...}, % Line continuation (...) like blue comment
+%        numbers=left, % Line numbers on left
+%        firstnumber=1, % Line numbers start with line 1
+%        numberstyle=\tiny\color{Blue}, % Line numbers are blue and small
+%        stepnumber=5 % Line numbers go in steps of 5
+%}
+%
+%% Creates a new command to include a perl script, the first parameter is the filename of the script (without .pl), the second parameter is the caption
+%\newcommand{\perlscript}[2]{
+%\begin{itemize}
+%\item[]\lstinputlisting[caption=#2,label=#1]{#1.pl}
+%\end{itemize}
+%}
 
 %----------------------------------------------------------------------------------------
 %	DOCUMENT STRUCTURE COMMANDS
@@ -180,46 +180,73 @@
 Considering a pinhole camera with perspective projection.
 
 \problemAnswer{
-	\begin{enumerate}
-	\item look here
-	\item{
-		Since the area (\(A\)) is \(1 mm^2\), it's radius must be \(\sqrt{\frac{A}{\pi}}\). From now on we will call this number \(\phi\).
-		
-        The diameter is therefore \(2 * \phi\).
-		
-        With an arbitrary value \(Q\), and all units in mm, we can define:
-		
-        Two points equidistant from each other on the circumference (marking the diameter) of this image would then be \((Q,Q)\) and \((Q,Q+2 * \phi)\).
-		
-        Knowing the relations \(\frac{x_i}{f} = \frac{x_o}{z_o}\) and \(\frac{y_i}{f} = \frac{y_o}{z_o}\), where subscript \(i\) stand for image dimensions, and subscript \(o\) stand for object dimensions,
-		
-        And knowing that \(z_o = 1 m = 1000 mm\)
+    The shape of the image of a disk that is sitting parallel to the image plane will always be the shape of the original disk.
 
-		We can compute the same positions along the circumference for the actual disk:
-		\[\frac{Q}{f} = \frac{x_{o1}}{z_o} \to x_{o1} = \frac{Q*z_o}{f}\]
-		\[\frac{Q}{f} = \frac{y_{o1}}{z_o} \to y_{o1} = \frac{Q*z_o}{f}\]
-		\[\frac{Q}{f} = \frac{x_{o2}}{z_o} \to x_{o2} = \frac{Q*z_o}{f}\]
-		\[\frac{Q+2*\phi}{f} = \frac{y_{o2}}{z_o} \to y_{o2} = \frac{(Q+2*\phi)*z_o}{f}\]
-		And find them to be: \((\frac{Q*z_o}{f},\frac{Q*z_o}{f})\) and \((\frac{Q*z_o}{f},\frac{(Q+2*\phi)*z_o}{f})\).
+    Given the equations \(\frac{x_i}{f}=\frac{x_o}{z_o}\) and \(\frac{y_i}{f}=\frac{y_o}{z_o}\),
+
+    And given three points on the image disk (that are both therefore the same distance \(z_o\) from the pinhole, \(r_{o1}=(x_{o1},y_{o1},z_o)\), \(r_{o2}=(x_{o2},y_{o2},z_o)\), and \(r_{o3}=(x_{o3},y_{o3},z_o)\),
+
+    You can solve for their positions on the image plane:
+    \[x_{i1} = f*x_{o1}/z_o , y_{i1} = f*y_{o1}/z_o\]
+    \[x_{i2} = f*x_{o2}/z_o , y_{i2} = f*y_{o2}/z_o\]
+    \[x_{i3} = f*x_{o3}/z_o , y_{i3} = f*y_{o3}/z_o\]
+
+    Now, if you try to compute the distances between the object points, and the distances between the image points,
+    \[(x_{o2},y_{o2},z_o) - (x_{o1},y_{o1},z_o) = (x_{o2}-x_{o1},y_{o2}-y_{o1},0)\]
+    \[(x_{o3},y_{o3},z_o) - (x_{o1},y_{o1},z_o) = (x_{o3}-x_{o1},y_{o3}-y_{o1},0)\]
+    \[(x_{o3},y_{o3},z_o) - (x_{o2},y_{o2},z_o) = (x_{o3}-x_{o2},y_{o3}-y_{o2},0)\]
+    \[(f*x_{o2}/z_o,f*y_{o2},z_o) - (f*x_{o1}/z_o,f*y_{o1}/z_o,z_o) = ((x_{o2}-x_{o1})*f/z_o,(y_{o2}-y_{o1})*f/z_o,0)\]
+    \[(f*x_{o3}/z_o,f*y_{o3},z_o) - (f*x_{o1}/z_o,f*y_{o1}/z_o,z_o) = ((x_{o3}-x_{o1})*f/z_o,(y_{o3}-y_{o1})*f/z_o,0)\]
+    \[(f*x_{o3}/z_o,f*y_{o3},z_o) - (f*x_{o2}/z_o,f*y_{o2}/z_o,z_o) = ((x_{o3}-x_{o2})*f/z_o,(y_{o3}-y_{o2})*f/z_o,0)\]
+    
+    You will find the relationships between those distances are the same between the image ones and the object ones, besides the scaling by a constant \(f/z_o\). Which therefore proves that the relative positions of points on a plane parallel to the image plane will remain constant, while their scale may change.
+    }
+\end{homeworkProblem}
+\begin{homeworkProblem}
+\problemAnswer{
+    Since the area (\(A\)) is \(1 mm^2\), it's radius must be \(\sqrt{\frac{A}{\pi}}\). From now on we will call this number \(\phi\).
 		
-		If then zo is doubled, we can reverse the process to find the corresponding points on the new image.
-		\[\frac{x_{i1}}{f} = \frac{Q*2*\frac{z_o}{f}}{2*z_o} \to x_{i1} = Q\]
-		\[\frac{y_{i1}}{f} = \frac{Q*2*\frac{z_o}{f}}{2*z_o} \to y_{i1} = Q\]
-		\[\frac{x_{i2}}{f} = \frac{Q*2*\frac{z_o}{f}}{2*z_o} \to x_{i2} = Q\]
-		\[\frac{y_{i2}}{f} = \frac{(Q+2*\phi)*2*\frac{z_o}{f}}{2*z_o} \to y_{i2} = Q+2*\phi\]
+    The diameter is therefore \(2 * \phi\).
 		
-		The new image points are \((Q,Q)\) and \((Q,Q+2*\phi)\).
+    With an arbitrary value \(Q\), and all units in mm, we can define:
 		
-        The diameter of the new circle is the vector \(|(Q,Q)-(Q,Q+2*\phi)| = (0,2*\phi)\). The vector's length can then be computed as \(2*\phi\).
+    Two points equidistant from each other on the circumference (marking the diameter) of this image would then be \((Q,Q)\) and \((Q,Q+2 * \phi)\).
 		
-        The radius of the new circle is \(\phi\).
+    Knowing the relations \(\frac{x_i}{f} = \frac{x_o}{z_o}\) and \(\frac{y_i}{f} = \frac{y_o}{z_o}\), where subscript \(i\) stand for image dimensions, and subscript \(o\) stand for object dimensions,
 		
-        The area of the new circle \(= \pi * \phi^2 = \pi * \sqrt{\frac{A}{\pi}}^2 = \pi * \frac{A}{\pi} = A\).
+    And knowing that \(z_o = 1 m = 1000 mm\)
+
+	We can compute the same positions along the circumference for the actual disk:
+	\[\frac{Q}{f} = \frac{x_{o1}}{z_o} \to x_{o1} = \frac{Q*z_o}{f}\]
+	\[\frac{Q}{f} = \frac{y_{o1}}{z_o} \to y_{o1} = \frac{Q*z_o}{f}\]
+	\[\frac{Q}{f} = \frac{x_{o2}}{z_o} \to x_{o2} = \frac{Q*z_o}{f}\]
+	\[\frac{Q+2*\phi}{f} = \frac{y_{o2}}{z_o} \to y_{o2} = \frac{(Q+2*\phi)*z_o}{f}\]
+	And find them to be: \((\frac{Q*z_o}{f},\frac{Q*z_o}{f})\) and \((\frac{Q*z_o}{f},\frac{(Q+2*\phi)*z_o}{f})\).
 		
-        The are of the new circle is the same as the area of the old circle.
-	}
-	\item and look here
-	\end{enumerate}
+	If then zo is doubled, we can reverse the process to find the corresponding points on the new image.
+	\[\frac{x_{i1}}{f} = \frac{Q*2*\frac{z_o}{f}}{2*z_o} \to x_{i1} = Q\]
+	\[\frac{y_{i1}}{f} = \frac{Q*2*\frac{z_o}{f}}{2*z_o} \to y_{i1} = Q\]
+	\[\frac{x_{i2}}{f} = \frac{Q*2*\frac{z_o}{f}}{2*z_o} \to x_{i2} = Q\]
+	\[\frac{y_{i2}}{f} = \frac{(Q+2*\phi)*2*\frac{z_o}{f}}{2*z_o} \to y_{i2} = Q+2*\phi\]
+		
+	The new image points are \((Q,Q)\) and \((Q,Q+2*\phi)\).
+		
+    The diameter of the new circle is the vector \(|(Q,Q)-(Q,Q+2*\phi)| = (0,2*\phi)\). The vector's length can then be computed as \(2*\phi\).
+		
+    The radius of the new circle is \(\phi\).
+		
+    The area of the new circle \(= \pi * \phi^2 = \pi * \sqrt{\frac{A}{\pi}}^2 = \pi * \frac{A}{\pi} = A\).
+		
+    The are of the new circle is the same as the area of the old circle.
+}
+\end{homeworkProblem}
+\begin{homeworkProblem}
+\problemAnswer{
+    The shape of the image of the sphere will be highly dependent on how distant \(x_o\) and \(y_o\) are from \(0\) (\(0\) being the origin of the system, and therefore the position of the pinhole. Note that \(z_o\) would still be nonzero).
+    
+    The relationship between points on a plane from part 1.a still hold up. But since the object is now a sphere, there are a large number of new points on the object that are sitting between the original object plane and the pinhole. as the sphere moves further from the origin along that parallel plane, points near the front on the sphere will obstruct the projection of the points of the sphere that are along the parallel plane.
+    
+    The image that would originally have been a perfect circle when the sphere was sitting at the origin, would stretch out into an ellipsis as it moves further away, as the other points of the sphere are being projected on top of the ones on a given parallel plane. It is as if there is an infinite number of other disks sitting on parallel planes that are closer to the pinhole than the original one.
 }
 \end{homeworkProblem}
 
@@ -265,7 +292,28 @@ The prompt requests the we derive the equation for the hyperfocal distance 'H' o
 
 \begin{homeworkProblem}
 \problemAnswer{
-	blah blah balh
+	This is a simple implementation of the depth of field equation,
+    \[c = \frac{f^2*(o - o_1)}{N*o_1*(o - f)}\]
+
+    where the focal length, the f-number, and the maximized blur circle are all constants of the given image system.
+
+    
+}
+\end{homeworkProblem}
+\begin{homeworkProblem}
+\problemAnswer{
+    Any given point on the scene line would have been represented as \((x_o,k)\), where because we are operating in only two dimensions, the equation \(\frac{x_o}{f} = \frac{x_i}{k}\) exists (in the 3D plane we knew of two equations like this, but since we dropped a degree of freedom there is now only one equation.
+
+    But now since the scene line has been placed at an angle \(\theta\) from the perpendicular to the optical axis, any given point on the new scene line should actually be represented as \((x_o*cos(\theta),k + x_o*sin(\theta))\).
+
+    This makes intuitive sense - if the new angle is 0, all the points new values should be equal to their old ones. If the angle is 180 then the line has been flipped and all x values should be negated, but their relative positions from the lens should stay the same. If the new angle is 90, then it is as if all the points are at the optical axis (in the x direction), and any y value has added to it the original position of the line in the x direction.
+
+    Since the system is in two dimensions, the line will remain a line regardless of a change in angle because any modifications to the line in this respect keeps all points still adjacent to their neighbors, and no points go into an imaginary axis. However, the image of the line will appear to shrink, as more and more points on the line approach the optical axis.
+}
+\end{homeworkProblem}
+\begin{homeworkProblem}
+\problemAnswer{
+    
 }
 \end{homeworkProblem}
 
