@@ -1,1 +1,0 @@
-g++ -g *.cc -I. -I/usr/include/OpenEXR -lIlmImf -lImath -lHalf -Wall -o prog_out

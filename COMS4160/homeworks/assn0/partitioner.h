@@ -1,7 +1,7 @@
 /*
- * Filename:    anh2130_coms4160_assn1.h
+ * Filename:    partitioner.h
  * Author:      Adam Hadar, anh2130
- * Last edited: 2016-09-18
+ * Last edited: 2016-09-21
  * Purpose:     Header file for the main function.
  *     Includes the headers for all the other necessary pieces of code to `main` to work.
  */

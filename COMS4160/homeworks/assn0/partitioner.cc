@@ -1,12 +1,12 @@
 /*
- * Filename:    anh2130_coms4160_assn1.cpp
+ * Filename:    partitioner.cpp
  * Author:      Adam Hadar, anh2130
- * Last edited: 2016-09-19
+ * Last edited: 2016-09-21
  * Purpose:     Writes a partitioned channel image to `hw0.exr`.
  *     Reads a given .exr file from command line, and converts it according to a prompt.
  */
 
-#include "anh2130_coms4160_assn0.h"
+#include "partitioner.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
     int x, y;
     Box2i dw;
     Array2D<Rgba> pixels;
+    bool is_not_bottom_right;
     half tmp;
     /*
     RgbaInputFile file_in   (line 42)
@@ -53,9 +54,12 @@ int main(int argc, char *argv[])
     for (y = height-1; y >= 0; --y)
         for (x = width-1; x >= 0; --x) {
             Rgba &px = pixels[y][x];
-            tmp = y<height_partition||x<width_partition?(px.r+px.g+px.b)/3.0:0.2126*px.r+0.7152*px.g+0.0722*px.b;
+            is_not_bottom_right = y < height_partition || x < width_partition;
+            tmp = is_not_bottom_right?
+                (px.r + px.g + px.b)/3.0:
+                0.2126*px.r + 0.7152*px.g + 0.0722*px.b;
             px.a = 1;
-            if(y < height_partition || x < width_partition)
+            if(is_not_bottom_right)
                 // top-left :: red channel
                 if(y < height_partition && x < width_partition) px.r += tmp, px.g = 0,    px.b = 0;
                 // bottom-left :: green channel
