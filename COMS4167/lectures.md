@@ -247,6 +247,35 @@ If _gradU = (alpha, Beta)_, then _alpha = 0_, _Beta = 9.8_.
 ## Lecture 05, 2016-09-20
 
 
+## Lecture 06, 2016-09-22
+Last lecture we covered that there were issues with both of the Eulers we have been using.
+
+_g(y) = 0_
+
+### Newton's method
+Line search
+
+input: y0
+k = 0
+loop
+	Jacobian * delta y = - G(yk)
+	yk+1 = yk + delta y
+	++k
+	if delta Y < epsilon_step
+	if g(yk) < epsilon value
+	f g(yk+1)/g(y0) < epsilon change in value
+
+Jacobian = 
+
+2d x 2d matrix
+
+- top left = id_d
+- top right = -h * id_d
+- bottom left = -h * M^(-1) * Jacobian of Force with respect to \_q
+- bottom right = id_d - h * M^(-1) * Jacobain of Force with respect to .q
+
+
+
 
 
 

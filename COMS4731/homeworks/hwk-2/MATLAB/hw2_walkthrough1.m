@@ -10,9 +10,11 @@ img = imread('coins.png');
 subplot(1, 2, 1);
 imshow(img); title('Original Image');
 
-% Convert the image into a binary image by applying a threshold
-%threshold = ??;
-
+%START ADAM CODE
+    % Convert the image into a binary image by applying a threshold
+    %threshold = ??;
+    threshold = 0.3;
+%END ADAM CODE
 bw_img = im2bw(img, threshold);
 subplot(1, 2, 2);
 imshow(bw_img); title('Binary Image');
@@ -26,9 +28,11 @@ saveas(fh1, 'binary_coins.png');
 % dilation and then erosion
 fh2 = figure;
 
-% Specify the number of dilations/erosions
-%k = ??;
-
+%START ADAM CODE
+    % Specify the number of dilations/erosions
+    %k = ??;
+    k = 5;
+%END ADAM CODE
 processed_img = bwmorph(bw_img, 'dilate', k);
 subplot(1, 2, 1);
 imshow(processed_img); title('After Dilation');
@@ -46,9 +50,11 @@ saveas(fh2, 'noise_removal_coins.png');
 % Apply erosion then dilation once to remove the rices
 fh3 = figure;
 
-% Specify the number of erosions/dilations
-%k = ??;
-
+%START ADAM CODE
+    % Specify the number of erosions/dilations
+    %k = ??;
+    k = 3;
+%END ADAM CODE
 processed_img = bwmorph(processed_img, 'erode', k);
 subplot(1, 2, 1);
 imshow(processed_img); title('After Erosion');

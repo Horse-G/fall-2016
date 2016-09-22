@@ -153,22 +153,90 @@ floating point starts skipping values at higher end of the range
 #### half-pixel
 struct of 4 halfs
 
+## Lecture 03, 2016-09-21
+### Recap
+We will always talk about light in terms of geometric optics (light as a particle).
 
+Due to metamerism, we can use RGB to represent colors.
 
+The raytracing algorithm is very intuitive. It extends to mant secondary phenomena, like shadows, refraction, multiple lights.
+- produces very realistic images
+- weak becuse not good for things like diffuse inter-reflection
+- weak because it is slow
 
+### Ray tracing
+#### Recap
+for each pixel:
+- computer ray through current pixel
+- intersect with scene
+- compute shading at intersection point
+- put shading value in pixel
 
+#### Shadows
+Make a second ray from the intersection point to light source, compute distance to find the right amount of shadow.
 
+#### Reflections
+Find complement ray and compute the energy coming from another point.
 
+### Refraction
+Find other complement ray to find energy coming from another point.
 
+### Multiple lights
+Need to compute multiple rays at the points, to each of the light sources.
 
+### New psuedocode
+for each pixel:
+- compute the ray through the current pixel (primary ray)
+- intersect eay with the scene
+- trace shadow rays to all lights
+- compute illumination/shading at the intersection point
+- if the surface is reflective, trace a reflection ray
+- if the surface is transparent, trace a transmission ray
+- combine shading, reflectance, transmission contributions into pixel value
+- (if ray missed all objects, set color to background value)
 
+Basically generating a tree of rays
 
+### Benefits
+provides an easily-understood solution to visibility determination from any **point in the scene**
 
+automatically generates images
 
+### Intro to materials
+Light is partially absorbed by materials before the bounce off to another direction
 
+In reflection
+Reflection is outscattered, transmission is inscattered
 
+In opaque objects, some light is reflected, bu the rest is absorbed. Reflected light is the specular contribution, but absorbed light is the diffuse contribution.
 
+#### How do we characterize reflectance geometrically?
+- the angle of the ray to the surface
+- the angle of the light to the surface
+- the normal direction at the specific position on the surface
 
+How these affect the exiting energy is described by the **shading model**
+
+#### Simple material description
+specular reflection is an RGB triple (in [0,1])
+
+diffuse reflection is an RGB triple (in [0,1])
+
+The shading combines these with an RGB triple that describes the incidient light energy (could be > 1) to produce an RGB triple describing the emitted energy along a ray (could be > 1)
+
+#### Modeling the systems
+- way to represent rays
+- camera model
+- geometric models
+- way to represent lights
+- shading model
+- support classes: image
+
+### Signal processing
+### Hw 1.1 overview
+### Animation Appreciation
+
+"The Adventures of Andre and Wally B."
 
 
 
