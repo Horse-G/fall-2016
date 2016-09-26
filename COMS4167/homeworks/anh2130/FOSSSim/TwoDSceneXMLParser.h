@@ -13,11 +13,14 @@
 
 #include "ExplicitEuler.h"
 #include "SymplecticEuler.h"
+#include "ImplicitEuler.h"
+#include "LinearizedImplicitEuler.h"
 
 #include "SpringForce.h"
 #include "GravitationalForce.h"
 #include "SimpleGravityForce.h"
 #include "DragDampingForce.h"
+#include "VortexForce.h"
 
 #include "StringUtilities.h"
 #include "RenderingUtilities.h"
@@ -50,6 +53,8 @@ private:
   void loadSimpleGravityForces( rapidxml::xml_node<>* node, TwoDScene& twodscene );
 
   void loadDragDampingForces( rapidxml::xml_node<>* node, TwoDScene& twodscene );
+
+  void loadVorexForces( rapidxml::xml_node<>* node, TwoDScene& twodscene );
 
   void loadIntegrator( rapidxml::xml_node<>* node, SceneStepper** scenestepper, scalar& dt );
   

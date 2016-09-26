@@ -33,11 +33,17 @@ def get_scenes(asset_directory_path):
 def print_scenes(scenes=[]):
     print("FOSSSim Scenes Available (use ./run.py [scene #]:")
     max_deliverable = 0
+
+    last_category = None
     for i, s in enumerate(scenes):
         if "Deliverable{0}".format(max_deliverable + 1) in s:
             max_deliverable += 1
             print("")
             print("\033[1mDeliverable {0}\033[0m:".format(max_deliverable))
+        elif "Deliverable{0}".format(max_deliverable) not in s and s.split('/')[0] != last_category:
+            last_category = s.split('/')[0]
+            print("")
+            print("\033[1m{0}\033[0m:".format(s.split('/')[0]))
 
         print("\033[94m{:4d}\033[0m: {}".format(i, s))
 

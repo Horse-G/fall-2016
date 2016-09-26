@@ -39,6 +39,7 @@ ParticlePath::ParticlePath( int particle, int max_list_size, const Color& color 
 
 void ParticlePath::addToPath( const Vector2s& newpoint )
 {
+  if( m_max_list_size <= 0 ) return;
   if( (int) m_path.size() >= m_max_list_size ) m_path.pop_front();
   m_path.push_back(newpoint);
 }

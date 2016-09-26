@@ -3,43 +3,20 @@
 //
 // Copyright (C) 2009 Ilya Baran <ibaran@mit.edu>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_BVALGORITHMS_H
 #define EIGEN_BVALGORITHMS_H
 
-/**  Given a BVH, runs the query encapsulated by \a intersector.
-  *  The Intersector type must provide the following members: \code
-     bool intersectVolume(const BVH::Volume &volume) //returns true if volume intersects the query
-     bool intersectObject(const BVH::Object &object) //returns true if the search should terminate immediately
-  \endcode
-  */
-template<typename BVH, typename Intersector>
-void BVIntersect(const BVH &tree, Intersector &intersector)
-{
-  ei_intersect_helper(tree, intersector, tree.getRootIndex());
-}
+namespace Eigen { 
+
+namespace internal {
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN
 template<typename BVH, typename Intersector>
-bool ei_intersect_helper(const BVH &tree, Intersector &intersector, typename BVH::Index root)
+bool intersect_helper(const BVH &tree, Intersector &intersector, typename BVH::Index root)
 {
   typedef typename BVH::Index Index;
   typedef typename BVH::VolumeIterator VolIter;
@@ -67,28 +44,42 @@ bool ei_intersect_helper(const BVH &tree, Intersector &intersector, typename BVH
 #endif //not EIGEN_PARSED_BY_DOXYGEN
 
 template<typename Volume1, typename Object1, typename Object2, typename Intersector>
-struct ei_intersector_helper1
+struct intersector_helper1
 {
-  ei_intersector_helper1(const Object2 &inStored, Intersector &in) : stored(inStored), intersector(in) {}
+  intersector_helper1(const Object2 &inStored, Intersector &in) : stored(inStored), intersector(in) {}
   bool intersectVolume(const Volume1 &vol) { return intersector.intersectVolumeObject(vol, stored); }
   bool intersectObject(const Object1 &obj) { return intersector.intersectObjectObject(obj, stored); }
   Object2 stored;
   Intersector &intersector;
 private:
-  ei_intersector_helper1& operator=(const ei_intersector_helper1&);
+  intersector_helper1& operator=(const intersector_helper1&);
 };
 
 template<typename Volume2, typename Object2, typename Object1, typename Intersector>
-struct ei_intersector_helper2
+struct intersector_helper2
 {
-  ei_intersector_helper2(const Object1 &inStored, Intersector &in) : stored(inStored), intersector(in) {}
+  intersector_helper2(const Object1 &inStored, Intersector &in) : stored(inStored), intersector(in) {}
   bool intersectVolume(const Volume2 &vol) { return intersector.intersectObjectVolume(stored, vol); }
   bool intersectObject(const Object2 &obj) { return intersector.intersectObjectObject(stored, obj); }
   Object1 stored;
   Intersector &intersector;
 private:
-  ei_intersector_helper2& operator=(const ei_intersector_helper2&);
+  intersector_helper2& operator=(const intersector_helper2&);
 };
+
+} // end namespace internal
+
+/**  Given a BVH, runs the query encapsulated by \a intersector.
+  *  The Intersector type must provide the following members: \code
+     bool intersectVolume(const BVH::Volume &volume) //returns true if volume intersects the query
+     bool intersectObject(const BVH::Object &object) //returns true if the search should terminate immediately
+  \endcode
+  */
+template<typename BVH, typename Intersector>
+void BVIntersect(const BVH &tree, Intersector &intersector)
+{
+  internal::intersect_helper(tree, intersector, tree.getRootIndex());
+}
 
 /**  Given two BVH's, runs the query on their Cartesian product encapsulated by \a intersector.
   *  The Intersector type must provide the following members: \code
@@ -103,8 +94,8 @@ void BVIntersect(const BVH1 &tree1, const BVH2 &tree2, Intersector &intersector)
 {
   typedef typename BVH1::Index Index1;
   typedef typename BVH2::Index Index2;
-  typedef ei_intersector_helper1<typename BVH1::Volume, typename BVH1::Object, typename BVH2::Object, Intersector> Helper1;
-  typedef ei_intersector_helper2<typename BVH2::Volume, typename BVH2::Object, typename BVH1::Object, Intersector> Helper2;
+  typedef internal::intersector_helper1<typename BVH1::Volume, typename BVH1::Object, typename BVH2::Object, Intersector> Helper1;
+  typedef internal::intersector_helper2<typename BVH2::Volume, typename BVH2::Object, typename BVH1::Object, Intersector> Helper2;
   typedef typename BVH1::VolumeIterator VolIter1;
   typedef typename BVH1::ObjectIterator ObjIter1;
   typedef typename BVH2::VolumeIterator VolIter2;
@@ -131,7 +122,7 @@ void BVIntersect(const BVH1 &tree1, const BVH2 &tree2, Intersector &intersector)
 
       for(oCur2 = oBegin2; oCur2 != oEnd2; ++oCur2) {//go through child objects of second tree
         Helper1 helper(*oCur2, intersector);
-        if(ei_intersect_helper(tree1, helper, *vBegin1))
+        if(internal::intersect_helper(tree1, helper, *vBegin1))
           return; //intersector said to stop query
       }
     }
@@ -139,7 +130,7 @@ void BVIntersect(const BVH1 &tree1, const BVH2 &tree2, Intersector &intersector)
     for(; oBegin1 != oEnd1; ++oBegin1) { //go through child objects of first tree
       for(vCur2 = vBegin2; vCur2 != vEnd2; ++vCur2) { //go through child volumes of second tree
         Helper2 helper(*oBegin1, intersector);
-        if(ei_intersect_helper(tree2, helper, *vCur2))
+        if(internal::intersect_helper(tree2, helper, *vCur2))
           return; //intersector said to stop query
       }
 
@@ -151,23 +142,11 @@ void BVIntersect(const BVH1 &tree1, const BVH2 &tree2, Intersector &intersector)
   }
 }
 
-/**  Given a BVH, runs the query encapsulated by \a minimizer.
-  *  \returns the minimum value.
-  *  The Minimizer type must provide the following members: \code
-     typedef Scalar //the numeric type of what is being minimized--not necessarily the Scalar type of the BVH (if it has one)
-     Scalar minimumOnVolume(const BVH::Volume &volume)
-     Scalar minimumOnObject(const BVH::Object &object)
-  \endcode
-  */
-template<typename BVH, typename Minimizer>
-typename Minimizer::Scalar BVMinimize(const BVH &tree, Minimizer &minimizer)
-{
-  return ei_minimize_helper(tree, minimizer, tree.getRootIndex(), std::numeric_limits<typename Minimizer::Scalar>::max());
-}
+namespace internal {
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN
 template<typename BVH, typename Minimizer>
-typename Minimizer::Scalar ei_minimize_helper(const BVH &tree, Minimizer &minimizer, typename BVH::Index root, typename Minimizer::Scalar minimum)
+typename Minimizer::Scalar minimize_helper(const BVH &tree, Minimizer &minimizer, typename BVH::Index root, typename Minimizer::Scalar minimum)
 {
   typedef typename Minimizer::Scalar Scalar;
   typedef typename BVH::Index Index;
@@ -186,7 +165,7 @@ typename Minimizer::Scalar ei_minimize_helper(const BVH &tree, Minimizer &minimi
     todo.pop();
 
     for(; oBegin != oEnd; ++oBegin) //go through child objects
-      minimum = std::min(minimum, minimizer.minimumOnObject(*oBegin));
+      minimum = (std::min)(minimum, minimizer.minimumOnObject(*oBegin));
 
     for(; vBegin != vEnd; ++vBegin) { //go through child volumes
       Scalar val = minimizer.minimumOnVolume(tree.getVolume(*vBegin));
@@ -201,30 +180,46 @@ typename Minimizer::Scalar ei_minimize_helper(const BVH &tree, Minimizer &minimi
 
 
 template<typename Volume1, typename Object1, typename Object2, typename Minimizer>
-struct ei_minimizer_helper1
+struct minimizer_helper1
 {
   typedef typename Minimizer::Scalar Scalar;
-  ei_minimizer_helper1(const Object2 &inStored, Minimizer &m) : stored(inStored), minimizer(m) {}
+  minimizer_helper1(const Object2 &inStored, Minimizer &m) : stored(inStored), minimizer(m) {}
   Scalar minimumOnVolume(const Volume1 &vol) { return minimizer.minimumOnVolumeObject(vol, stored); }
   Scalar minimumOnObject(const Object1 &obj) { return minimizer.minimumOnObjectObject(obj, stored); }
   Object2 stored;
   Minimizer &minimizer;
 private:
-  ei_minimizer_helper1& operator=(const ei_minimizer_helper1&) {}
+  minimizer_helper1& operator=(const minimizer_helper1&);
 };
 
 template<typename Volume2, typename Object2, typename Object1, typename Minimizer>
-struct ei_minimizer_helper2
+struct minimizer_helper2
 {
   typedef typename Minimizer::Scalar Scalar;
-  ei_minimizer_helper2(const Object1 &inStored, Minimizer &m) : stored(inStored), minimizer(m) {}
+  minimizer_helper2(const Object1 &inStored, Minimizer &m) : stored(inStored), minimizer(m) {}
   Scalar minimumOnVolume(const Volume2 &vol) { return minimizer.minimumOnObjectVolume(stored, vol); }
   Scalar minimumOnObject(const Object2 &obj) { return minimizer.minimumOnObjectObject(stored, obj); }
   Object1 stored;
   Minimizer &minimizer;
 private:
-  ei_minimizer_helper2& operator=(const ei_minimizer_helper2&);
+  minimizer_helper2& operator=(const minimizer_helper2&);
 };
+
+} // end namespace internal
+
+/**  Given a BVH, runs the query encapsulated by \a minimizer.
+  *  \returns the minimum value.
+  *  The Minimizer type must provide the following members: \code
+     typedef Scalar //the numeric type of what is being minimized--not necessarily the Scalar type of the BVH (if it has one)
+     Scalar minimumOnVolume(const BVH::Volume &volume)
+     Scalar minimumOnObject(const BVH::Object &object)
+  \endcode
+  */
+template<typename BVH, typename Minimizer>
+typename Minimizer::Scalar BVMinimize(const BVH &tree, Minimizer &minimizer)
+{
+  return internal::minimize_helper(tree, minimizer, tree.getRootIndex(), (std::numeric_limits<typename Minimizer::Scalar>::max)());
+}
 
 /**  Given two BVH's, runs the query on their cartesian product encapsulated by \a minimizer.
   *  \returns the minimum value.
@@ -242,8 +237,8 @@ typename Minimizer::Scalar BVMinimize(const BVH1 &tree1, const BVH2 &tree2, Mini
   typedef typename Minimizer::Scalar Scalar;
   typedef typename BVH1::Index Index1;
   typedef typename BVH2::Index Index2;
-  typedef ei_minimizer_helper1<typename BVH1::Volume, typename BVH1::Object, typename BVH2::Object, Minimizer> Helper1;
-  typedef ei_minimizer_helper2<typename BVH2::Volume, typename BVH2::Object, typename BVH1::Object, Minimizer> Helper2;
+  typedef internal::minimizer_helper1<typename BVH1::Volume, typename BVH1::Object, typename BVH2::Object, Minimizer> Helper1;
+  typedef internal::minimizer_helper2<typename BVH2::Volume, typename BVH2::Object, typename BVH1::Object, Minimizer> Helper2;
   typedef std::pair<Scalar, std::pair<Index1, Index2> > QueueElement; //first element is priority
   typedef typename BVH1::VolumeIterator VolIter1;
   typedef typename BVH1::ObjectIterator ObjIter1;
@@ -256,7 +251,7 @@ typename Minimizer::Scalar BVMinimize(const BVH1 &tree1, const BVH2 &tree2, Mini
   ObjIter2 oBegin2 = ObjIter2(), oEnd2 = ObjIter2(), oCur2 = ObjIter2();
   std::priority_queue<QueueElement, std::vector<QueueElement>, std::greater<QueueElement> > todo; //smallest is at the top
 
-  Scalar minimum = std::numeric_limits<Scalar>::max();
+  Scalar minimum = (std::numeric_limits<Scalar>::max)();
   todo.push(std::make_pair(Scalar(), std::make_pair(tree1.getRootIndex(), tree2.getRootIndex())));
 
   while(!todo.empty()) {
@@ -266,12 +261,12 @@ typename Minimizer::Scalar BVMinimize(const BVH1 &tree1, const BVH2 &tree2, Mini
 
     for(; oBegin1 != oEnd1; ++oBegin1) { //go through child objects of first tree
       for(oCur2 = oBegin2; oCur2 != oEnd2; ++oCur2) {//go through child objects of second tree
-        minimum = std::min(minimum, minimizer.minimumOnObjectObject(*oBegin1, *oCur2));
+        minimum = (std::min)(minimum, minimizer.minimumOnObjectObject(*oBegin1, *oCur2));
       }
 
       for(vCur2 = vBegin2; vCur2 != vEnd2; ++vCur2) { //go through child volumes of second tree
         Helper2 helper(*oBegin1, minimizer);
-        minimum = std::min(minimum, ei_minimize_helper(tree2, helper, *vCur2, minimum));
+        minimum = (std::min)(minimum, internal::minimize_helper(tree2, helper, *vCur2, minimum));
       }
     }
 
@@ -280,7 +275,7 @@ typename Minimizer::Scalar BVMinimize(const BVH1 &tree1, const BVH2 &tree2, Mini
 
       for(oCur2 = oBegin2; oCur2 != oEnd2; ++oCur2) {//go through child objects of second tree
         Helper1 helper(*oCur2, minimizer);
-        minimum = std::min(minimum, ei_minimize_helper(tree1, helper, *vBegin1, minimum));
+        minimum = (std::min)(minimum, internal::minimize_helper(tree1, helper, *vBegin1, minimum));
       }
 
       for(vCur2 = vBegin2; vCur2 != vEnd2; ++vCur2) { //go through child volumes of second tree
@@ -292,5 +287,7 @@ typename Minimizer::Scalar BVMinimize(const BVH1 &tree1, const BVH2 &tree2, Mini
   }
   return minimum;
 }
+
+} // end namespace Eigen
 
 #endif // EIGEN_BVALGORITHMS_H

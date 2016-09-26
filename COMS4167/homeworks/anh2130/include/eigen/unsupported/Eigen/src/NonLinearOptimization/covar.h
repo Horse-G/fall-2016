@@ -1,10 +1,14 @@
+namespace Eigen { 
+
+namespace internal {
 
 template <typename Scalar>
-void ei_covar(
+void covar(
         Matrix< Scalar, Dynamic, Dynamic > &r,
         const VectorXi &ipvt,
-        Scalar tol = ei_sqrt(NumTraits<Scalar>::epsilon()) )
+        Scalar tol = std::sqrt(NumTraits<Scalar>::epsilon()) )
 {
+    using std::abs;
     typedef DenseIndex Index;
 
     /* Local variables */
@@ -14,14 +18,14 @@ void ei_covar(
 
     /* Function Body */
     const Index n = r.cols();
-    const Scalar tolr = tol * ei_abs(r(0,0));
+    const Scalar tolr = tol * abs(r(0,0));
     Matrix< Scalar, Dynamic, 1 > wa(n);
-    assert(ipvt.size()==n);
+    eigen_assert(ipvt.size()==n);
 
     /* form the inverse of r in the full upper triangle of r. */
     l = -1;
     for (k = 0; k < n; ++k)
-        if (ei_abs(r(k,k)) > tolr) {
+        if (abs(r(k,k)) > tolr) {
             r(k,k) = 1. / r(k,k);
             for (j = 0; j <= k-1; ++j) {
                 temp = r(k,k) * r(j,k);
@@ -61,3 +65,6 @@ void ei_covar(
     r.diagonal() = wa;
 }
 
+} // end namespace internal
+
+} // end namespace Eigen

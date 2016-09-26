@@ -4,36 +4,23 @@
 // Copyright (C) 2008 Gael Guennebaud <gael.guennebaud@inria.fr>
 // Copyright (C) 2006-2010 Benoit Jacob <jacob.benoit.1@gmail.com>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_BLOCK_H
 #define EIGEN_BLOCK_H
 
+namespace Eigen { 
+
 /** \class Block
+  * \ingroup Core_Module
   *
   * \brief Expression of a fixed-size or dynamic-size block
   *
   * \param XprType the type of the expression in which we are taking a block
   * \param BlockRows the number of rows of the block we are taking at compile time (optional)
   * \param BlockCols the number of columns of the block we are taking at compile time (optional)
-  * \param _DirectAccessStatus \internal used for partial specialization
   *
   * This class represents an expression of either a fixed-size or dynamic-size block. It is the return
   * type of DenseBase::block(Index,Index,Index,Index) and DenseBase::block<int,int>(Index,Index) and
@@ -57,60 +44,140 @@
   *
   * \sa DenseBase::block(Index,Index,Index,Index), DenseBase::block(Index,Index), class VectorBlock
   */
-template<typename XprType, int BlockRows, int BlockCols, bool HasDirectAccess>
-struct ei_traits<Block<XprType, BlockRows, BlockCols, HasDirectAccess> > : ei_traits<XprType>
+
+namespace internal {
+template<typename XprType, int BlockRows, int BlockCols, bool InnerPanel>
+struct traits<Block<XprType, BlockRows, BlockCols, InnerPanel> > : traits<XprType>
 {
-  typedef typename ei_traits<XprType>::Scalar Scalar;
-  typedef typename ei_traits<XprType>::StorageKind StorageKind;
-  typedef typename ei_traits<XprType>::XprKind XprKind;
-  typedef typename ei_nested<XprType>::type XprTypeNested;
-  typedef typename ei_unref<XprTypeNested>::type _XprTypeNested;
+  typedef typename traits<XprType>::Scalar Scalar;
+  typedef typename traits<XprType>::StorageKind StorageKind;
+  typedef typename traits<XprType>::XprKind XprKind;
+  typedef typename nested<XprType>::type XprTypeNested;
+  typedef typename remove_reference<XprTypeNested>::type _XprTypeNested;
   enum{
-    MatrixRows = ei_traits<XprType>::RowsAtCompileTime,
-    MatrixCols = ei_traits<XprType>::ColsAtCompileTime,
+    MatrixRows = traits<XprType>::RowsAtCompileTime,
+    MatrixCols = traits<XprType>::ColsAtCompileTime,
     RowsAtCompileTime = MatrixRows == 0 ? 0 : BlockRows,
     ColsAtCompileTime = MatrixCols == 0 ? 0 : BlockCols,
     MaxRowsAtCompileTime = BlockRows==0 ? 0
                          : RowsAtCompileTime != Dynamic ? int(RowsAtCompileTime)
-                         : int(ei_traits<XprType>::MaxRowsAtCompileTime),
+                         : int(traits<XprType>::MaxRowsAtCompileTime),
     MaxColsAtCompileTime = BlockCols==0 ? 0
                          : ColsAtCompileTime != Dynamic ? int(ColsAtCompileTime)
-                         : int(ei_traits<XprType>::MaxColsAtCompileTime),
-    XprTypeIsRowMajor = (int(ei_traits<XprType>::Flags)&RowMajorBit) != 0,
-    IsRowMajor = (MaxRowsAtCompileTime==1&&MaxColsAtCompileTime!=1) ? 1
-               : (MaxColsAtCompileTime==1&&MaxRowsAtCompileTime!=1) ? 0
+                         : int(traits<XprType>::MaxColsAtCompileTime),
+    XprTypeIsRowMajor = (int(traits<XprType>::Flags)&RowMajorBit) != 0,
+    IsDense = is_same<StorageKind,Dense>::value,
+    IsRowMajor = (IsDense&&MaxRowsAtCompileTime==1&&MaxColsAtCompileTime!=1) ? 1
+               : (IsDense&&MaxColsAtCompileTime==1&&MaxRowsAtCompileTime!=1) ? 0
                : XprTypeIsRowMajor,
     HasSameStorageOrderAsXprType = (IsRowMajor == XprTypeIsRowMajor),
     InnerSize = IsRowMajor ? int(ColsAtCompileTime) : int(RowsAtCompileTime),
     InnerStrideAtCompileTime = HasSameStorageOrderAsXprType
-                             ? int(ei_inner_stride_at_compile_time<XprType>::ret)
-                             : int(ei_outer_stride_at_compile_time<XprType>::ret),
+                             ? int(inner_stride_at_compile_time<XprType>::ret)
+                             : int(outer_stride_at_compile_time<XprType>::ret),
     OuterStrideAtCompileTime = HasSameStorageOrderAsXprType
-                             ? int(ei_outer_stride_at_compile_time<XprType>::ret)
-                             : int(ei_inner_stride_at_compile_time<XprType>::ret),
-    MaskPacketAccessBit = (InnerSize == Dynamic || (InnerSize % ei_packet_traits<Scalar>::size) == 0)
+                             ? int(outer_stride_at_compile_time<XprType>::ret)
+                             : int(inner_stride_at_compile_time<XprType>::ret),
+    MaskPacketAccessBit = (InnerSize == Dynamic || (InnerSize % packet_traits<Scalar>::size) == 0)
                        && (InnerStrideAtCompileTime == 1)
                         ? PacketAccessBit : 0,
-    FlagsLinearAccessBit = (RowsAtCompileTime == 1 || ColsAtCompileTime == 1) ? LinearAccessBit : 0,
-    Flags0 = ei_traits<XprType>::Flags & (HereditaryBits | MaskPacketAccessBit | DirectAccessBit),
-    Flags1 = Flags0 | FlagsLinearAccessBit,
-    Flags = (Flags1 & ~RowMajorBit) | (IsRowMajor ? RowMajorBit : 0)
+    MaskAlignedBit = (InnerPanel && (OuterStrideAtCompileTime!=Dynamic) && (((OuterStrideAtCompileTime * int(sizeof(Scalar))) % 16) == 0)) ? AlignedBit : 0,
+    FlagsLinearAccessBit = (RowsAtCompileTime == 1 || ColsAtCompileTime == 1 || (InnerPanel && (traits<XprType>::Flags&LinearAccessBit))) ? LinearAccessBit : 0,
+    FlagsLvalueBit = is_lvalue<XprType>::value ? LvalueBit : 0,
+    FlagsRowMajorBit = IsRowMajor ? RowMajorBit : 0,
+    Flags0 = traits<XprType>::Flags & ( (HereditaryBits & ~RowMajorBit) |
+                                        DirectAccessBit |
+                                        MaskPacketAccessBit |
+                                        MaskAlignedBit),
+    Flags = Flags0 | FlagsLinearAccessBit | FlagsLvalueBit | FlagsRowMajorBit
   };
 };
 
-template<typename XprType, int BlockRows, int BlockCols, bool HasDirectAccess> class Block
-  : public ei_dense_xpr_base<Block<XprType, BlockRows, BlockCols, HasDirectAccess> >::type
+template<typename XprType, int BlockRows=Dynamic, int BlockCols=Dynamic, bool InnerPanel = false,
+         bool HasDirectAccess = internal::has_direct_access<XprType>::ret> class BlockImpl_dense;
+         
+} // end namespace internal
+
+template<typename XprType, int BlockRows, int BlockCols, bool InnerPanel, typename StorageKind> class BlockImpl;
+
+template<typename XprType, int BlockRows, int BlockCols, bool InnerPanel> class Block
+  : public BlockImpl<XprType, BlockRows, BlockCols, InnerPanel, typename internal::traits<XprType>::StorageKind>
 {
+    typedef BlockImpl<XprType, BlockRows, BlockCols, InnerPanel, typename internal::traits<XprType>::StorageKind> Impl;
+  public:
+    //typedef typename Impl::Base Base;
+    typedef Impl Base;
+    EIGEN_GENERIC_PUBLIC_INTERFACE(Block)
+    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Block)
+  
+    /** Column or Row constructor
+      */
+    inline Block(XprType& xpr, Index i) : Impl(xpr,i)
+    {
+      eigen_assert( (i>=0) && (
+          ((BlockRows==1) && (BlockCols==XprType::ColsAtCompileTime) && i<xpr.rows())
+        ||((BlockRows==XprType::RowsAtCompileTime) && (BlockCols==1) && i<xpr.cols())));
+    }
+
+    /** Fixed-size constructor
+      */
+    inline Block(XprType& xpr, Index a_startRow, Index a_startCol)
+      : Impl(xpr, a_startRow, a_startCol)
+    {
+      EIGEN_STATIC_ASSERT(RowsAtCompileTime!=Dynamic && ColsAtCompileTime!=Dynamic,THIS_METHOD_IS_ONLY_FOR_FIXED_SIZE)
+      eigen_assert(a_startRow >= 0 && BlockRows >= 1 && a_startRow + BlockRows <= xpr.rows()
+             && a_startCol >= 0 && BlockCols >= 1 && a_startCol + BlockCols <= xpr.cols());
+    }
+
+    /** Dynamic-size constructor
+      */
+    inline Block(XprType& xpr,
+          Index a_startRow, Index a_startCol,
+          Index blockRows, Index blockCols)
+      : Impl(xpr, a_startRow, a_startCol, blockRows, blockCols)
+    {
+      eigen_assert((RowsAtCompileTime==Dynamic || RowsAtCompileTime==blockRows)
+          && (ColsAtCompileTime==Dynamic || ColsAtCompileTime==blockCols));
+      eigen_assert(a_startRow >= 0 && blockRows >= 0 && a_startRow  <= xpr.rows() - blockRows
+          && a_startCol >= 0 && blockCols >= 0 && a_startCol <= xpr.cols() - blockCols);
+    }
+};
+         
+// The generic default implementation for dense block simplu forward to the internal::BlockImpl_dense
+// that must be specialized for direct and non-direct access...
+template<typename XprType, int BlockRows, int BlockCols, bool InnerPanel>
+class BlockImpl<XprType, BlockRows, BlockCols, InnerPanel, Dense>
+  : public internal::BlockImpl_dense<XprType, BlockRows, BlockCols, InnerPanel>
+{
+    typedef internal::BlockImpl_dense<XprType, BlockRows, BlockCols, InnerPanel> Impl;
+    typedef typename XprType::Index Index;
+  public:
+    typedef Impl Base;
+    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(BlockImpl)
+    inline BlockImpl(XprType& xpr, Index i) : Impl(xpr,i) {}
+    inline BlockImpl(XprType& xpr, Index a_startRow, Index a_startCol) : Impl(xpr, a_startRow, a_startCol) {}
+    inline BlockImpl(XprType& xpr, Index a_startRow, Index a_startCol, Index blockRows, Index blockCols)
+      : Impl(xpr, a_startRow, a_startCol, blockRows, blockCols) {}
+};
+
+namespace internal {
+
+/** \internal Internal implementation of dense Blocks in the general case. */
+template<typename XprType, int BlockRows, int BlockCols, bool InnerPanel, bool HasDirectAccess> class BlockImpl_dense
+  : public internal::dense_xpr_base<Block<XprType, BlockRows, BlockCols, InnerPanel> >::type
+{
+    typedef Block<XprType, BlockRows, BlockCols, InnerPanel> BlockType;
   public:
 
-    typedef typename ei_dense_xpr_base<Block>::type Base;
-    EIGEN_DENSE_PUBLIC_INTERFACE(Block)
+    typedef typename internal::dense_xpr_base<BlockType>::type Base;
+    EIGEN_DENSE_PUBLIC_INTERFACE(BlockType)
+    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(BlockImpl_dense)
 
     class InnerIterator;
 
     /** Column or Row constructor
       */
-    inline Block(const XprType& xpr, Index i)
+    inline BlockImpl_dense(XprType& xpr, Index i)
       : m_xpr(xpr),
         // It is a row if and only if BlockRows==1 and BlockCols==XprType::ColsAtCompileTime,
         // and it is a column if and only if BlockRows==XprType::RowsAtCompileTime and BlockCols==1,
@@ -120,54 +187,54 @@ template<typename XprType, int BlockRows, int BlockCols, bool HasDirectAccess> c
         m_startCol( (BlockRows==XprType::RowsAtCompileTime) && (BlockCols==1) ? i : 0),
         m_blockRows(BlockRows==1 ? 1 : xpr.rows()),
         m_blockCols(BlockCols==1 ? 1 : xpr.cols())
-    {
-      ei_assert( (i>=0) && (
-          ((BlockRows==1) && (BlockCols==XprType::ColsAtCompileTime) && i<xpr.rows())
-        ||((BlockRows==XprType::RowsAtCompileTime) && (BlockCols==1) && i<xpr.cols())));
-    }
+    {}
 
     /** Fixed-size constructor
       */
-    inline Block(const XprType& xpr, Index startRow, Index startCol)
-      : m_xpr(xpr), m_startRow(startRow), m_startCol(startCol),
-        m_blockRows(BlockRows), m_blockCols(BlockCols)
-    {
-      EIGEN_STATIC_ASSERT(RowsAtCompileTime!=Dynamic && ColsAtCompileTime!=Dynamic,THIS_METHOD_IS_ONLY_FOR_FIXED_SIZE)
-      ei_assert(startRow >= 0 && BlockRows >= 1 && startRow + BlockRows <= xpr.rows()
-             && startCol >= 0 && BlockCols >= 1 && startCol + BlockCols <= xpr.cols());
-    }
+    inline BlockImpl_dense(XprType& xpr, Index a_startRow, Index a_startCol)
+      : m_xpr(xpr), m_startRow(a_startRow), m_startCol(a_startCol),
+                    m_blockRows(BlockRows), m_blockCols(BlockCols)
+    {}
 
     /** Dynamic-size constructor
       */
-    inline Block(const XprType& xpr,
-          Index startRow, Index startCol,
+    inline BlockImpl_dense(XprType& xpr,
+          Index a_startRow, Index a_startCol,
           Index blockRows, Index blockCols)
-      : m_xpr(xpr), m_startRow(startRow), m_startCol(startCol),
-                          m_blockRows(blockRows), m_blockCols(blockCols)
-    {
-      ei_assert((RowsAtCompileTime==Dynamic || RowsAtCompileTime==blockRows)
-          && (ColsAtCompileTime==Dynamic || ColsAtCompileTime==blockCols));
-      ei_assert(startRow >= 0 && blockRows >= 0 && startRow + blockRows <= xpr.rows()
-          && startCol >= 0 && blockCols >= 0 && startCol + blockCols <= xpr.cols());
-    }
-
-    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Block)
+      : m_xpr(xpr), m_startRow(a_startRow), m_startCol(a_startCol),
+                    m_blockRows(blockRows), m_blockCols(blockCols)
+    {}
 
     inline Index rows() const { return m_blockRows.value(); }
     inline Index cols() const { return m_blockCols.value(); }
 
-    inline Scalar& coeffRef(Index row, Index col)
+    inline Scalar& coeffRef(Index rowId, Index colId)
     {
+      EIGEN_STATIC_ASSERT_LVALUE(XprType)
       return m_xpr.const_cast_derived()
-               .coeffRef(row + m_startRow.value(), col + m_startCol.value());
+               .coeffRef(rowId + m_startRow.value(), colId + m_startCol.value());
     }
 
-    EIGEN_STRONG_INLINE const CoeffReturnType coeff(Index row, Index col) const
+    inline const Scalar& coeffRef(Index rowId, Index colId) const
     {
-      return m_xpr.coeff(row + m_startRow.value(), col + m_startCol.value());
+      return m_xpr.derived()
+               .coeffRef(rowId + m_startRow.value(), colId + m_startCol.value());
+    }
+
+    EIGEN_STRONG_INLINE const CoeffReturnType coeff(Index rowId, Index colId) const
+    {
+      return m_xpr.coeff(rowId + m_startRow.value(), colId + m_startCol.value());
     }
 
     inline Scalar& coeffRef(Index index)
+    {
+      EIGEN_STATIC_ASSERT_LVALUE(XprType)
+      return m_xpr.const_cast_derived()
+             .coeffRef(m_startRow.value() + (RowsAtCompileTime == 1 ? 0 : index),
+                       m_startCol.value() + (RowsAtCompileTime == 1 ? index : 0));
+    }
+
+    inline const Scalar& coeffRef(Index index) const
     {
       return m_xpr.const_cast_derived()
              .coeffRef(m_startRow.value() + (RowsAtCompileTime == 1 ? 0 : index),
@@ -182,17 +249,17 @@ template<typename XprType, int BlockRows, int BlockCols, bool HasDirectAccess> c
     }
 
     template<int LoadMode>
-    inline PacketScalar packet(Index row, Index col) const
+    inline PacketScalar packet(Index rowId, Index colId) const
     {
       return m_xpr.template packet<Unaligned>
-              (row + m_startRow.value(), col + m_startCol.value());
+              (rowId + m_startRow.value(), colId + m_startCol.value());
     }
 
     template<int LoadMode>
-    inline void writePacket(Index row, Index col, const PacketScalar& x)
+    inline void writePacket(Index rowId, Index colId, const PacketScalar& val)
     {
       m_xpr.const_cast_derived().template writePacket<Unaligned>
-              (row + m_startRow.value(), col + m_startCol.value(), x);
+              (rowId + m_startRow.value(), colId + m_startCol.value(), val);
     }
 
     template<int LoadMode>
@@ -204,11 +271,11 @@ template<typename XprType, int BlockRows, int BlockCols, bool HasDirectAccess> c
     }
 
     template<int LoadMode>
-    inline void writePacket(Index index, const PacketScalar& x)
+    inline void writePacket(Index index, const PacketScalar& val)
     {
       m_xpr.const_cast_derived().template writePacket<Unaligned>
          (m_startRow.value() + (RowsAtCompileTime == 1 ? 0 : index),
-          m_startCol.value() + (RowsAtCompileTime == 1 ? index : 0), x);
+          m_startCol.value() + (RowsAtCompileTime == 1 ? index : 0), val);
     }
 
     #ifdef EIGEN_PARSED_BY_DOXYGEN
@@ -218,72 +285,83 @@ template<typename XprType, int BlockRows, int BlockCols, bool HasDirectAccess> c
     inline Index outerStride() const;
     #endif
 
+    const typename internal::remove_all<typename XprType::Nested>::type& nestedExpression() const 
+    { 
+      return m_xpr; 
+    }
+      
+    Index startRow() const 
+    { 
+      return m_startRow.value(); 
+    }
+      
+    Index startCol() const 
+    { 
+      return m_startCol.value(); 
+    }
+
   protected:
 
     const typename XprType::Nested m_xpr;
-    const ei_variable_if_dynamic<Index, XprType::RowsAtCompileTime == 1 ? 0 : Dynamic> m_startRow;
-    const ei_variable_if_dynamic<Index, XprType::ColsAtCompileTime == 1 ? 0 : Dynamic> m_startCol;
-    const ei_variable_if_dynamic<Index, RowsAtCompileTime> m_blockRows;
-    const ei_variable_if_dynamic<Index, ColsAtCompileTime> m_blockCols;
+    const internal::variable_if_dynamic<Index, XprType::RowsAtCompileTime == 1 ? 0 : Dynamic> m_startRow;
+    const internal::variable_if_dynamic<Index, XprType::ColsAtCompileTime == 1 ? 0 : Dynamic> m_startCol;
+    const internal::variable_if_dynamic<Index, RowsAtCompileTime> m_blockRows;
+    const internal::variable_if_dynamic<Index, ColsAtCompileTime> m_blockCols;
 };
 
-/** \internal */
-template<typename XprType, int BlockRows, int BlockCols>
-class Block<XprType,BlockRows,BlockCols,true>
-  : public MapBase<Block<XprType, BlockRows, BlockCols,true> >
+/** \internal Internal implementation of dense Blocks in the direct access case.*/
+template<typename XprType, int BlockRows, int BlockCols, bool InnerPanel>
+class BlockImpl_dense<XprType,BlockRows,BlockCols, InnerPanel,true>
+  : public MapBase<Block<XprType, BlockRows, BlockCols, InnerPanel> >
 {
+    typedef Block<XprType, BlockRows, BlockCols, InnerPanel> BlockType;
   public:
 
-    typedef MapBase<Block> Base;
-    EIGEN_DENSE_PUBLIC_INTERFACE(Block)
-
-    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Block)
+    typedef MapBase<BlockType> Base;
+    EIGEN_DENSE_PUBLIC_INTERFACE(BlockType)
+    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(BlockImpl_dense)
 
     /** Column or Row constructor
       */
-    inline Block(const XprType& xpr, Index i)
-      : Base(&xpr.const_cast_derived().coeffRef(
+    inline BlockImpl_dense(XprType& xpr, Index i)
+      : Base(internal::const_cast_ptr(&xpr.coeffRef(
               (BlockRows==1) && (BlockCols==XprType::ColsAtCompileTime) ? i : 0,
-              (BlockRows==XprType::RowsAtCompileTime) && (BlockCols==1) ? i : 0),
+              (BlockRows==XprType::RowsAtCompileTime) && (BlockCols==1) ? i : 0)),
              BlockRows==1 ? 1 : xpr.rows(),
              BlockCols==1 ? 1 : xpr.cols()),
         m_xpr(xpr)
     {
-      ei_assert( (i>=0) && (
-          ((BlockRows==1) && (BlockCols==XprType::ColsAtCompileTime) && i<xpr.rows())
-        ||((BlockRows==XprType::RowsAtCompileTime) && (BlockCols==1) && i<xpr.cols())));
       init();
     }
 
     /** Fixed-size constructor
       */
-    inline Block(const XprType& xpr, Index startRow, Index startCol)
-      : Base(&xpr.const_cast_derived().coeffRef(startRow,startCol)), m_xpr(xpr)
+    inline BlockImpl_dense(XprType& xpr, Index startRow, Index startCol)
+      : Base(internal::const_cast_ptr(&xpr.coeffRef(startRow,startCol))), m_xpr(xpr)
     {
-      ei_assert(startRow >= 0 && BlockRows >= 1 && startRow + BlockRows <= xpr.rows()
-             && startCol >= 0 && BlockCols >= 1 && startCol + BlockCols <= xpr.cols());
       init();
     }
 
     /** Dynamic-size constructor
       */
-    inline Block(const XprType& xpr,
+    inline BlockImpl_dense(XprType& xpr,
           Index startRow, Index startCol,
           Index blockRows, Index blockCols)
-      : Base(&xpr.const_cast_derived().coeffRef(startRow,startCol), blockRows, blockCols),
+      : Base(internal::const_cast_ptr(&xpr.coeffRef(startRow,startCol)), blockRows, blockCols),
         m_xpr(xpr)
     {
-      ei_assert((RowsAtCompileTime==Dynamic || RowsAtCompileTime==blockRows)
-             && (ColsAtCompileTime==Dynamic || ColsAtCompileTime==blockCols));
-      ei_assert(startRow >= 0 && blockRows >= 0 && startRow + blockRows <= xpr.rows()
-             && startCol >= 0 && blockCols >= 0 && startCol + blockCols <= xpr.cols());
       init();
     }
 
+    const typename internal::remove_all<typename XprType::Nested>::type& nestedExpression() const 
+    { 
+      return m_xpr; 
+    }
+      
     /** \sa MapBase::innerStride() */
     inline Index innerStride() const
     {
-      return ei_traits<Block>::HasSameStorageOrderAsXprType
+      return internal::traits<BlockType>::HasSameStorageOrderAsXprType
              ? m_xpr.innerStride()
              : m_xpr.outerStride();
     }
@@ -302,7 +380,7 @@ class Block<XprType,BlockRows,BlockCols,true>
 
     #ifndef EIGEN_PARSED_BY_DOXYGEN
     /** \internal used by allowAligned() */
-    inline Block(const XprType& xpr, const Scalar* data, Index blockRows, Index blockCols)
+    inline BlockImpl_dense(XprType& xpr, const Scalar* data, Index blockRows, Index blockCols)
       : Base(data, blockRows, blockCols), m_xpr(xpr)
     {
       init();
@@ -312,555 +390,17 @@ class Block<XprType,BlockRows,BlockCols,true>
   protected:
     void init()
     {
-      m_outerStride = ei_traits<Block>::HasSameStorageOrderAsXprType
+      m_outerStride = internal::traits<BlockType>::HasSameStorageOrderAsXprType
                     ? m_xpr.outerStride()
                     : m_xpr.innerStride();
     }
 
-    const typename XprType::Nested m_xpr;
-    int m_outerStride;
+    typename XprType::Nested m_xpr;
+    Index m_outerStride;
 };
 
-/** \returns a dynamic-size expression of a block in *this.
-  *
-  * \param startRow the first row in the block
-  * \param startCol the first column in the block
-  * \param blockRows the number of rows in the block
-  * \param blockCols the number of columns in the block
-  *
-  * Example: \include MatrixBase_block_int_int_int_int.cpp
-  * Output: \verbinclude MatrixBase_block_int_int_int_int.out
-  *
-  * \note Even though the returned expression has dynamic size, in the case
-  * when it is applied to a fixed-size matrix, it inherits a fixed maximal size,
-  * which means that evaluating it does not cause a dynamic memory allocation.
-  *
-  * \sa class Block, block(Index,Index)
-  */
-template<typename Derived>
-inline Block<Derived> DenseBase<Derived>
-  ::block(Index startRow, Index startCol, Index blockRows, Index blockCols)
-{
-  return Block<Derived>(derived(), startRow, startCol, blockRows, blockCols);
-}
+} // end namespace internal
 
-/** This is the const version of block(Index,Index,Index,Index). */
-template<typename Derived>
-inline const Block<Derived> DenseBase<Derived>
-  ::block(Index startRow, Index startCol, Index blockRows, Index blockCols) const
-{
-  return Block<Derived>(derived(), startRow, startCol, blockRows, blockCols);
-}
-
-
-
-
-/** \returns a dynamic-size expression of a top-right corner of *this.
-  *
-  * \param cRows the number of rows in the corner
-  * \param cCols the number of columns in the corner
-  *
-  * Example: \include MatrixBase_topRightCorner_int_int.cpp
-  * Output: \verbinclude MatrixBase_topRightCorner_int_int.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-inline Block<Derived> DenseBase<Derived>
-  ::topRightCorner(Index cRows, Index cCols)
-{
-  return Block<Derived>(derived(), 0, cols() - cCols, cRows, cCols);
-}
-
-/** This is the const version of topRightCorner(Index, Index).*/
-template<typename Derived>
-inline const Block<Derived>
-DenseBase<Derived>::topRightCorner(Index cRows, Index cCols) const
-{
-  return Block<Derived>(derived(), 0, cols() - cCols, cRows, cCols);
-}
-
-/** \returns an expression of a fixed-size top-right corner of *this.
-  *
-  * The template parameters CRows and CCols are the number of rows and columns in the corner.
-  *
-  * Example: \include MatrixBase_template_int_int_topRightCorner.cpp
-  * Output: \verbinclude MatrixBase_template_int_int_topRightCorner.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-template<int CRows, int CCols>
-inline Block<Derived, CRows, CCols>
-DenseBase<Derived>::topRightCorner()
-{
-  return Block<Derived, CRows, CCols>(derived(), 0, cols() - CCols);
-}
-
-/** This is the const version of topRightCorner<int, int>().*/
-template<typename Derived>
-template<int CRows, int CCols>
-inline const Block<Derived, CRows, CCols>
-DenseBase<Derived>::topRightCorner() const
-{
-  return Block<Derived, CRows, CCols>(derived(), 0, cols() - CCols);
-}
-
-
-
-
-/** \returns a dynamic-size expression of a top-left corner of *this.
-  *
-  * \param cRows the number of rows in the corner
-  * \param cCols the number of columns in the corner
-  *
-  * Example: \include MatrixBase_topLeftCorner_int_int.cpp
-  * Output: \verbinclude MatrixBase_topLeftCorner_int_int.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-inline Block<Derived> DenseBase<Derived>
-  ::topLeftCorner(Index cRows, Index cCols)
-{
-  return Block<Derived>(derived(), 0, 0, cRows, cCols);
-}
-
-/** This is the const version of topLeftCorner(Index, Index).*/
-template<typename Derived>
-inline const Block<Derived>
-DenseBase<Derived>::topLeftCorner(Index cRows, Index cCols) const
-{
-  return Block<Derived>(derived(), 0, 0, cRows, cCols);
-}
-
-/** \returns an expression of a fixed-size top-left corner of *this.
-  *
-  * The template parameters CRows and CCols are the number of rows and columns in the corner.
-  *
-  * Example: \include MatrixBase_template_int_int_topLeftCorner.cpp
-  * Output: \verbinclude MatrixBase_template_int_int_topLeftCorner.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-template<int CRows, int CCols>
-inline Block<Derived, CRows, CCols>
-DenseBase<Derived>::topLeftCorner()
-{
-  return Block<Derived, CRows, CCols>(derived(), 0, 0);
-}
-
-/** This is the const version of topLeftCorner<int, int>().*/
-template<typename Derived>
-template<int CRows, int CCols>
-inline const Block<Derived, CRows, CCols>
-DenseBase<Derived>::topLeftCorner() const
-{
-  return Block<Derived, CRows, CCols>(derived(), 0, 0);
-}
-
-
-
-
-
-
-/** \returns a dynamic-size expression of a bottom-right corner of *this.
-  *
-  * \param cRows the number of rows in the corner
-  * \param cCols the number of columns in the corner
-  *
-  * Example: \include MatrixBase_bottomRightCorner_int_int.cpp
-  * Output: \verbinclude MatrixBase_bottomRightCorner_int_int.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-inline Block<Derived> DenseBase<Derived>
-  ::bottomRightCorner(Index cRows, Index cCols)
-{
-  return Block<Derived>(derived(), rows() - cRows, cols() - cCols, cRows, cCols);
-}
-
-/** This is the const version of bottomRightCorner(Index, Index).*/
-template<typename Derived>
-inline const Block<Derived>
-DenseBase<Derived>::bottomRightCorner(Index cRows, Index cCols) const
-{
-  return Block<Derived>(derived(), rows() - cRows, cols() - cCols, cRows, cCols);
-}
-
-/** \returns an expression of a fixed-size bottom-right corner of *this.
-  *
-  * The template parameters CRows and CCols are the number of rows and columns in the corner.
-  *
-  * Example: \include MatrixBase_template_int_int_bottomRightCorner.cpp
-  * Output: \verbinclude MatrixBase_template_int_int_bottomRightCorner.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-template<int CRows, int CCols>
-inline Block<Derived, CRows, CCols>
-DenseBase<Derived>::bottomRightCorner()
-{
-  return Block<Derived, CRows, CCols>(derived(), rows() - CRows, cols() - CCols);
-}
-
-/** This is the const version of bottomRightCorner<int, int>().*/
-template<typename Derived>
-template<int CRows, int CCols>
-inline const Block<Derived, CRows, CCols>
-DenseBase<Derived>::bottomRightCorner() const
-{
-  return Block<Derived, CRows, CCols>(derived(), rows() - CRows, cols() - CCols);
-}
-
-
-
-
-/** \returns a dynamic-size expression of a bottom-left corner of *this.
-  *
-  * \param cRows the number of rows in the corner
-  * \param cCols the number of columns in the corner
-  *
-  * Example: \include MatrixBase_bottomLeftCorner_int_int.cpp
-  * Output: \verbinclude MatrixBase_bottomLeftCorner_int_int.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-inline Block<Derived> DenseBase<Derived>
-  ::bottomLeftCorner(Index cRows, Index cCols)
-{
-  return Block<Derived>(derived(), rows() - cRows, 0, cRows, cCols);
-}
-
-/** This is the const version of bottomLeftCorner(Index, Index).*/
-template<typename Derived>
-inline const Block<Derived>
-DenseBase<Derived>::bottomLeftCorner(Index cRows, Index cCols) const
-{
-  return Block<Derived>(derived(), rows() - cRows, 0, cRows, cCols);
-}
-
-/** \returns an expression of a fixed-size bottom-left corner of *this.
-  *
-  * The template parameters CRows and CCols are the number of rows and columns in the corner.
-  *
-  * Example: \include MatrixBase_template_int_int_bottomLeftCorner.cpp
-  * Output: \verbinclude MatrixBase_template_int_int_bottomLeftCorner.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-template<int CRows, int CCols>
-inline Block<Derived, CRows, CCols>
-DenseBase<Derived>::bottomLeftCorner()
-{
-  return Block<Derived, CRows, CCols>(derived(), rows() - CRows, 0);
-}
-
-/** This is the const version of bottomLeftCorner<int, int>().*/
-template<typename Derived>
-template<int CRows, int CCols>
-inline const Block<Derived, CRows, CCols>
-DenseBase<Derived>::bottomLeftCorner() const
-{
-  return Block<Derived, CRows, CCols>(derived(), rows() - CRows, 0);
-}
-
-
-
-/** \returns a block consisting of the top rows of *this.
-  *
-  * \param n the number of rows in the block
-  *
-  * Example: \include MatrixBase_topRows_int.cpp
-  * Output: \verbinclude MatrixBase_topRows_int.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-inline typename DenseBase<Derived>::RowsBlockXpr DenseBase<Derived>
-  ::topRows(Index n)
-{
-  return RowsBlockXpr(derived(), 0, 0, n, cols());
-}
-
-/** This is the const version of topRows(Index).*/
-template<typename Derived>
-inline const typename DenseBase<Derived>::RowsBlockXpr
-DenseBase<Derived>::topRows(Index n) const
-{
-  return RowsBlockXpr(derived(), 0, 0, n, cols());
-}
-
-/** \returns a block consisting of the top rows of *this.
-  *
-  * \param N the number of rows in the block
-  *
-  * Example: \include MatrixBase_template_int_topRows.cpp
-  * Output: \verbinclude MatrixBase_template_int_topRows.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-template<int N>
-inline typename DenseBase<Derived>::template NRowsBlockXpr<N>::Type
-DenseBase<Derived>::topRows()
-{
-  return typename DenseBase<Derived>::template NRowsBlockXpr<N>::Type(derived(), 0, 0, N, cols());
-}
-
-/** This is the const version of topRows<int>().*/
-template<typename Derived>
-template<int N>
-inline const typename DenseBase<Derived>::template NRowsBlockXpr<N>::Type
-DenseBase<Derived>::topRows() const
-{
-  return typename DenseBase<Derived>::template NRowsBlockXpr<N>::Type(derived(), 0, 0, N, cols());
-}
-
-
-
-
-
-/** \returns a block consisting of the bottom rows of *this.
-  *
-  * \param n the number of rows in the block
-  *
-  * Example: \include MatrixBase_bottomRows_int.cpp
-  * Output: \verbinclude MatrixBase_bottomRows_int.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-inline typename DenseBase<Derived>::RowsBlockXpr DenseBase<Derived>
-  ::bottomRows(Index n)
-{
-  return RowsBlockXpr(derived(), rows() - n, 0, n, cols());
-}
-
-/** This is the const version of bottomRows(Index).*/
-template<typename Derived>
-inline const typename DenseBase<Derived>::RowsBlockXpr
-DenseBase<Derived>::bottomRows(Index n) const
-{
-  return RowsBlockXpr(derived(), rows() - n, 0, n, cols());
-}
-
-/** \returns a block consisting of the bottom rows of *this.
-  *
-  * \param N the number of rows in the block
-  *
-  * Example: \include MatrixBase_template_int_bottomRows.cpp
-  * Output: \verbinclude MatrixBase_template_int_bottomRows.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-template<int N>
-inline typename DenseBase<Derived>::template NRowsBlockXpr<N>::Type
-DenseBase<Derived>::bottomRows()
-{
-  return typename NRowsBlockXpr<N>::Type(derived(), rows() - N, 0, N, cols());
-}
-
-/** This is the const version of bottomRows<int>().*/
-template<typename Derived>
-template<int N>
-inline const typename DenseBase<Derived>::template NRowsBlockXpr<N>::Type
-DenseBase<Derived>::bottomRows() const
-{
-  return typename NRowsBlockXpr<N>::Type(derived(), rows() - N, 0, N, cols());
-}
-
-
-
-
-
-/** \returns a block consisting of the top columns of *this.
-  *
-  * \param n the number of columns in the block
-  *
-  * Example: \include MatrixBase_leftCols_int.cpp
-  * Output: \verbinclude MatrixBase_leftCols_int.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-inline typename DenseBase<Derived>::ColsBlockXpr DenseBase<Derived>
-  ::leftCols(Index n)
-{
-  return ColsBlockXpr(derived(), 0, 0, rows(), n);
-}
-
-/** This is the const version of leftCols(Index).*/
-template<typename Derived>
-inline const typename DenseBase<Derived>::ColsBlockXpr
-DenseBase<Derived>::leftCols(Index n) const
-{
-  return ColsBlockXpr(derived(), 0, 0, rows(), n);
-}
-
-/** \returns a block consisting of the top columns of *this.
-  *
-  * \param N the number of columns in the block
-  *
-  * Example: \include MatrixBase_template_int_leftCols.cpp
-  * Output: \verbinclude MatrixBase_template_int_leftCols.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-template<int N>
-inline typename DenseBase<Derived>::template NColsBlockXpr<N>::Type
-DenseBase<Derived>::leftCols()
-{
-  return typename NColsBlockXpr<N>::Type(derived(), 0, 0, rows(), N);
-}
-
-/** This is the const version of leftCols<int>().*/
-template<typename Derived>
-template<int N>
-inline const typename DenseBase<Derived>::template NColsBlockXpr<N>::Type
-DenseBase<Derived>::leftCols() const
-{
-  return typename NColsBlockXpr<N>::Type(derived(), 0, 0, rows(), N);
-}
-
-
-
-
-
-/** \returns a block consisting of the top columns of *this.
-  *
-  * \param n the number of columns in the block
-  *
-  * Example: \include MatrixBase_rightCols_int.cpp
-  * Output: \verbinclude MatrixBase_rightCols_int.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-inline typename DenseBase<Derived>::ColsBlockXpr DenseBase<Derived>
-  ::rightCols(Index n)
-{
-  return ColsBlockXpr(derived(), 0, cols() - n, rows(), n);
-}
-
-/** This is the const version of rightCols(Index).*/
-template<typename Derived>
-inline const typename DenseBase<Derived>::ColsBlockXpr
-DenseBase<Derived>::rightCols(Index n) const
-{
-  return ColsBlockXpr(derived(), 0, cols() - n, rows(), n);
-}
-
-/** \returns a block consisting of the top columns of *this.
-  *
-  * \param N the number of columns in the block
-  *
-  * Example: \include MatrixBase_template_int_rightCols.cpp
-  * Output: \verbinclude MatrixBase_template_int_rightCols.out
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-template<int N>
-inline typename DenseBase<Derived>::template NColsBlockXpr<N>::Type
-DenseBase<Derived>::rightCols()
-{
-  return typename DenseBase<Derived>::template NColsBlockXpr<N>::Type(derived(), 0, cols() - N, rows(), N);
-}
-
-/** This is the const version of rightCols<int>().*/
-template<typename Derived>
-template<int N>
-inline const typename DenseBase<Derived>::template NColsBlockXpr<N>::Type
-DenseBase<Derived>::rightCols() const
-{
-  return typename DenseBase<Derived>::template NColsBlockXpr<N>::Type(derived(), 0, cols() - N, rows(), N);
-}
-
-
-
-
-
-/** \returns a fixed-size expression of a block in *this.
-  *
-  * The template parameters \a BlockRows and \a BlockCols are the number of
-  * rows and columns in the block.
-  *
-  * \param startRow the first row in the block
-  * \param startCol the first column in the block
-  *
-  * Example: \include MatrixBase_block_int_int.cpp
-  * Output: \verbinclude MatrixBase_block_int_int.out
-  *
-  * \note since block is a templated member, the keyword template has to be used
-  * if the matrix type is also a template parameter: \code m.template block<3,3>(1,1); \endcode
-  *
-  * \sa class Block, block(Index,Index,Index,Index)
-  */
-template<typename Derived>
-template<int BlockRows, int BlockCols>
-inline Block<Derived, BlockRows, BlockCols>
-DenseBase<Derived>::block(Index startRow, Index startCol)
-{
-  return Block<Derived, BlockRows, BlockCols>(derived(), startRow, startCol);
-}
-
-/** This is the const version of block<>(Index, Index). */
-template<typename Derived>
-template<int BlockRows, int BlockCols>
-inline const Block<Derived, BlockRows, BlockCols>
-DenseBase<Derived>::block(Index startRow, Index startCol) const
-{
-  return Block<Derived, BlockRows, BlockCols>(derived(), startRow, startCol);
-}
-
-/** \returns an expression of the \a i-th column of *this. Note that the numbering starts at 0.
-  *
-  * Example: \include MatrixBase_col.cpp
-  * Output: \verbinclude MatrixBase_col.out
-  *
-  * \sa row(), class Block */
-template<typename Derived>
-inline typename DenseBase<Derived>::ColXpr
-DenseBase<Derived>::col(Index i)
-{
-  return ColXpr(derived(), i);
-}
-
-/** This is the const version of col(). */
-template<typename Derived>
-inline const typename DenseBase<Derived>::ColXpr
-DenseBase<Derived>::col(Index i) const
-{
-  return ColXpr(derived(), i);
-}
-
-/** \returns an expression of the \a i-th row of *this. Note that the numbering starts at 0.
-  *
-  * Example: \include MatrixBase_row.cpp
-  * Output: \verbinclude MatrixBase_row.out
-  *
-  * \sa col(), class Block */
-template<typename Derived>
-inline typename DenseBase<Derived>::RowXpr
-DenseBase<Derived>::row(Index i)
-{
-  return RowXpr(derived(), i);
-}
-
-/** This is the const version of row(). */
-template<typename Derived>
-inline const typename DenseBase<Derived>::RowXpr
-DenseBase<Derived>::row(Index i) const
-{
-  return RowXpr(derived(), i);
-}
+} // end namespace Eigen
 
 #endif // EIGEN_BLOCK_H

@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2009 Guillaume Saupin <guillaume.saupin@cea.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SKYLINEUTIL_H
 #define EIGEN_SKYLINEUTIL_H
+
+namespace Eigen { 
 
 #ifdef NDEBUG
 #define EIGEN_DBG_SKYLINE(X)
@@ -64,11 +51,11 @@ EIGEN_STRONG_INLINE Derived& operator Op(const Other& scalar) \
 
 #define _EIGEN_SKYLINE_GENERIC_PUBLIC_INTERFACE(Derived, BaseClass) \
   typedef BaseClass Base; \
-  typedef typename Eigen::ei_traits<Derived>::Scalar Scalar; \
+  typedef typename Eigen::internal::traits<Derived>::Scalar Scalar; \
   typedef typename Eigen::NumTraits<Scalar>::Real RealScalar; \
-  typedef typename Eigen::ei_traits<Derived>::StorageKind StorageKind; \
-  typedef typename Eigen::ei_index<StorageKind>::type Index; \
-  enum {  Flags = Eigen::ei_traits<Derived>::Flags, };
+  typedef typename Eigen::internal::traits<Derived>::StorageKind StorageKind; \
+  typedef typename Eigen::internal::index<StorageKind>::type Index; \
+  enum {  Flags = Eigen::internal::traits<Derived>::Flags, };
 
 #define EIGEN_SKYLINE_GENERIC_PUBLIC_INTERFACE(Derived) \
   _EIGEN_SKYLINE_GENERIC_PUBLIC_INTERFACE(Derived, Eigen::SkylineMatrixBase<Derived>)
@@ -79,20 +66,24 @@ template<typename _Scalar, int _Flags = 0> class DynamicSkylineMatrix;
 template<typename _Scalar, int _Flags = 0> class SkylineVector;
 template<typename _Scalar, int _Flags = 0> class MappedSkylineMatrix;
 
-template<typename Lhs, typename Rhs> struct ei_skyline_product_mode;
-template<typename Lhs, typename Rhs, int ProductMode = ei_skyline_product_mode<Lhs,Rhs>::value> struct SkylineProductReturnType;
+namespace internal {
 
+template<typename Lhs, typename Rhs> struct skyline_product_mode;
+template<typename Lhs, typename Rhs, int ProductMode = skyline_product_mode<Lhs,Rhs>::value> struct SkylineProductReturnType;
 
-template<typename T> class ei_eval<T,IsSkyline>
+template<typename T> class eval<T,IsSkyline>
 {
-    typedef typename ei_traits<T>::Scalar _Scalar;
+    typedef typename traits<T>::Scalar _Scalar;
     enum {
-          _Flags = ei_traits<T>::Flags
+          _Flags = traits<T>::Flags
     };
 
   public:
     typedef SkylineMatrix<_Scalar, _Flags> type;
 };
 
+} // end namespace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_SKYLINEUTIL_H

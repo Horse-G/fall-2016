@@ -3,32 +3,19 @@
 //
 // Copyright (C) 2009 Mark Borgerding mark a borgerding net
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+namespace Eigen { 
 
+namespace internal {
 
   // This FFT implementation was derived from kissfft http:sourceforge.net/projects/kissfft
   // Copyright 2003-2009 Mark Borgerding
 
 template <typename _Scalar>
-struct ei_kiss_cpx_fft
+struct kiss_cpx_fft
 {
   typedef _Scalar Scalar;
   typedef std::complex<Scalar> Complex;
@@ -41,6 +28,7 @@ struct ei_kiss_cpx_fft
   inline
     void make_twiddles(int nfft,bool inverse)
     {
+      using std::acos;
       m_inverse = inverse;
       m_twiddles.resize(nfft);
       Scalar phinc =  (inverse?2:-2)* acos( (Scalar) -1)  / nfft;
@@ -274,7 +262,7 @@ struct ei_kiss_cpx_fft
 };
 
 template <typename _Scalar>
-struct ei_kissfft_impl
+struct kissfft_impl
 {
   typedef _Scalar Scalar;
   typedef std::complex<Scalar> Complex;
@@ -294,11 +282,19 @@ struct ei_kissfft_impl
   inline
     void fwd2( Complex * dst,const Complex *src,int n0,int n1)
     {
+        EIGEN_UNUSED_VARIABLE(dst);
+        EIGEN_UNUSED_VARIABLE(src);
+        EIGEN_UNUSED_VARIABLE(n0);
+        EIGEN_UNUSED_VARIABLE(n1);
     }
 
   inline
     void inv2( Complex * dst,const Complex *src,int n0,int n1)
     {
+        EIGEN_UNUSED_VARIABLE(dst);
+        EIGEN_UNUSED_VARIABLE(src);
+        EIGEN_UNUSED_VARIABLE(n0);
+        EIGEN_UNUSED_VARIABLE(n1);
     }
 
   // real-to-complex forward FFT
@@ -378,7 +374,7 @@ struct ei_kissfft_impl
     }
 
   protected:
-  typedef ei_kiss_cpx_fft<Scalar> PlanData;
+  typedef kiss_cpx_fft<Scalar> PlanData;
   typedef std::map<int,PlanData> PlanMap;
 
   PlanMap m_plans;
@@ -404,6 +400,7 @@ struct ei_kissfft_impl
   inline
     Complex * real_twiddles(int ncfft2)
     {
+      using std::acos;
       std::vector<Complex> & twidref = m_realTwiddles[ncfft2];// creates new if not there
       if ( (int)twidref.size() != ncfft2 ) {
         twidref.resize(ncfft2);
@@ -416,5 +413,8 @@ struct ei_kissfft_impl
     }
 };
 
-/* vim: set filetype=cpp et sw=2 ts=2 ai: */
+} // end namespace internal
 
+} // end namespace Eigen
+
+/* vim: set filetype=cpp et sw=2 ts=2 ai: */

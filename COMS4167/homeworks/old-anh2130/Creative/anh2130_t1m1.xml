@@ -1,0 +1,281 @@
+<!-- A number of particles under gravity with initial conditions that produce a rainbow-like shape -->
+<scene>
+  <duration time="12.0"/>
+  <integrator type="explicit-euler" dt="0.01"/>
+  <maxsimfreq max="500.0"/>
+  <simplegravity fx="-1.5" fy="-1.5"/>
+  <backgroundcolor r="0.1" g="0.1" b="0.1"/>
+  <!-- 00-03: corners for size of image -->
+  <particle m= "1.0" px="0.0"    py="0.0"    vx="0.0"  vy="0.0"    fixed="1" radius= "2.0"/>
+  <particle m= "1.0" px="0.0"    py="-720.0" vx="0.0"  vy="0.0"    fixed="1" radius= "2.0"/>
+  <particle m= "1.0" px="1280.0" py="-720.0" vx="0.0"  vy="0.0"    fixed="1" radius= "2.0"/>
+  <particle m= "1.0" px="1280.0" py="0.0"    vx="0.0"  vy="0.0"    fixed="1" radius= "2.0"/>
+  <particlecolor i= "0" r="0.1"   g="0.1"   b="0.1"  />
+  <particlecolor i= "1" r="0.1"   g="0.1"   b="0.1"  />
+  <particlecolor i= "2" r="0.1"   g="0.1"   b="0.1"  />
+  <particlecolor i= "3" r="0.1"   g="0.1"   b="0.1"  />
+  <!-- 04-05: the disk -->
+  <particle m= "1.0" px="640.0"  py="-360.0" vx="0.0"   vy="0.0"   fixed="1" radius="350.0"/>
+  <particle m= "1.0" px="640.0"  py="-360.0" vx="0.0"   vy="0.0"   fixed="1" radius="5.0"  />
+  <particlecolor i= "4" r="1.0"   g="0.8"   b="0.0"  />
+  <particlecolor i= "5" r="0.1"   g="0.1"   b="0.1"  />
+  <!-- 06-20: Particles that form the explosion -->
+  <!-- 00-13: Edges that form the explosion -->
+  <!-- 06: axis -->
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="0.0"   vy="0.0"   fixed="1" radius="2.0"  />
+  <!-- 07-20: spokes --> 
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="25.1667" vy="-0.33333" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="7.33333" vy="1.666667" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="12.0000" vy="4.000000" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="8.91667" vy="11.08333" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="2.25000" vy="5.333333" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="-1.1667" vy="7.833333" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="-5.2500" vy="3.583333" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="-9.5833" vy="-0.75000" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="-5.5000" vy="-1.66667" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="-3.3333" vy="-3.91667" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="-0.7500" vy="-8.16667" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="7.58333" vy="-11.5000" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="3.58333" vy="-3.83333" fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="500.0"  py="-530.0" vx="12.3333" vy="-3.83333" fixed="1" radius="2.0"  />
+  <particlecolor i="6"  r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="7"  r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="8"  r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="9"  r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="10" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="11" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="12" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="13" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="14" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="15" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="16" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="17" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="18" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="19" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="20" r="1.0" g="1.0" b="1.0"/>
+  <edge i="6"  j="7"  radius="1.0" />
+  <edge i="6"  j="8"  radius="1.0" />
+  <edge i="6"  j="9"  radius="1.0" />
+  <edge i="6"  j="10" radius="1.0" />
+  <edge i="6"  j="11" radius="1.0" />
+  <edge i="6"  j="12" radius="1.0" />
+  <edge i="6"  j="13" radius="1.0" />
+  <edge i="6"  j="14" radius="1.0" />
+  <edge i="6"  j="15" radius="1.0" />
+  <edge i="6"  j="16" radius="1.0" />
+  <edge i="6"  j="17" radius="1.0" />
+  <edge i="6"  j="18" radius="1.0" />
+  <edge i="6"  j="19" radius="1.0" />
+  <edge i="6"  j="20" radius="1.0" />
+  <edgecolor i="0"  r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="1"  r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="2"  r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="3"  r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="4"  r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="5"  r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="6"  r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="7"  r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="8"  r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="9"  r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="10" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="11" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="12" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="13" r="1.0" g="1.0" b="1.0"/>
+  <!-- 21-30: Particles that form the train tracks -->
+  <!-- 14-17: Edges that form the train tracks -->
+  <particle m="1.0"  px="468.0"  py="-220.0" vx="0.0"   vy="0.0"   fixed="1" radius="82.0" />
+  <particle m="1.0"  px="468.0"  py="-220.0" vx="0.0"   vy="0.0"   fixed="1" radius="80.0" />
+  <particle m="1.0"  px="468.0"  py="-220.0" vx="0.0"   vy="0.0"   fixed="1" radius="18.0" />
+  <particle m="1.0"  px="468.0"  py="-220.0" vx="0.0"   vy="0.0"   fixed="1" radius="16.0" />
+  <particle m="1.0"  px="468.0"  py="-220.0" vx="0.0"   vy="0.0"   fixed="1" radius="6.0"  />
+  <particle m="1.0"  px="468.0"  py="-220.0" vx="0.0"   vy="0.0"   fixed="1" radius="4.0"  />
+  <particle m="1.0"  px="546.0"  py="-230.0" vx="0.0"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="546.0"  py="-230.0" vx="0.0"   vy="4.08333"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="546.0"  py="-230.0" vx="1.25"  vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="546.0"  py="-230.0" vx="1.25"  vy="4.08333"  fixed="1" radius="2.0"  />
+  <particlecolor i="21" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="22" r="1.0" g="0.8" b="0.0"/>
+  <particlecolor i="23" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="24" r="1.0" g="0.8" b="0.0"/>
+  <particlecolor i="25" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="26" r="1.0" g="0.8" b="0.0"/>
+  <particlecolor i="27" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="28" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="29" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="30" r="1.0" g="1.0" b="1.0"/>
+  <edge i="27" j="28" radius="1.0" />
+  <edge i="27" j="29" radius="1.0" />
+  <edge i="28" j="30" radius="1.0" />
+  <edge i="29" j="30" radius="1.0" />
+  <edgecolor i="14" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="15" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="16" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="17" r="1.0" g="1.0" b="1.0"/>
+  <!-- 31-40: Particles that form the left lines -->
+  <!-- 18-22: Edges that form the left lines -->
+  <particle m="1.0"  px="389.0"  py="-368.0" vx="0.0"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="389.0"  py="-368.0" vx="13.5"  vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="474.0"  py="-390.0" vx="0.0"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="474.0"  py="-390.0" vx="6.25"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="474.0"  py="-397.0" vx="0.0"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="474.0"  py="-397.0" vx="6.25"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="474.0"  py="-404.0" vx="0.0"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="474.0"  py="-404.0" vx="6.25"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="474.0"  py="-411.0" vx="0.0"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="474.0"  py="-411.0" vx="2.666667"  vy="0.0"   fixed="1" radius="2.0"  />
+  <particlecolor i="31" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="32" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="33" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="34" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="35" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="36" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="37" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="38" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="39" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="40" r="1.0" g="1.0" b="1.0"/>
+  <edge i="31" j="32" radius="5.0" />
+  <edge i="33" j="34" radius="1.0" />
+  <edge i="35" j="36" radius="1.0" />
+  <edge i="37" j="38" radius="1.0" />
+  <edge i="39" j="40" radius="1.0" />
+  <edgecolor i="18" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="19" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="20" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="21" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="22" r="1.0" g="1.0" b="1.0"/>
+  <!-- 41-46: Particles that form hydrogen -->
+  <!-- 23-23: Edges that form hydrogen -->
+  <particle m="1.0"  px="749.0"  py="-612.0" vx="0.0"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="749.0"  py="-612.0" vx="2.333333"  vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="734.0"  py="-612.0" vx="0.0"   vy="0.0"   fixed="1" radius="15.0" />
+  <particle m="1.0"  px="734.0"  py="-612.0" vx="0.0"   vy="0.0"   fixed="1" radius="13.0" />
+  <particle m="1.0"  px="792.0"  py="-612.0" vx="0.0"   vy="0.0"   fixed="1" radius="15.0" />
+  <particle m="1.0"  px="792.0"  py="-612.0" vx="0.0"   vy="0.0"   fixed="1" radius="13.0" />
+  <particlecolor i="41" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="42" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="43" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="44" r="1.0" g="0.8" b="0.0"/>
+  <particlecolor i="45" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="46" r="1.0" g="0.8" b="0.0"/>
+  <edge i="41" j="42" radius="1.0" />
+  <edgecolor i="23" r="1.0" g="1.0" b="1.0"/>
+  <!-- 47-56: Particles that form squares -->
+  <!-- 24-31: Edges that form squares -->
+  <particle m="1.0"  px="753.5"  py="-429.0" vx="0.0"   vy="0.0"   fixed="1" radius="25.0" />
+  <particle m="1.0"  px="753.5"  py="-429.0" vx="0.0"   vy="0.0"   fixed="1" radius="23.0" />
+  <particle m="1.0"  px="707.0"  py="-464.0" vx="0.0"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="707.0"  py="-464.0" vx="0.0"   vy="5.833333"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="707.0"  py="-464.0" vx="7.75"  vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="707.0"  py="-464.0" vx="7.75"  vy="5.83333"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="707.0"  py="-382.0" vx="0.0"   vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="707.0"  py="-382.0" vx="0.0"   vy="5.83333"  fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="707.0"  py="-382.0" vx="7.75"  vy="0.0"   fixed="1" radius="2.0"  />
+  <particle m="1.0"  px="707.0"  py="-382.0" vx="7.75"  vy="5.83333"  fixed="1" radius="2.0"  />
+  <particlecolor i="47" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="48" r="1.0" g="0.8" b="0.0"/>
+  <particlecolor i="49" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="50" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="51" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="52" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="53" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="54" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="55" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="56" r="1.0" g="1.0" b="1.0"/>
+  <edge i="49" j="50" radius="1.0" />
+  <edge i="49" j="51" radius="1.0" />
+  <edge i="50" j="52" radius="1.0" />
+  <edge i="51" j="52" radius="1.0" />
+  <edge i="53" j="54" radius="1.0" />
+  <edge i="53" j="55" radius="1.0" />
+  <edge i="54" j="56" radius="1.0" />
+  <edge i="55" j="56" radius="1.0" />
+  <edgecolor i="24" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="25" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="26" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="27" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="28" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="29" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="30" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="31" r="1.0" g="1.0" b="1.0"/>
+  <!-- 57-63: Particles that form lower zigzag -->
+  <!-- 32-37: Edges that form lower zigzag -->
+  <particle m="1.0"  px="704.0"  py="-231.0" vx="0.0"       vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="704.0"  py="-231.0" vx="3.75"      vy="-3.83333"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="704.0"  py="-231.0" vx="4.9166667" vy="-0.25"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="704.0"  py="-231.0" vx="8.583333"  vy="-4.08333"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="704.0"  py="-231.0" vx="9.75"      vy="-0.416667"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="704.0"  py="-231.0" vx="13.5"      vy="-4.3333"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="704.0"  py="-231.0" vx="14.6667"   vy="-0.5"   fixed="1" radius="2.0" />
+  <particlecolor i="57" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="58" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="59" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="60" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="61" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="62" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="63" r="1.0" g="1.0" b="1.0"/>
+  <edge i="57" j="58" radius="1.0" />
+  <edge i="58" j="59" radius="1.0" />
+  <edge i="59" j="60" radius="1.0" />
+  <edge i="60" j="61" radius="1.0" />
+  <edge i="61" j="62" radius="1.0" />
+  <edge i="62" j="63" radius="1.0" />
+  <edgecolor i="32" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="33" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="34" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="35" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="36" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="37" r="1.0" g="1.0" b="1.0"/>
+  <!-- 64-76: Particles that form the heartbeat -->
+  <!-- 38-48: Edges that form the heartbeat -->
+  <particle m="1.0"  px="622.0"  py="-165.0" vx="0.0"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="622.0"  py="-165.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="624.0"  py="-144.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="626.5"  py="-177.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="629.0"  py="-144.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="631.5"  py="-177.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="633.0"  py="-144.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="635.5"  py="-177.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="638.0"  py="-144.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="640.5"  py="-177.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="643.0"  py="-144.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="645.5"  py="-165.0" vx="19.625"  vy="0.0"   fixed="1" radius="2.0" />
+  <particle m="1.0"  px="881.0"  py="-165.0" vx="0.0"  vy="0.0"   fixed="1" radius="2.0" />
+  <particlecolor i="64" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="65" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="66" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="67" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="68" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="69" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="70" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="71" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="72" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="73" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="74" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="75" r="1.0" g="1.0" b="1.0"/>
+  <particlecolor i="76" r="1.0" g="1.0" b="1.0"/>
+  <edge i="64" j="65" radius="1.0" />
+  <edge i="65" j="66" radius="1.0" />
+  <edge i="66" j="67" radius="1.0" />
+  <edge i="67" j="68" radius="1.0" />
+  <edge i="69" j="70" radius="1.0" />
+  <edge i="70" j="71" radius="1.0" />
+  <edge i="71" j="72" radius="1.0" />
+  <edge i="72" j="73" radius="1.0" />
+  <edge i="73" j="74" radius="1.0" />
+  <edge i="74" j="75" radius="1.0" />
+  <edge i="75" j="76" radius="1.0" />
+  <edgecolor i="38" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="39" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="40" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="41" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="42" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="43" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="44" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="45" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="46" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="47" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="48" r="1.0" g="1.0" b="1.0"/>
+  <!--<edgecolor i="49" r="1.0" g="1.0" b="1.0"/>
+  <edgecolor i="50" r="1.0" g="1.0" b="1.0"/>
+-->
+</scene>

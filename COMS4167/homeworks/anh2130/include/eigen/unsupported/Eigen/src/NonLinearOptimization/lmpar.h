@@ -1,6 +1,9 @@
+namespace Eigen { 
+
+namespace internal {
 
 template <typename Scalar>
-void ei_lmpar(
+void lmpar(
         Matrix< Scalar, Dynamic, Dynamic > &r,
         const VectorXi &ipvt,
         const Matrix< Scalar, Dynamic, 1 >  &diag,
@@ -9,6 +12,8 @@ void ei_lmpar(
         Scalar &par,
         Matrix< Scalar, Dynamic, 1 >  &x)
 {
+    using std::abs;
+    using std::sqrt;
     typedef DenseIndex Index;
 
     /* Local variables */
@@ -22,11 +27,11 @@ void ei_lmpar(
 
 
     /* Function Body */
-    const Scalar dwarf = std::numeric_limits<Scalar>::min();
+    const Scalar dwarf = (std::numeric_limits<Scalar>::min)();
     const Index n = r.cols();
-    assert(n==diag.size());
-    assert(n==qtb.size());
-    assert(n==x.size());
+    eigen_assert(n==diag.size());
+    eigen_assert(n==qtb.size());
+    eigen_assert(n==x.size());
 
     Matrix< Scalar, Dynamic, 1 >  wa1, wa2;
 
@@ -90,12 +95,12 @@ void ei_lmpar(
     gnorm = wa1.stableNorm();
     paru = gnorm / delta;
     if (paru == 0.)
-        paru = dwarf / std::min(delta,Scalar(0.1));
+        paru = dwarf / (std::min)(delta,Scalar(0.1));
 
     /* if the input par lies outside of the interval (parl,paru), */
     /* set par to the closer endpoint. */
-    par = std::max(par,parl);
-    par = std::min(par,paru);
+    par = (std::max)(par,parl);
+    par = (std::min)(par,paru);
     if (par == 0.)
         par = gnorm / dxnorm;
 
@@ -105,11 +110,11 @@ void ei_lmpar(
 
         /* evaluate the function at the current value of par. */
         if (par == 0.)
-            par = std::max(dwarf,Scalar(.001) * paru); /* Computing MAX */
-        wa1 = ei_sqrt(par)* diag;
+            par = (std::max)(dwarf,Scalar(.001) * paru); /* Computing MAX */
+        wa1 = sqrt(par)* diag;
 
         Matrix< Scalar, Dynamic, 1 > sdiag(n);
-        ei_qrsolv<Scalar>(r, ipvt, wa1, qtb, x, sdiag);
+        qrsolv<Scalar>(r, ipvt, wa1, qtb, x, sdiag);
 
         wa2 = diag.cwiseProduct(x);
         dxnorm = wa2.blueNorm();
@@ -119,7 +124,7 @@ void ei_lmpar(
         /* if the function is small enough, accept the current value */
         /* of par. also test for the exceptional cases where parl */
         /* is zero or the number of iterations has reached 10. */
-        if (ei_abs(fp) <= Scalar(0.1) * delta || (parl == 0. && fp <= temp && temp < 0.) || iter == 10)
+        if (abs(fp) <= Scalar(0.1) * delta || (parl == 0. && fp <= temp && temp < 0.) || iter == 10)
             break;
 
         /* compute the newton correction. */
@@ -138,13 +143,13 @@ void ei_lmpar(
 
         /* depending on the sign of the function, update parl or paru. */
         if (fp > 0.)
-            parl = std::max(parl,par);
+            parl = (std::max)(parl,par);
         if (fp < 0.)
-            paru = std::min(paru,par);
+            paru = (std::min)(paru,par);
 
         /* compute an improved estimate for par. */
         /* Computing MAX */
-        par = std::max(parl,par+parc);
+        par = (std::max)(parl,par+parc);
 
         /* end of an iteration. */
     }
@@ -156,7 +161,7 @@ void ei_lmpar(
 }
 
 template <typename Scalar>
-void ei_lmpar2(
+void lmpar2(
         const ColPivHouseholderQR<Matrix< Scalar, Dynamic, Dynamic> > &qr,
         const Matrix< Scalar, Dynamic, 1 >  &diag,
         const Matrix< Scalar, Dynamic, 1 >  &qtb,
@@ -165,6 +170,8 @@ void ei_lmpar2(
         Matrix< Scalar, Dynamic, 1 >  &x)
 
 {
+    using std::sqrt;
+    using std::abs;
     typedef DenseIndex Index;
 
     /* Local variables */
@@ -178,10 +185,10 @@ void ei_lmpar2(
 
 
     /* Function Body */
-    const Scalar dwarf = std::numeric_limits<Scalar>::min();
+    const Scalar dwarf = (std::numeric_limits<Scalar>::min)();
     const Index n = qr.matrixQR().cols();
-    assert(n==diag.size());
-    assert(n==qtb.size());
+    eigen_assert(n==diag.size());
+    eigen_assert(n==qtb.size());
 
     Matrix< Scalar, Dynamic, 1 >  wa1, wa2;
 
@@ -226,12 +233,12 @@ void ei_lmpar2(
     gnorm = wa1.stableNorm();
     paru = gnorm / delta;
     if (paru == 0.)
-        paru = dwarf / std::min(delta,Scalar(0.1));
+        paru = dwarf / (std::min)(delta,Scalar(0.1));
 
     /* if the input par lies outside of the interval (parl,paru), */
     /* set par to the closer endpoint. */
-    par = std::max(par,parl);
-    par = std::min(par,paru);
+    par = (std::max)(par,parl);
+    par = (std::min)(par,paru);
     if (par == 0.)
         par = gnorm / dxnorm;
 
@@ -242,11 +249,11 @@ void ei_lmpar2(
 
         /* evaluate the function at the current value of par. */
         if (par == 0.)
-            par = std::max(dwarf,Scalar(.001) * paru); /* Computing MAX */
-        wa1 = ei_sqrt(par)* diag;
+            par = (std::max)(dwarf,Scalar(.001) * paru); /* Computing MAX */
+        wa1 = sqrt(par)* diag;
 
         Matrix< Scalar, Dynamic, 1 > sdiag(n);
-        ei_qrsolv<Scalar>(s, qr.colsPermutation().indices(), wa1, qtb, x, sdiag);
+        qrsolv<Scalar>(s, qr.colsPermutation().indices(), wa1, qtb, x, sdiag);
 
         wa2 = diag.cwiseProduct(x);
         dxnorm = wa2.blueNorm();
@@ -256,7 +263,7 @@ void ei_lmpar2(
         /* if the function is small enough, accept the current value */
         /* of par. also test for the exceptional cases where parl */
         /* is zero or the number of iterations has reached 10. */
-        if (ei_abs(fp) <= Scalar(0.1) * delta || (parl == 0. && fp <= temp && temp < 0.) || iter == 10)
+        if (abs(fp) <= Scalar(0.1) * delta || (parl == 0. && fp <= temp && temp < 0.) || iter == 10)
             break;
 
         /* compute the newton correction. */
@@ -274,15 +281,18 @@ void ei_lmpar2(
 
         /* depending on the sign of the function, update parl or paru. */
         if (fp > 0.)
-            parl = std::max(parl,par);
+            parl = (std::max)(parl,par);
         if (fp < 0.)
-            paru = std::min(paru,par);
+            paru = (std::min)(paru,par);
 
         /* compute an improved estimate for par. */
-        par = std::max(parl,par+parc);
+        par = (std::max)(parl,par+parc);
     }
     if (iter == 0)
         par = 0.;
     return;
 }
 
+} // end namespace internal
+
+} // end namespace Eigen

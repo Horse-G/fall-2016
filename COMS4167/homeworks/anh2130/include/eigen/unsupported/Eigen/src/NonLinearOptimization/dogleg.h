@@ -1,12 +1,18 @@
+namespace Eigen { 
+
+namespace internal {
 
 template <typename Scalar>
-void ei_dogleg(
+void dogleg(
         const Matrix< Scalar, Dynamic, Dynamic >  &qrfac,
         const Matrix< Scalar, Dynamic, 1 >  &diag,
         const Matrix< Scalar, Dynamic, 1 >  &qtb,
         Scalar delta,
         Matrix< Scalar, Dynamic, 1 >  &x)
 {
+    using std::abs;
+    using std::sqrt;
+    
     typedef DenseIndex Index;
 
     /* Local variables */
@@ -18,9 +24,9 @@ void ei_dogleg(
     /* Function Body */
     const Scalar epsmch = NumTraits<Scalar>::epsilon();
     const Index n = qrfac.cols();
-    assert(n==qtb.size());
-    assert(n==x.size());
-    assert(n==diag.size());
+    eigen_assert(n==qtb.size());
+    eigen_assert(n==x.size());
+    eigen_assert(n==diag.size());
     Matrix< Scalar, Dynamic, 1 >  wa1(n), wa2(n);
 
     /* first, calculate the gauss-newton direction. */
@@ -86,13 +92,16 @@ void ei_dogleg(
     /* at which the quadratic is minimized. */
     bnorm = qtb.stableNorm();
     temp = bnorm / gnorm * (bnorm / qnorm) * (sgnorm / delta);
-    temp = temp - delta / qnorm * ei_abs2(sgnorm / delta) + ei_sqrt(ei_abs2(temp - delta / qnorm) + (1.-ei_abs2(delta / qnorm)) * (1.-ei_abs2(sgnorm / delta)));
-    alpha = delta / qnorm * (1. - ei_abs2(sgnorm / delta)) / temp;
+    temp = temp - delta / qnorm * numext::abs2(sgnorm / delta) + sqrt(numext::abs2(temp - delta / qnorm) + (1.-numext::abs2(delta / qnorm)) * (1.-numext::abs2(sgnorm / delta)));
+    alpha = delta / qnorm * (1. - numext::abs2(sgnorm / delta)) / temp;
 algo_end:
 
     /* form appropriate convex combination of the gauss-newton */
     /* direction and the scaled gradient direction. */
-    temp = (1.-alpha) * std::min(sgnorm,delta);
+    temp = (1.-alpha) * (std::min)(sgnorm,delta);
     x = temp * wa1 + alpha * x;
 }
 
+} // end namespace internal
+
+} // end namespace Eigen

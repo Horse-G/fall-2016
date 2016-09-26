@@ -90,49 +90,44 @@ void TwoDSceneRenderer::renderSweptEdge( const Eigen::Vector2d& x0, const Eigen:
 
 void TwoDSceneRenderer::renderScene() const
 {
-    /*
-     * This function renders each of the objects in the scene.
-     * Since the order of rendering is particle paths, edges, and then particles,
-     *   particles cover up the other two.
-     * */
-    const VectorXs& x = m_scene.getX();
-    assert( x.size()%2 == 0 );
-    assert( 2*m_scene.getNumParticles() == x.size() );
-    // Render particle paths
-    for( std::vector<renderingutils::ParticlePath>::size_type i = 0; i < m_particle_paths.size(); ++i )
-    {
-        const std::list<Vector2s>& ppath = m_particle_paths[i].getPath();
-        const renderingutils::Color& pathcolor = m_particle_paths[i].getColor();
-        glColor3d(pathcolor.r,pathcolor.g,pathcolor.b);
-        glBegin(GL_LINE_STRIP);
-        for( std::list<Vector2s>::const_iterator itr = ppath.begin(); itr != ppath.end(); ++itr )
-        {
-          glVertex2d(itr->x(),itr->y());
-        }
-        glEnd();
-    }
-  
-    // Render edges
-    //glColor3d(0.0,0.388235294117647,0.388235294117647);
-    const std::vector<std::pair<int,int> >& edges = m_scene.getEdges();
-    const std::vector<scalar>& edgeradii = m_scene.getEdgeRadii();
-    assert( edgeradii.size() == edges.size() );
-    for( std::vector<std::pair<int,int> >::size_type i = 0; i < edges.size(); ++i )
-    {
-        assert( edges[i].first >= 0 );  assert( edges[i].first < m_scene.getNumParticles() );
-        assert( edges[i].second >= 0 ); assert( edges[i].second < m_scene.getNumParticles() );
-        glColor3d(m_edge_colors[i].r,m_edge_colors[i].g,m_edge_colors[i].b);
-        renderSweptEdge( x.segment<2>(2*edges[i].first), x.segment<2>(2*edges[i].second), edgeradii[i] );
-    }
+  const VectorXs& x = m_scene.getX();
+  assert( x.size()%2 == 0 );
+  assert( 2*m_scene.getNumParticles() == x.size() );
 
-    // Render particles
-    const std::vector<scalar>& radii = m_scene.getRadii();
-    assert( (int) radii.size() == m_scene.getNumParticles() );
-    for( int i = 0; i < m_scene.getNumParticles(); ++i ) 
+  for( std::vector<renderingutils::ParticlePath>::size_type i = 0; i < m_particle_paths.size(); ++i )
+  {
+    const std::list<Vector2s>& ppath = m_particle_paths[i].getPath();
+    const renderingutils::Color& pathcolor = m_particle_paths[i].getColor();
+    glColor3d(pathcolor.r,pathcolor.g,pathcolor.b);
+    glBegin(GL_LINE_STRIP);
+    for( std::list<Vector2s>::const_iterator itr = ppath.begin(); itr != ppath.end(); ++itr )
     {
-        glColor3d(m_particle_colors[i].r,m_particle_colors[i].g,m_particle_colors[i].b);
-        renderSolidCircle( x.segment<2>(2*i), radii[i] );
+      glVertex2d(itr->x(),itr->y());
     }
+    glEnd();
+  }
+  
+  // Render edges
+  //glColor3d(0.0,0.388235294117647,0.388235294117647);
+  const std::vector<std::pair<int,int> >& edges = m_scene.getEdges();
+  const std::vector<scalar>& edgeradii = m_scene.getEdgeRadii();
+  assert( edgeradii.size() == edges.size() );
+  for( std::vector<std::pair<int,int> >::size_type i = 0; i < edges.size(); ++i )
+  {
+    assert( edges[i].first >= 0 );  assert( edges[i].first < m_scene.getNumParticles() );
+    assert( edges[i].second >= 0 ); assert( edges[i].second < m_scene.getNumParticles() );
+    glColor3d(m_edge_colors[i].r,m_edge_colors[i].g,m_edge_colors[i].b);
+    renderSweptEdge( x.segment<2>(2*edges[i].first), x.segment<2>(2*edges[i].second), edgeradii[i] );
+  }
+
+  // Render particles
+  const std::vector<scalar>& radii = m_scene.getRadii();
+  assert( (int) radii.size() == m_scene.getNumParticles() );
+  for( int i = 0; i < m_scene.getNumParticles(); ++i ) 
+  {
+    glColor3d(m_particle_colors[i].r,m_particle_colors[i].g,m_particle_colors[i].b);
+    renderSolidCircle( x.segment<2>(2*i), radii[i] );
+  }  
 }
 
 void TwoDSceneRenderer::circleMajorResiduals( const TwoDScene& oracle_scene, const TwoDScene& testing_scene, scalar eps ) const

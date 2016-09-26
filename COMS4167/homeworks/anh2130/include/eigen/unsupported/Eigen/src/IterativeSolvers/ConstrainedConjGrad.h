@@ -2,25 +2,6 @@
 // for linear algebra.
 //
 // Copyright (C) 2008 Gael Guennebaud <gael.guennebaud@inria.fr>
-//
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
 
 /* NOTE The functions of this file have been adapted from the GMM++ library */
 
@@ -45,19 +26,25 @@
 //
 //========================================================================
 
+#include "../../../../Eigen/src/Core/util/NonMPL2.h"
+
 #ifndef EIGEN_CONSTRAINEDCG_H
 #define EIGEN_CONSTRAINEDCG_H
 
 #include <Eigen/Core>
 
+namespace Eigen { 
+
+namespace internal {
+
 /** \ingroup IterativeSolvers_Module
   * Compute the pseudo inverse of the non-square matrix C such that
   * \f$ CINV = (C * C^T)^{-1} * C \f$ based on a conjugate gradient method.
   *
-  * This function is internally used by ei_constrained_cg.
+  * This function is internally used by constrained_cg.
   */
 template <typename CMatrix, typename CINVMatrix>
-void ei_pseudo_inverse(const CMatrix &C, CINVMatrix &CINV)
+void pseudo_inverse(const CMatrix &C, CINVMatrix &CINV)
 {
   // optimisable : copie de la ligne, precalcul de C * trans(C).
   typedef typename CMatrix::Scalar Scalar;
@@ -71,7 +58,9 @@ void ei_pseudo_inverse(const CMatrix &C, CINVMatrix &CINV)
   Scalar rho, rho_1, alpha;
   d.setZero();
 
-  CINV.startFill(); // FIXME estimate the number of non-zeros
+  typedef Triplet<double> T;
+  std::vector<T> tripletList;
+    
   for (Index i = 0; i < rows; ++i)
   {
     d[i] = 1.0;
@@ -97,11 +86,12 @@ void ei_pseudo_inverse(const CMatrix &C, CINVMatrix &CINV)
     // FIXME add a generic "prune/filter" expression for both dense and sparse object to sparse
     for (Index j=0; j<l.size(); ++j)
       if (l[j]<1e-15)
-        CINV.fill(i,j) = l[j];
+	tripletList.push_back(T(i,j,l(j)));
 
+	
     d[i] = 0.0;
   }
-  CINV.endFill();
+  CINV.setFromTriplets(tripletList.begin(), tripletList.end());
 }
 
 
@@ -113,9 +103,10 @@ void ei_pseudo_inverse(const CMatrix &C, CINVMatrix &CINV)
   */
 template<typename TMatrix, typename CMatrix,
          typename VectorX, typename VectorB, typename VectorF>
-void ei_constrained_cg(const TMatrix& A, const CMatrix& C, VectorX& x,
+void constrained_cg(const TMatrix& A, const CMatrix& C, VectorX& x,
                        const VectorB& b, const VectorF& f, IterationController &iter)
 {
+  using std::sqrt;
   typedef typename TMatrix::Scalar Scalar;
   typedef typename TMatrix::Index Index;
   typedef Matrix<Scalar,Dynamic,1>  TmpVec;
@@ -127,11 +118,11 @@ void ei_constrained_cg(const TMatrix& A, const CMatrix& C, VectorX& x,
           memox(xSize);
   std::vector<bool> satured(C.rows());
   p.setZero();
-  iter.setRhsNorm(ei_sqrt(b.dot(b))); // gael vect_sp(PS, b, b)
+  iter.setRhsNorm(sqrt(b.dot(b))); // gael vect_sp(PS, b, b)
   if (iter.rhsNorm() == 0.0) iter.setRhsNorm(1.0);
 
   SparseMatrix<Scalar,RowMajor> CINV(C.rows(), C.cols());
-  ei_pseudo_inverse(C, CINV);
+  pseudo_inverse(C, CINV);
 
   while(true)
   {
@@ -170,7 +161,7 @@ void ei_constrained_cg(const TMatrix& A, const CMatrix& C, VectorX& x,
 
     if (iter.noiseLevel() > 0 && transition) std::cerr << "CCG: transition\n";
     if (transition || iter.first()) gamma = 0.0;
-    else gamma = std::max(0.0, (rho - old_z.dot(z)) / rho_1);
+    else gamma = (std::max)(0.0, (rho - old_z.dot(z)) / rho_1);
     p = z + gamma*p;
 
     ++iter;
@@ -183,12 +174,16 @@ void ei_constrained_cg(const TMatrix& A, const CMatrix& C, VectorX& x,
       {
         Scalar bb = C.row(i).dot(p) - f[i];
         if (bb > 0.0)
-          lambda = std::min(lambda, (f.coeff(i)-C.row(i).dot(x)) / bb);
+          lambda = (std::min)(lambda, (f.coeff(i)-C.row(i).dot(x)) / bb);
       }
     }
     x += lambda * p;
     memox -= x;
   }
 }
+
+} // end namespace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_CONSTRAINEDCG_H

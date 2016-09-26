@@ -3,61 +3,52 @@
 //
 // Copyright (C) 2009 Ilya Baran <ibaran@mit.edu>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef KDBVH_H_INCLUDED
 #define KDBVH_H_INCLUDED
 
+namespace Eigen { 
+
+namespace internal {
+
 //internal pair class for the BVH--used instead of std::pair because of alignment
 template<typename Scalar, int Dim>
-struct ei_vector_int_pair
+struct vector_int_pair
 {
 EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar, Dim)
   typedef Matrix<Scalar, Dim, 1> VectorType;
 
-  ei_vector_int_pair(const VectorType &v, int i) : first(v), second(i) {}
+  vector_int_pair(const VectorType &v, int i) : first(v), second(i) {}
 
   VectorType first;
   int second;
 };
 
 //these templates help the tree initializer get the bounding boxes either from a provided
-//iterator range or using ei_bounding_box in a unified way
+//iterator range or using bounding_box in a unified way
 template<typename ObjectList, typename VolumeList, typename BoxIter>
-struct ei_get_boxes_helper {
+struct get_boxes_helper {
   void operator()(const ObjectList &objects, BoxIter boxBegin, BoxIter boxEnd, VolumeList &outBoxes)
   {
     outBoxes.insert(outBoxes.end(), boxBegin, boxEnd);
-    ei_assert(outBoxes.size() == objects.size());
+    eigen_assert(outBoxes.size() == objects.size());
   }
 };
 
 template<typename ObjectList, typename VolumeList>
-struct ei_get_boxes_helper<ObjectList, VolumeList, int> {
+struct get_boxes_helper<ObjectList, VolumeList, int> {
   void operator()(const ObjectList &objects, int, int, VolumeList &outBoxes)
   {
     outBoxes.reserve(objects.size());
     for(int i = 0; i < (int)objects.size(); ++i)
-      outBoxes.push_back(ei_bounding_box(objects[i]));
+      outBoxes.push_back(bounding_box(objects[i]));
   }
 };
+
+} // end namespace internal
 
 
 /** \class KdBVH
@@ -65,7 +56,7 @@ struct ei_get_boxes_helper<ObjectList, VolumeList, int> {
  *
  *  \param _Scalar The underlying scalar type of the bounding boxes
  *  \param _Dim The dimension of the space in which the hierarchy lives
- *  \param _Object The object type that lives in the hierarchy.  It must have value semantics.  Either ei_bounding_box(_Object) must
+ *  \param _Object The object type that lives in the hierarchy.  It must have value semantics.  Either bounding_box(_Object) must
  *                 be defined and return an AlignedBox<_Scalar, _Dim> or bounding boxes must be provided to the tree initializer.
  *
  *  This class provides a simple (as opposed to optimized) implementation of a bounding volume hierarchy analogous to a Kd-tree.
@@ -88,14 +79,14 @@ public:
 
   KdBVH() {}
 
-  /** Given an iterator range over \a Object references, constructs the BVH.  Requires that ei_bounding_box(Object) return a Volume. */
+  /** Given an iterator range over \a Object references, constructs the BVH.  Requires that bounding_box(Object) return a Volume. */
   template<typename Iter> KdBVH(Iter begin, Iter end) { init(begin, end, 0, 0); } //int is recognized by init as not being an iterator type
 
   /** Given an iterator range over \a Object references and an iterator range over their bounding boxes, constructs the BVH */
   template<typename OIter, typename BIter> KdBVH(OIter begin, OIter end, BIter boxBegin, BIter boxEnd) { init(begin, end, boxBegin, boxEnd); }
 
   /** Given an iterator range over \a Object references, constructs the BVH, overwriting whatever is in there currently.
-    * Requires that ei_bounding_box(Object) return a Volume. */
+    * Requires that bounding_box(Object) return a Volume. */
   template<typename Iter> void init(Iter begin, Iter end) { init(begin, end, 0, 0); }
 
   /** Given an iterator range over \a Object references and an iterator range over their bounding boxes,
@@ -116,7 +107,7 @@ public:
     VIPairList objCenters;
 
     //compute the bounding boxes depending on BIter type
-    ei_get_boxes_helper<ObjectList, VolumeList, BIter>()(objects, boxBegin, boxEnd, objBoxes);
+    internal::get_boxes_helper<ObjectList, VolumeList, BIter>()(objects, boxBegin, boxEnd, objBoxes);
 
     objCenters.reserve(n);
     boxes.reserve(n - 1);
@@ -176,7 +167,7 @@ public:
   }
 
 private:
-  typedef ei_vector_int_pair<Scalar, Dim> VIPair;
+  typedef internal::vector_int_pair<Scalar, Dim> VIPair;
   typedef std::vector<VIPair, aligned_allocator<VIPair> > VIPairList;
   typedef Matrix<Scalar, Dim, 1> VectorType;
   struct VectorComparator //compares vectors, or, more specificall, VIPairs along a particular dimension
@@ -191,7 +182,7 @@ private:
   //the two halves, and adds their parent node.  TODO: a cache-friendlier layout
   void build(VIPairList &objCenters, int from, int to, const VolumeList &objBoxes, int dim)
   {
-    ei_assert(to - from > 1);
+    eigen_assert(to - from > 1);
     if(to - from == 2) {
       boxes.push_back(objBoxes[objCenters[from].second].merged(objBoxes[objCenters[from + 1].second]));
       children.push_back(from + (int)objects.size() - 1); //there are objects.size() - 1 tree nodes
@@ -225,5 +216,7 @@ private:
   VolumeList boxes;
   ObjectList objects;
 };
+
+} // end namespace Eigen
 
 #endif //KDBVH_H_INCLUDED

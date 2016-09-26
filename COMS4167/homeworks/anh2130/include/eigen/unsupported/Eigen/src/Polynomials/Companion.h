@@ -3,24 +3,9 @@
 //
 // Copyright (C) 2010 Manuel Yguel <manuel.yguel@gmail.com>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_COMPANION_H
 #define EIGEN_COMPANION_H
@@ -29,16 +14,20 @@
 // * Eigen/Core
 // * Eigen/src/PolynomialSolver.h
 
+namespace Eigen { 
+
+namespace internal {
+
 #ifndef EIGEN_PARSED_BY_DOXYGEN
 
 template <typename T>
-T ei_radix(){ return 2; }
+T radix(){ return 2; }
 
 template <typename T>
-T ei_radix2(){ return ei_radix<T>()*ei_radix<T>(); }
+T radix2(){ return radix<T>()*radix<T>(); }
 
 template<int Size>
-struct ei_decrement_if_fixed_size
+struct decrement_if_fixed_size
 {
   enum {
     ret = (Size == Dynamic) ? Dynamic : Size-1 };
@@ -47,14 +36,14 @@ struct ei_decrement_if_fixed_size
 #endif
 
 template< typename _Scalar, int _Deg >
-class ei_companion
+class companion
 {
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(_Scalar,_Deg==Dynamic ? Dynamic : _Deg)
 
     enum {
       Deg = _Deg,
-      Deg_1=ei_decrement_if_fixed_size<Deg>::ret
+      Deg_1=decrement_if_fixed_size<Deg>::ret
     };
 
     typedef _Scalar                                Scalar;
@@ -92,7 +81,7 @@ class ei_companion
     }
 
     template<typename VectorType>
-    ei_companion( const VectorType& poly ){
+    companion( const VectorType& poly ){
       setPolynomial( poly ); }
 
   public:
@@ -150,7 +139,7 @@ class ei_companion
 
 template< typename _Scalar, int _Deg >
 inline
-bool ei_companion<_Scalar,_Deg>::balanced( Scalar colNorm, Scalar rowNorm,
+bool companion<_Scalar,_Deg>::balanced( Scalar colNorm, Scalar rowNorm,
     bool& isBalanced, Scalar& colB, Scalar& rowB )
 {
   if( Scalar(0) == colNorm || Scalar(0) == rowNorm ){ return true; }
@@ -161,22 +150,22 @@ bool ei_companion<_Scalar,_Deg>::balanced( Scalar colNorm, Scalar rowNorm,
     // \f$ 2^{2\sigma-1} < rowNorm / colNorm \le 2^{2\sigma+1} \f$
     // then the balancing coefficient for the row is \f$ 1/2^{\sigma} \f$
     // and the balancing coefficient for the column is \f$ 2^{\sigma} \f$
-    rowB = rowNorm / ei_radix<Scalar>();
+    rowB = rowNorm / radix<Scalar>();
     colB = Scalar(1);
     const Scalar s = colNorm + rowNorm;
 
     while (colNorm < rowB)
     {
-      colB *= ei_radix<Scalar>();
-      colNorm *= ei_radix2<Scalar>();
+      colB *= radix<Scalar>();
+      colNorm *= radix2<Scalar>();
     }
 
-    rowB = rowNorm * ei_radix<Scalar>();
+    rowB = rowNorm * radix<Scalar>();
 
     while (colNorm >= rowB)
     {
-      colB /= ei_radix<Scalar>();
-      colNorm /= ei_radix2<Scalar>();
+      colB /= radix<Scalar>();
+      colNorm /= radix2<Scalar>();
     }
 
     //This line is used to avoid insubstantial balancing
@@ -193,7 +182,7 @@ bool ei_companion<_Scalar,_Deg>::balanced( Scalar colNorm, Scalar rowNorm,
 
 template< typename _Scalar, int _Deg >
 inline
-bool ei_companion<_Scalar,_Deg>::balancedR( Scalar colNorm, Scalar rowNorm,
+bool companion<_Scalar,_Deg>::balancedR( Scalar colNorm, Scalar rowNorm,
     bool& isBalanced, Scalar& colB, Scalar& rowB )
 {
   if( Scalar(0) == colNorm || Scalar(0) == rowNorm ){ return true; }
@@ -204,9 +193,9 @@ bool ei_companion<_Scalar,_Deg>::balancedR( Scalar colNorm, Scalar rowNorm,
      * of the row and column norm
      */
     const _Scalar q = colNorm/rowNorm;
-    if( !ei_isApprox( q, _Scalar(1) ) )
+    if( !isApprox( q, _Scalar(1) ) )
     {
-      rowB = ei_sqrt( colNorm/rowNorm );
+      rowB = sqrt( colNorm/rowNorm );
       colB = Scalar(1)/rowB;
 
       isBalanced = false;
@@ -219,8 +208,9 @@ bool ei_companion<_Scalar,_Deg>::balancedR( Scalar colNorm, Scalar rowNorm,
 
 
 template< typename _Scalar, int _Deg >
-void ei_companion<_Scalar,_Deg>::balance()
+void companion<_Scalar,_Deg>::balance()
 {
+  using std::abs;
   EIGEN_STATIC_ASSERT( Deg == Dynamic || 1 < Deg, YOU_MADE_A_PROGRAMMING_MISTAKE );
   const Index deg   = m_monic.size();
   const Index deg_1 = deg-1;
@@ -234,8 +224,8 @@ void ei_companion<_Scalar,_Deg>::balance()
 
     //First row, first column excluding the diagonal
     //==============================================
-    colNorm = ei_abs(m_bl_diag[0]);
-    rowNorm = ei_abs(m_monic[0]);
+    colNorm = abs(m_bl_diag[0]);
+    rowNorm = abs(m_monic[0]);
 
     //Compute balancing of the row and the column
     if( !balanced( colNorm, rowNorm, hasConverged, colB, rowB ) )
@@ -249,10 +239,10 @@ void ei_companion<_Scalar,_Deg>::balance()
     for( Index i=1; i<deg_1; ++i )
     {
       // column norm, excluding the diagonal
-      colNorm = ei_abs(m_bl_diag[i]);
+      colNorm = abs(m_bl_diag[i]);
 
       // row norm, excluding the diagonal
-      rowNorm = ei_abs(m_bl_diag[i-1]) + ei_abs(m_monic[i]);
+      rowNorm = abs(m_bl_diag[i-1]) + abs(m_monic[i]);
 
       //Compute balancing of the row and the column
       if( !balanced( colNorm, rowNorm, hasConverged, colB, rowB ) )
@@ -268,7 +258,7 @@ void ei_companion<_Scalar,_Deg>::balance()
     const Index ebl = m_bl_diag.size()-1;
     VectorBlock<RightColumn,Deg_1> headMonic( m_monic, 0, deg_1 );
     colNorm = headMonic.array().abs().sum();
-    rowNorm = ei_abs( m_bl_diag[ebl] );
+    rowNorm = abs( m_bl_diag[ebl] );
 
     //Compute balancing of the row and the column
     if( !balanced( colNorm, rowNorm, hasConverged, colB, rowB ) )
@@ -279,5 +269,8 @@ void ei_companion<_Scalar,_Deg>::balance()
   }
 }
 
+} // end namespace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_COMPANION_H

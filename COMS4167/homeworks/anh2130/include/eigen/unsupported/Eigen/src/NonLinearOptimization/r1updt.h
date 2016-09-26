@@ -1,29 +1,33 @@
+namespace Eigen { 
+
+namespace internal {
 
 template <typename Scalar>
-void ei_r1updt(
+void r1updt(
         Matrix< Scalar, Dynamic, Dynamic > &s,
         const Matrix< Scalar, Dynamic, 1> &u,
-        std::vector<PlanarRotation<Scalar> > &v_givens,
-        std::vector<PlanarRotation<Scalar> > &w_givens,
+        std::vector<JacobiRotation<Scalar> > &v_givens,
+        std::vector<JacobiRotation<Scalar> > &w_givens,
         Matrix< Scalar, Dynamic, 1> &v,
         Matrix< Scalar, Dynamic, 1> &w,
         bool *sing)
 {
     typedef DenseIndex Index;
+    const JacobiRotation<Scalar> IdentityRotation = JacobiRotation<Scalar>(1,0);
 
     /* Local variables */
     const Index m = s.rows();
     const Index n = s.cols();
     Index i, j=1;
     Scalar temp;
-    PlanarRotation<Scalar> givens;
+    JacobiRotation<Scalar> givens;
 
-    // ei_r1updt had a broader usecase, but we dont use it here. And, more
+    // r1updt had a broader usecase, but we dont use it here. And, more
     // importantly, we can not test it.
-    assert(m==n);
-    assert(u.size()==m);
-    assert(v.size()==n);
-    assert(w.size()==n);
+    eigen_assert(m==n);
+    eigen_assert(u.size()==m);
+    eigen_assert(v.size()==n);
+    eigen_assert(w.size()==n);
 
     /* move the nontrivial part of the last column of s into w. */
     w[n-1] = s(n-1,n-1);
@@ -48,7 +52,8 @@ void ei_r1updt(
                 w[i] = givens.s() * s(j,i) + givens.c() * w[i];
                 s(j,i) = temp;
             }
-        }
+        } else
+            v_givens[j] = IdentityRotation;
     }
 
     /* add the spike from the rank 1 update to w. */
@@ -72,7 +77,8 @@ void ei_r1updt(
             /* store the information necessary to recover the */
             /* givens rotation. */
             w_givens[j] = givens;
-        }
+        } else
+            v_givens[j] = IdentityRotation;
 
         /* test for zero diagonal elements in the output s. */
         if (s(j,j) == 0.) {
@@ -88,3 +94,6 @@ void ei_r1updt(
     return;
 }
 
+} // end namespace internal
+
+} // end namespace Eigen

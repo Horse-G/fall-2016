@@ -25,7 +25,10 @@ void DragDampingForce::addGradEToTotal( const VectorXs& x, const VectorXs& v, co
   assert( x.size() == m.size() );
   assert( x.size() == gradE.size() );
   assert( x.size()%2 == 0 );
-        for(int i = x.size()/2-1; i >= 0; --i)
+  
+  //for( int i = 0; i < x.size()/2; ++i ) gradE.segment<2>(2*i) += m_b*v.segment<2>(2*i);
+  
+       for(int i = x.size()/2-1; i >= 0; --i)
             gradE.segment<2>(2*i) += m_b*v.segment<2>(2*i);
 }
 
@@ -36,6 +39,8 @@ void DragDampingForce::addHessXToTotal( const VectorXs& x, const VectorXs& v, co
   assert( x.size() == hessE.rows() );
   assert( x.size() == hessE.cols() );
   assert( x.size()%2 == 0 );
+
+  // Nothing to do.
 }
 
 void DragDampingForce::addHessVToTotal( const VectorXs& x, const VectorXs& v, const VectorXs& m, MatrixXs& hessE )
@@ -45,6 +50,8 @@ void DragDampingForce::addHessVToTotal( const VectorXs& x, const VectorXs& v, co
   assert( x.size() == hessE.rows() );
   assert( x.size() == hessE.cols() );
   assert( x.size()%2 == 0 );
+  
+  // Compute the force Jacboian here!
 }
 
 Force* DragDampingForce::createNewCopy()

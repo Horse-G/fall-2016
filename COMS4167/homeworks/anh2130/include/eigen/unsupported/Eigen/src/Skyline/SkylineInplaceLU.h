@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2008 Guillaume Saupin <guillaume.saupin@cea.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SKYLINEINPLACELU_H
 #define EIGEN_SKYLINEINPLACELU_H
+
+namespace Eigen { 
 
 /** \ingroup Skyline_Module
  *
@@ -134,8 +121,8 @@ void SkylineInplaceLU<MatrixType>::compute() {
     const size_t rows = m_lu.rows();
     const size_t cols = m_lu.cols();
 
-    ei_assert(rows == cols && "We do not (yet) support rectangular LU.");
-    ei_assert(!m_lu.IsRowMajor && "LU decomposition does not work with rowMajor Storage");
+    eigen_assert(rows == cols && "We do not (yet) support rectangular LU.");
+    eigen_assert(!m_lu.IsRowMajor && "LU decomposition does not work with rowMajor Storage");
 
     for (Index row = 0; row < rows; row++) {
         const double pivot = m_lu.coeffDiag(row);
@@ -198,8 +185,8 @@ void SkylineInplaceLU<MatrixType>::computeRowMajor() {
     const size_t rows = m_lu.rows();
     const size_t cols = m_lu.cols();
 
-    ei_assert(rows == cols && "We do not (yet) support rectangular LU.");
-    ei_assert(m_lu.IsRowMajor && "You're trying to apply rowMajor decomposition on a ColMajor matrix !");
+    eigen_assert(rows == cols && "We do not (yet) support rectangular LU.");
+    eigen_assert(m_lu.IsRowMajor && "You're trying to apply rowMajor decomposition on a ColMajor matrix !");
 
     for (Index row = 0; row < rows; row++) {
         typename MatrixType::InnerLowerIterator llIt(m_lu, row);
@@ -359,5 +346,7 @@ bool SkylineInplaceLU<MatrixType>::solve(const MatrixBase<BDerived> &b, MatrixBa
 
     return true;
 }
+
+} // end namespace Eigen
 
 #endif // EIGEN_SKYLINELU_H

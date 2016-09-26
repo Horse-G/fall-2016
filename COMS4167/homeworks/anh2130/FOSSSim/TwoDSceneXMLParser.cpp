@@ -29,6 +29,7 @@ void TwoDSceneXMLParser::loadSceneFromXML( const std::string& filename, TwoDScen
   loadSimpleGravityForces( node, twodscene );
   loadGravitationalForces( node, twodscene );
   loadDragDampingForces( node, twodscene );
+  loadVorexForces( node, twodscene );
   // Integrator/solver
   loadIntegrator( node, scenestepper, dt );
   loadMaxTime( node, max_t );
@@ -487,6 +488,87 @@ void TwoDSceneXMLParser::loadDragDampingForces( rapidxml::xml_node<>* node, TwoD
   }  
 }
 
+void TwoDSceneXMLParser::loadVorexForces( rapidxml::xml_node<>* node, TwoDScene& twodscene )
+{
+  assert( node != NULL );
+  
+  // Extract the edge the force acts across
+  int forcenum = 0;
+  for( rapidxml::xml_node<>* nd = node->first_node("vortexforce"); nd; nd = nd->next_sibling("vortexforce") )
+  {
+    std::pair<int,int> newedge;
+    if( nd->first_attribute("i") )
+    {
+      std::string attribute(nd->first_attribute("i")->value());
+      if( !stringutils::extractFromString(attribute,newedge.first) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of i attribute for vortexforce " << forcenum << ". Value must be integer. Exiting." << std::endl;
+        exit(1);
+      }        
+    }
+    else
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of i attribute for vortexforce " << forcenum << ". Exiting." << std::endl;
+      exit(1);
+    }
+    
+    if( nd->first_attribute("j") )
+    {
+      std::string attribute(nd->first_attribute("j")->value());
+      if( !stringutils::extractFromString(attribute,newedge.second) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of j attribute for vortexforce " << forcenum << ". Value must be integer. Exiting." << std::endl;
+        exit(1);
+      }        
+    }
+    else
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of j attribute for vortexforce " << forcenum << ". Exiting." << std::endl;
+      exit(1);
+    }
+    
+    // Extract the 'Biot-Savart' constant
+    scalar kbs = std::numeric_limits<scalar>::signaling_NaN();
+    if( nd->first_attribute("kbs") )
+    {
+      std::string attribute(nd->first_attribute("kbs")->value());
+      if( !stringutils::extractFromString(attribute,kbs) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of kbs attribute for vortexforce " << forcenum << ". Value must be numeric. Exiting." << std::endl;
+        exit(1);
+      }
+    }
+    else 
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse kbs attribute for vortexforce " << forcenum << ". Exiting." << std::endl;
+      exit(1);
+    }
+    
+    // Extract the viscosity constant
+    scalar kvc = std::numeric_limits<scalar>::signaling_NaN();
+    if( nd->first_attribute("kvc") )
+    {
+      std::string attribute(nd->first_attribute("kvc")->value());
+      if( !stringutils::extractFromString(attribute,kvc) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of kvc attribute for vortexforce " << forcenum << ". Value must be numeric. Exiting." << std::endl;
+        exit(1);
+      }
+    }
+    else 
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse kvc attribute for vortexforce " << forcenum << ". Exiting." << std::endl;
+      exit(1);
+    }    
+    
+    //std::cout << "VortexForce: " << forcenum << "    i: " << newedge.first << "   j: " << newedge.second << "   kbs: " << kbs << "   kvc: " << kvc << std::endl;
+    
+    twodscene.insertForce(new VortexForce(newedge,kbs,kvc));
+    
+    ++forcenum;
+  }
+}
+
 void TwoDSceneXMLParser::loadSimpleGravityForces( rapidxml::xml_node<>* node, TwoDScene& twodscene )
 {
   assert( node != NULL );
@@ -564,6 +646,8 @@ void TwoDSceneXMLParser::loadIntegrator( rapidxml::xml_node<>* node, SceneSteppe
   
   if( integratortype == "explicit-euler" ) *scenestepper = new ExplicitEuler;
   else if( integratortype == "symplectic-euler" ) *scenestepper = new SymplecticEuler;
+  else if( integratortype == "implicit-euler" ) *scenestepper = new ImplicitEuler;
+  else if( integratortype == "linearized-implicit-euler" ) *scenestepper = new LinearizedImplicitEuler;
   else
   {
     std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Invalid integrator 'type' attribute specified. Exiting." << std::endl;

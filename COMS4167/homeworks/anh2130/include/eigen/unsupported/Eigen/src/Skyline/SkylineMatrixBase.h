@@ -3,29 +3,16 @@
 //
 // Copyright (C) 2008-2009 Guillaume Saupin <guillaume.saupin@cea.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SKYLINEMATRIXBASE_H
 #define EIGEN_SKYLINEMATRIXBASE_H
 
 #include "SkylineUtil.h"
+
+namespace Eigen { 
 
 /** \ingroup Skyline_Module
  *
@@ -39,26 +26,26 @@
 template<typename Derived> class SkylineMatrixBase : public EigenBase<Derived> {
 public:
 
-    typedef typename ei_traits<Derived>::Scalar Scalar;
-    typedef typename ei_traits<Derived>::StorageKind StorageKind;
-    typedef typename ei_index<StorageKind>::type Index;
+    typedef typename internal::traits<Derived>::Scalar Scalar;
+    typedef typename internal::traits<Derived>::StorageKind StorageKind;
+    typedef typename internal::index<StorageKind>::type Index;
 
     enum {
-        RowsAtCompileTime = ei_traits<Derived>::RowsAtCompileTime,
+        RowsAtCompileTime = internal::traits<Derived>::RowsAtCompileTime,
         /**< The number of rows at compile-time. This is just a copy of the value provided
          * by the \a Derived type. If a value is not known at compile-time,
          * it is set to the \a Dynamic constant.
          * \sa MatrixBase::rows(), MatrixBase::cols(), ColsAtCompileTime, SizeAtCompileTime */
 
-        ColsAtCompileTime = ei_traits<Derived>::ColsAtCompileTime,
+        ColsAtCompileTime = internal::traits<Derived>::ColsAtCompileTime,
         /**< The number of columns at compile-time. This is just a copy of the value provided
          * by the \a Derived type. If a value is not known at compile-time,
          * it is set to the \a Dynamic constant.
          * \sa MatrixBase::rows(), MatrixBase::cols(), RowsAtCompileTime, SizeAtCompileTime */
 
 
-        SizeAtCompileTime = (ei_size_at_compile_time<ei_traits<Derived>::RowsAtCompileTime,
-        ei_traits<Derived>::ColsAtCompileTime>::ret),
+        SizeAtCompileTime = (internal::size_at_compile_time<internal::traits<Derived>::RowsAtCompileTime,
+        internal::traits<Derived>::ColsAtCompileTime>::ret),
         /**< This is equal to the number of coefficients, i.e. the number of
          * rows times the number of columns, or to \a Dynamic if this is not
          * known at compile-time. \sa RowsAtCompileTime, ColsAtCompileTime */
@@ -66,7 +53,7 @@ public:
         MaxRowsAtCompileTime = RowsAtCompileTime,
         MaxColsAtCompileTime = ColsAtCompileTime,
 
-        MaxSizeAtCompileTime = (ei_size_at_compile_time<MaxRowsAtCompileTime,
+        MaxSizeAtCompileTime = (internal::size_at_compile_time<MaxRowsAtCompileTime,
         MaxColsAtCompileTime>::ret),
 
         IsVectorAtCompileTime = RowsAtCompileTime == 1 || ColsAtCompileTime == 1,
@@ -75,12 +62,12 @@ public:
          * we are dealing with a column-vector (if there is only one column) or with
          * a row-vector (if there is only one row). */
 
-        Flags = ei_traits<Derived>::Flags,
+        Flags = internal::traits<Derived>::Flags,
         /**< This stores expression \ref flags flags which may or may not be inherited by new expressions
          * constructed from this one. See the \ref flags "list of flags".
          */
 
-        CoeffReadCost = ei_traits<Derived>::CoeffReadCost,
+        CoeffReadCost = internal::traits<Derived>::CoeffReadCost,
         /**< This is a rough measure of how expensive it is to read one coefficient from
          * this expression.
          */
@@ -212,12 +199,14 @@ public:
      * Notice that in the case of a plain matrix or vector (not an expression) this function just returns
      * a const reference, in order to avoid a useless copy.
      */
-    EIGEN_STRONG_INLINE const typename ei_eval<Derived, IsSkyline>::type eval() const {
-        return typename ei_eval<Derived>::type(derived());
+    EIGEN_STRONG_INLINE const typename internal::eval<Derived, IsSkyline>::type eval() const {
+        return typename internal::eval<Derived>::type(derived());
     }
 
 protected:
     bool m_isRValue;
 };
+
+} // end namespace Eigen
 
 #endif // EIGEN_SkylineMatrixBase_H

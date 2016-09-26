@@ -3,41 +3,28 @@
 //
 // Copyright (C) 2008-2009 Guillaume Saupin <guillaume.saupin@cea.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SKYLINEPRODUCT_H
 #define EIGEN_SKYLINEPRODUCT_H
 
+namespace Eigen { 
+
 template<typename Lhs, typename Rhs, int ProductMode>
 struct SkylineProductReturnType {
-    typedef const typename ei_nested<Lhs, Rhs::RowsAtCompileTime>::type LhsNested;
-    typedef const typename ei_nested<Rhs, Lhs::RowsAtCompileTime>::type RhsNested;
+    typedef const typename internal::nested<Lhs, Rhs::RowsAtCompileTime>::type LhsNested;
+    typedef const typename internal::nested<Rhs, Lhs::RowsAtCompileTime>::type RhsNested;
 
     typedef SkylineProduct<LhsNested, RhsNested, ProductMode> Type;
 };
 
 template<typename LhsNested, typename RhsNested, int ProductMode>
-struct ei_traits<SkylineProduct<LhsNested, RhsNested, ProductMode> > {
+struct internal::traits<SkylineProduct<LhsNested, RhsNested, ProductMode> > {
     // clean the nested types:
-    typedef typename ei_cleantype<LhsNested>::type _LhsNested;
-    typedef typename ei_cleantype<RhsNested>::type _RhsNested;
+    typedef typename internal::remove_all<LhsNested>::type _LhsNested;
+    typedef typename internal::remove_all<RhsNested>::type _RhsNested;
     typedef typename _LhsNested::Scalar Scalar;
 
     enum {
@@ -65,29 +52,30 @@ struct ei_traits<SkylineProduct<LhsNested, RhsNested, ProductMode> > {
         CoeffReadCost = Dynamic
     };
 
-    typedef typename ei_meta_if<ResultIsSkyline,
+    typedef typename internal::conditional<ResultIsSkyline,
             SkylineMatrixBase<SkylineProduct<LhsNested, RhsNested, ProductMode> >,
-            MatrixBase<SkylineProduct<LhsNested, RhsNested, ProductMode> > >::ret Base;
+            MatrixBase<SkylineProduct<LhsNested, RhsNested, ProductMode> > >::type Base;
 };
 
+namespace internal {
 template<typename LhsNested, typename RhsNested, int ProductMode>
-class SkylineProduct : ei_no_assignment_operator,
-public ei_traits<SkylineProduct<LhsNested, RhsNested, ProductMode> >::Base {
+class SkylineProduct : no_assignment_operator,
+public traits<SkylineProduct<LhsNested, RhsNested, ProductMode> >::Base {
 public:
 
     EIGEN_GENERIC_PUBLIC_INTERFACE(SkylineProduct)
 
 private:
 
-    typedef typename ei_traits<SkylineProduct>::_LhsNested _LhsNested;
-    typedef typename ei_traits<SkylineProduct>::_RhsNested _RhsNested;
+    typedef typename traits<SkylineProduct>::_LhsNested _LhsNested;
+    typedef typename traits<SkylineProduct>::_RhsNested _RhsNested;
 
 public:
 
     template<typename Lhs, typename Rhs>
     EIGEN_STRONG_INLINE SkylineProduct(const Lhs& lhs, const Rhs& rhs)
     : m_lhs(lhs), m_rhs(rhs) {
-        ei_assert(lhs.cols() == rhs.rows());
+        eigen_assert(lhs.cols() == rhs.rows());
 
         enum {
             ProductIsValid = _LhsNested::ColsAtCompileTime == Dynamic
@@ -131,10 +119,10 @@ protected:
 // Note that here we force no inlining and separate the setZero() because GCC messes up otherwise
 
 template<typename Lhs, typename Rhs, typename Dest>
-EIGEN_DONT_INLINE void ei_skyline_row_major_time_dense_product(const Lhs& lhs, const Rhs& rhs, Dest& dst) {
-    typedef typename ei_cleantype<Lhs>::type _Lhs;
-    typedef typename ei_cleantype<Rhs>::type _Rhs;
-    typedef typename ei_traits<Lhs>::Scalar Scalar;
+EIGEN_DONT_INLINE void skyline_row_major_time_dense_product(const Lhs& lhs, const Rhs& rhs, Dest& dst) {
+    typedef typename remove_all<Lhs>::type _Lhs;
+    typedef typename remove_all<Rhs>::type _Rhs;
+    typedef typename traits<Lhs>::Scalar Scalar;
 
     enum {
         LhsIsRowMajor = (_Lhs::Flags & RowMajorBit) == RowMajorBit,
@@ -194,10 +182,10 @@ EIGEN_DONT_INLINE void ei_skyline_row_major_time_dense_product(const Lhs& lhs, c
 }
 
 template<typename Lhs, typename Rhs, typename Dest>
-EIGEN_DONT_INLINE void ei_skyline_col_major_time_dense_product(const Lhs& lhs, const Rhs& rhs, Dest& dst) {
-    typedef typename ei_cleantype<Lhs>::type _Lhs;
-    typedef typename ei_cleantype<Rhs>::type _Rhs;
-    typedef typename ei_traits<Lhs>::Scalar Scalar;
+EIGEN_DONT_INLINE void skyline_col_major_time_dense_product(const Lhs& lhs, const Rhs& rhs, Dest& dst) {
+    typedef typename remove_all<Lhs>::type _Lhs;
+    typedef typename remove_all<Rhs>::type _Rhs;
+    typedef typename traits<Lhs>::Scalar Scalar;
 
     enum {
         LhsIsRowMajor = (_Lhs::Flags & RowMajorBit) == RowMajorBit,
@@ -258,33 +246,35 @@ EIGEN_DONT_INLINE void ei_skyline_col_major_time_dense_product(const Lhs& lhs, c
 }
 
 template<typename Lhs, typename Rhs, typename ResultType,
-        int LhsStorageOrder = ei_traits<Lhs>::Flags&RowMajorBit>
-        struct ei_skyline_product_selector;
+        int LhsStorageOrder = traits<Lhs>::Flags&RowMajorBit>
+        struct skyline_product_selector;
 
 template<typename Lhs, typename Rhs, typename ResultType>
-struct ei_skyline_product_selector<Lhs, Rhs, ResultType, RowMajor> {
-    typedef typename ei_traits<typename ei_cleantype<Lhs>::type>::Scalar Scalar;
+struct skyline_product_selector<Lhs, Rhs, ResultType, RowMajor> {
+    typedef typename traits<typename remove_all<Lhs>::type>::Scalar Scalar;
 
     static void run(const Lhs& lhs, const Rhs& rhs, ResultType & res) {
-        ei_skyline_row_major_time_dense_product<Lhs, Rhs, ResultType > (lhs, rhs, res);
+        skyline_row_major_time_dense_product<Lhs, Rhs, ResultType > (lhs, rhs, res);
     }
 };
 
 template<typename Lhs, typename Rhs, typename ResultType>
-struct ei_skyline_product_selector<Lhs, Rhs, ResultType, ColMajor> {
-    typedef typename ei_traits<typename ei_cleantype<Lhs>::type>::Scalar Scalar;
+struct skyline_product_selector<Lhs, Rhs, ResultType, ColMajor> {
+    typedef typename traits<typename remove_all<Lhs>::type>::Scalar Scalar;
 
     static void run(const Lhs& lhs, const Rhs& rhs, ResultType & res) {
-        ei_skyline_col_major_time_dense_product<Lhs, Rhs, ResultType > (lhs, rhs, res);
+        skyline_col_major_time_dense_product<Lhs, Rhs, ResultType > (lhs, rhs, res);
     }
 };
+
+} // end namespace internal
 
 // template<typename Derived>
 // template<typename Lhs, typename Rhs >
 // Derived & MatrixBase<Derived>::lazyAssign(const SkylineProduct<Lhs, Rhs, SkylineTimeDenseProduct>& product) {
-//     typedef typename ei_cleantype<Lhs>::type _Lhs;
-//     ei_skyline_product_selector<typename ei_cleantype<Lhs>::type,
-//             typename ei_cleantype<Rhs>::type,
+//     typedef typename internal::remove_all<Lhs>::type _Lhs;
+//     internal::skyline_product_selector<typename internal::remove_all<Lhs>::type,
+//             typename internal::remove_all<Rhs>::type,
 //             Derived>::run(product.lhs(), product.rhs(), derived());
 // 
 //     return derived();
@@ -299,5 +289,7 @@ SkylineMatrixBase<Derived>::operator*(const MatrixBase<OtherDerived> &other) con
 
     return typename SkylineProductReturnType<Derived, OtherDerived>::Type(derived(), other.derived());
 }
+
+} // end namespace Eigen
 
 #endif // EIGEN_SKYLINEPRODUCT_H
