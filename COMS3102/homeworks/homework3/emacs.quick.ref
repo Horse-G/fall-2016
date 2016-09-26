@@ -1,0 +1,29 @@
+GET OUT:
+Cntrl-G    <- This aborts a partially entered command
+Cntrl-x Cntrl-c   <- exit   NOTE: you may have to answer 'yes' if buffers have been edited.
+
+Cntrl-s - search forward
+Cntrl-r - search backward
+
+Cntrl-p - up (previous)
+Cntrl-n - down (next)
+Cntrl-b - left (back)
+Cntrl-f - right (forward)
+
+Cntrl-a - beginning of line
+Cntrl-e - end of link
+
+M - <   beginning of file
+M - >   end of file
+
+M-g g  - goto line
+
+M-f - forward word
+M-b - back word
+
+ntrl-k - kill line
+Cntrl-y - yank linke
+
+Open File: C-x C-f
+Save File: C-x C-s
+

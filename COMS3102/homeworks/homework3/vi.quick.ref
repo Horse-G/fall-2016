@@ -1,0 +1,44 @@
+GET OUT:
+(ESC) : q! (ENTER)
+
+'i' -insert mode
+'ESC' - command mode 
+
+/ - search forward string
+? - search backward
+n - next Match
+N - back Match
+
+k- up
+j- down
+h- left
+l- right
+
+0 - beginning of line
+$ - end of line 
+
+gg - beginning of file
+G - end of file
+10G - jump to line 10
+
+w - next word ( try: 3w )
+e - end of word 
+b - beginning of word
+
+
+f - forward search (try 3f)
+
+i - insert
+o - start insert in next line
+O - start insert at previous line
+a - add at end of line
+
+* - next instance of word
+# - previous instance of word
+% - find matching block end (,[,{
+
+repeat:
+30 i gabba (ENTER) (ESC)
+
+x- delete under cursor
+X- delete to left of cursor
