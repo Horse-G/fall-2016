@@ -1,0 +1,70 @@
+1. Adam Hadar
+
+2. anh2130
+
+3.a) output of `git diff`
+[anh2130@coms3102server homework3]$ git diff HEAD origin
+diff --git a/contributors.txt b/contributors.txt
+index 3d26dbb..d907b09 100644
+--- a/contributors.txt
++++ b/contributors.txt
+@@ -1,3 +1 @@
+ Dan Mechanic
+-Adam Hadar
+-anh2130
+[anh2130@coms3102server homework3]$
+
+3.b) output of `git log`
+[anh2130@coms3102server homework3]$ git log
+commit add9650cc9a4136f1d546b6b82fabb04e603f953
+Author: anh2130 <anh2130@coms3102server.c.coms3102-fall2016.internal>
+Date:   Fri Sep 23 12:54:32 2016 -0400
+
+    added 'Adam Hadar' and 'anh2130' to contributors.txt
+
+commit ec61ade2d1124f87cc70f459485c462ca7bb1964
+Author: Dan Mechanic <mechanic@columbia.edu>
+Date:   Fri Sep 23 04:31:04 2016 -0400
+
+    slight update
+
+commit e397980caac2b7bdfc1254ff679953a2bae897f2
+Author: Dan Mechanic <dm2474@columbia.edu>
+Date:   Sun Sep 18 21:17:19 2016 -0400
+
+    commited positional parameter example and symbolic link examples
+
+commit 9d8b25034518a1c833fe83662b6a393f50f660a1
+Author: Dan Mechanic <dm2474@columbia.edu>
+Date:   Sat Sep 17 16:54:51 2016 -0400
+
+    added HelloPython and HelloPython2 example
+
+commit 7319a9aea91b1381b5e80fb3c3f1af9723ad906e
+Author: Dan Mechanic <dm2474@columbia.edu>
+Date:   Sat Sep 17 16:31:05 2016 -0400
+
+    Initial commit with contributors
+[anh2130@coms3102server homework3]$
+
+4. The difference between the two files is that one was written on a Windows computer and one was on a Linux/Mac - all the `Line Feed`s are actually `Carriage Return/Line Feed`s. If you do a find and replace, or just delete and press enter for each of the lines, you will fix it.
+
+5. The reason why I edited `bash_profile` instead of `bash_rc`, is that any subinstance (every time a script is run) will always start with running bashrc. Therefore, the PATH will keep adding ~/mybin everytime there is a script run inside a script.
+
+6. output of `ls -altr ~/mybin` 
+[anh2130@coms3102server ~]$ ls -altr ~/mybin
+total 20
+lrwxrwxrwx. 1 anh2130 anh2130   10 Sep 23 13:32 exclaim -> mystate.sh
+lrwxrwxrwx. 1 anh2130 anh2130   10 Sep 23 13:33 complain -> mystate.sh
+-rwx------. 1 anh2130 anh2130  241 Sep 23 13:39 mystate.sh
+-rwx------. 1 anh2130 anh2130  364 Sep 23 13:51 qref
+-rw-rw-r--. 1 anh2130 anh2130 1628 Sep 25 10:33 ANH2130hw3ans.txt
+drwx------. 2 anh2130 anh2130 4096 Sep 25 10:33 .
+drwx------. 7 anh2130 anh2130 4096 Sep 25 10:34 ..
+[anh2130@coms3102server ~]$
+
+7. output of `echo $PATH`
+[anh2130@coms3102server ~]$ echo $PATH
+/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/anh2130/bin:/home/anh2130/mybin:
+[anh2130@coms3102server ~]$
+
