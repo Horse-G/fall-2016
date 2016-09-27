@@ -14,10 +14,32 @@ bool LinearizedImplicitEuler::stepScene( TwoDScene& scene, scalar dt )
   const VectorXs& m = scene.getM();
   assert(x.size() == v.size());
   assert(x.size() == m.size());
-
-  // Implement implicit euler here!
-  
-  return true;
+        int x_size = x.size();
+        VectorXs dx = dt*v;
+        VectorXs dv = VectorXs::Zero(x_size);
+        VectorXs right = VectorXs::Zero(x_size);
+        MatrixXs left = MatrixXs::Zero(x_size,x_size);
+        // Accumulating
+        scene.accumulateGradU(right,dx,dv);
+        right *= -dt;
+        scene.accumulateddUdxdx(left,dx,dv);
+        left *= dt;
+        scene.accumulateddUdxdv(left,dx,dv);
+        left *= dt;
+        left.diagonal() += m;
+        // Fixed vertices
+        for(int i = x_size/2 - 1; i >= 0; --i)
+            if(scene.isFixed(i))
+            {
+                right.segment<2>(2*i).setZero();
+                left.block(2*i,0,2,2*i).setZero();
+                left.block(0,2*i,2*i,2).setZero();
+                left(2*i,2*i) = 1.0;
+                left(2*i+1,2*i+1) = 1.0;
+            }
+        v += left.fullPivLu().solve(right);
+        x += dt * v;
+        return true;
 }
 
 std::string LinearizedImplicitEuler::getName() const
