@@ -274,6 +274,42 @@ Jacobian =
 - bottom left = -h * M^(-1) * Jacobian of Force with respect to \_q
 - bottom right = id_d - h * M^(-1) * Jacobain of Force with respect to .q
 
+## Lecture 07, 2016-09-27
+How would you simulate a pendulum with our current abilities. There are different possibilities;
+
+### Penalty force
+make the particle not want to leave the curve (tie it to a spring)
+
+But if you want to generalize this process to any path, you have to realize the the spring is just applying potential energies to the particle.
+
+To do this you need to define a **constraint function**, that applies 0 energy when the particle is on the curve, and an antienergy when it is off the path.
+
+The potential for this force is the constraint function squared.
+
+### Constraint maintaining force
+For a pendulum, have a force pushing against the ball that is proportionally opposite to the amount of gravity pushing it out of the circle.
+ 
+This is specifically called **constraint enforcement via Lagrange multipliers**.
+
+#### Post constraint
+
+### Reduced coordinates
+
+## Lecture 08, 2016-09-29
+
+### Penalty force
+The penality approach is perfect for **elastic collisions**. Elastic collisions have a **coefficient of restution** of 1.
+
+Emily Nother
+
+### Constraint maintaining force
+_g > 0 -> lambda = 0_
+
+_lambda >= 0_
+
+_(Force total) dot (grad g) >= 0_
+
+Those last two were complementary; either lambda or force dot grad can be a positive nonzero, but not both.
 
 
 

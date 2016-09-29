@@ -11,9 +11,9 @@ protected:
 public:
 	Game() { numberOfPlayers = 1; }
 	Game(int n) { numberOfPlayers = n; }
-	bool isValid() { return true; }
-	bool isOver() { return false; }
-	void PrintGamePosition();
+	virtual bool isValid() { return true; }
+	virtual bool isOver() { return false; }
+	virtual void PrintGamePosition() { return; };
 };
 
 class Sudoku : public Game
@@ -30,13 +30,23 @@ public:
 	}
 	Sudoku(int v[9][9])
 	{
+		numberOfPlayers = 1;
 		for (int i = 8; i > -1; --i)
 			for (int j = 8; j > -1; --j)
 				values[i][j] = v[i][j];
 	}
 	void readDataFromFile(char *fileName)
 	{
-		return;
+		FILE *fp = NULL;
+		if ((fp = fopen(fileName, "r")) == NULL)
+		{
+			std::cout << "Can't open file for reading" << std::endl;
+			return;
+		}
+		for (int i = 0; i < 9; i++)
+			for (int j = 0; j < 9; j++)
+				fscanf(fp, "%d", &values[i][j]);
+		fclose(fp);
 	}
 	bool isValid()
 	{
@@ -53,7 +63,8 @@ public:
 		// rows
 		for (i = 8; i > -1; --i)
 		{
-			present = { false,false,false,false,false,false,false,false,false };
+			for(j = 9; j >= 0; --j)
+				present[j] = false;
 			for (j = 8; i > -1; --i)
 			{
 				if (present[values[i][j]] == true)
@@ -65,7 +76,8 @@ public:
 		// columns
 		for (i = 8; i > -1; --i)
 		{
-			present = { false,false,false,false,false,false,false,false,false };
+			for (j = 9; j >= 0; --j)
+				present[j] = false;
 			for (j = 8; i > -1; --i)
 			{
 				if (present[values[j][i]] == true)
@@ -75,26 +87,33 @@ public:
 			}
 		}
 		// squares
-		for (i = 0; i < 9; ++i)
+		/*for (i = 0; i < 3; i++)
 		{
-			present = { false,false,false,false,false,false,false,false,false };
-			for (j = 8; i > -1; --i)
+			for (j = 9; j >= 0; --j)
+				present[j] = false;
+			for (j = 0; i > -1; --i)
 			{
 				if (present[values[j][i]] == true)
 					return false;
 				if (present[values[j][i]] == false)
 					present[values[j][i]] = true;
 			}
-		}
+			i++;
+		}*/
 		return true;
 	}
 	bool isOver()
 	{
-		return false;
+		for (int i = 8; i > -1; --i)
+			for (int j = 8; j > -1; --j)
+				if (values[i][j] < 0)
+					return false;
+		return true;
 	}
 	void PrintGamePosition()
 	{
-		for (int i = 8; i > -1; --i) {
+		for (int i = 8; i > -1; --i)
+		{
 			for (int j = 8; j > -1; --j)
 				std::cout << values[i][j];
 			std::cout << std::endl;
@@ -107,9 +126,7 @@ int main()
 {
 	Sudoku sdk;
 	sdk.readDataFromFile("file.txt");
-	do {
-		sdk.PrintGamePosition();
-	} while (sdk.isOver());
+	
     return 0;
 }
 

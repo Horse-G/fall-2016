@@ -50,7 +50,10 @@ hw2_walkthrough1;
 %%
 function challenge1a()
 img_list = {'two_objects', 'many_objects_1', 'many_objects_2'};
+%ADAM CODE
+    threshold_list = [.5,.5,.5];
 %threshold_list = [???, ???, ???];
+%END ADAMCODE
 
 for i = 1:length(img_list)
     orig_img = imread([img_list{i} '.png']);
