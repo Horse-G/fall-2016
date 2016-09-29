@@ -32,10 +32,9 @@ bool LinearizedImplicitEuler::stepScene( TwoDScene& scene, scalar dt )
             if(scene.isFixed(i))
             {
                 right.segment<2>(2*i).setZero();
-                left.block(2*i,0,2,2*i).setZero();
-                left.block(0,2*i,2*i,2).setZero();
-                left(2*i,2*i) = 1.0;
-                left(2*i+1,2*i+1) = 1.0;
+                left.block(2*i,0,2,x_size/2).setZero();
+                left.block(0,2*i,x_size/2,2).setZero();
+                left.block(2*i,2*i,2,2) = Matrix2s::Identity();
             }
         v += left.fullPivLu().solve(right);
         x += dt * v;
