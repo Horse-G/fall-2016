@@ -1,0 +1,20 @@
+1. Adam Hadar
+
+2. anh2130
+
+3. output of `ls -al ~/hw4bin`
+[anh2130@coms3102server ~]$ ls -al ~/hw4bin/
+total 36
+drwxrwxr-x. 2 anh2130 anh2130 4096 Oct  1 13:03 .
+drwx------. 8 anh2130 anh2130 4096 Oct  1 13:03 ..
+-rw-rw-r--. 1 anh2130 anh2130  169 Oct  1 13:02 ANH2130hw4ans.txt
+-rw-r--r--. 1 anh2130 anh2130   94 Oct  1 13:03 .bash_logout
+-rw-r--r--. 1 anh2130 anh2130  234 Oct  1 13:03 .bashrc
+-rw-rw-r--. 1 anh2130 anh2130  371 Oct  1 12:59 coms3102shells.csv
+-rw-rw-r--. 1 anh2130 anh2130  371 Oct  1 13:01 coms3102shellsSORTED.csv
+-rw-rw-r--. 1 anh2130 anh2130  129 Oct  1 12:36 logout.log
+-rwx------. 1 anh2130 anh2130  257 Oct  1 12:58 shells.sh
+[anh2130@coms3102server ~]$
+
+4. Command to create `coms3102shellsSORTED.csv`
+cat coms3102shells.csv | sort -nr > coms3102shellsSORTED.csv

@@ -107,15 +107,9 @@ wave-particle duality - light acts as both
 Can ecnode this color as a 3-tuple
 3 values scaled from 0 to 1.
 
-
-
-
-
 Unless you know something specific,
 - a pixel is a point sample
 - an image is an array of point samples
-
-
 
 
 ### Pixel data types
@@ -237,6 +231,147 @@ The shading combines these with an RGB triple that describes the incidient light
 ### Animation Appreciation
 
 "The Adventures of Andre and Wally B."
+
+## Lecture 04, 2016-09-29
+what we'll need
+
+- a away to represent and work with rays
+- a camera model
+- geometric models - for the objects in our scene
+- a way to represent lights
+- a shading model, simple material descriptions
+- support classes: image, point/vector/intersection
+
+### rays
+defined as linear interpolation of a point and a vector
+
+_r(t) = P\_0 + td_
+
+```c++
+class ray
+{
+public:
+	point origin;
+	vector dir;
+};
+```
+
+### pinhole camera model
+camera coordinate frame
+
+- the eye point
+- vector w (opposite the viewing direction)
+- vector u ( the camera's right)
+- vector v ( the camera's up)
+
+the three vectors are orthonormal
+
+```c++
+class camera
+{
+	point eye;
+	float d;
+	vector u;
+	vector v;
+	vector w;
+	...
+};
+```
+
+### Basic geometries
+#### Planes
+planes ca nbe used to represent limitless ground. They can be useful as a bounding surface in acceleration structures
+
+implicit equation for a place with normal N and distance to origin d:
+
+_p dot N + d = 0_
+
+```
+class plane: public surface
+{
+	vector normal;
+	float d; // distance to origin
+}
+```
+
+##### ray-plane intersection
+System of equations with the plane equation and the ray formula, and solve for t.
+
+The dot product of orthogonal vectors is 0 (and then there won't be an interesection)
+
+##### create a plane
+from 3 points - cross products to compute normal
+
+#### Spheres
+- useful as test objects
+- useful for bounding objects (complex ones)
+- useful for representing sky
+- are not flat, so easy to test shading
+
+```
+class sphere: public surface
+{
+	point center;
+	float radius;
+}
+```
+
+- descriminant negative: line and sphere do not interest
+- descriminant zero: 1 interesction (graze). hard to compute with floats - have a magnitude check for < than error
+- otherwise: the two intersect
+
+### Ray-surface intersections
+- yes/no intersection
+- 't' the parameterization of the intersection point
+- **intersection point** for shading
+- **geometric normal** for shading
+- surface id - so we can look up materials
+- all this suggests an intersection class
+
+### Images and signal processing
+
+### Assignment 1.0
+Write, test, and evaluate a raytracing renderer named **raytra**
+
+eventually, it will include:
+
+- multiple light sources
+- multiple geometry types
+- diffuse, specular, & mirror reflection models
+- refraction on transparent materials
+- spatial acceleration structures
+
+#### Basics
+- scene file read
+- camera & image setup
+- primary ray generation
+- ray/sphere interersection
+- no shading, lights
+- need basic materials
+
+for each pixel:
+- compute the ray through current pixel (primary ray)
+- intersect ray with scene
+- if ray missed all objects, set color to background value
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
