@@ -3,32 +3,44 @@
 
 #include <cstdlib>
 #include <iostream>
+#include "geometry.h"
+#include "materials.h"
 
 using namespace std;
 
-struct float3 {
-  float x,y,z;
-};
-inline istream &operator>>(istream &is, float3 &f) {
-  return is>>f.x>>f.y>>f.z;
+inline istream &operator>>(istream &is, geo_point &f) {
+    return is>>f.x>>f.y>>f.z;
 }
-inline ostream &operator<<(ostream &os, float3 &f) {
-  return os<<"<"<<f.x<<","<<f.y<<","<<f.z<<">";
+inline istream &operator>>(istream &is, geo_vector &v){
+    return is>>v.x>>v.y>>v.z;
+}
+inline istream &operator>>(istream &is, rgb_triple &c){
+    return is>>c.r>>c.g>>c.b;
+}
+inline ostream &operator<<(ostream &os, geo_point &f) {
+    return os<<"<"<<f.x<<","<<f.y<<","<<f.z<<">";
+}
+inline ostream &operator<<(ostream &os, geo_vector &v){
+    return os<<"<"<<v.x<<","<<v.y<<","<<v.z<<">";
+}
+inline ostream &operator<<(ostream &os, rgb_triple &c){
+    return os<<"<"<<c.r<<","<<c.g<<","<<c.b<<">";
 }
 
-class Parser {
- protected:
-  virtual void sphere(float3 pos, float r) {}
-  virtual void triangle(float3 p1, float3 p2, float3 p3) {}
-  virtual void plane(float3 n, float d) {}
-  virtual void camera(float3 pos, float3 dir, float d, float iw, float ih, int pw, int ph) {}
-  virtual void pointLight(float3 pos, float3 rgb) {}
-  virtual void directionalLight(float3 dir, float3 rgb) {}
-  virtual void ambientLight(float3 rgb) {}
-  virtual void material(float3 diff, float3 spec, float r, float3 refl) {}
+class Parser
+{
+protected:
+    virtual void parse_sphere(geo_point pos, float r) {}
+    //virtual void triangle(geo_point p1, float3 p2, float3 p3) {}
+    //virtual void plane(geo_point n, float d) {}
+    virtual void parse_camera(geo_point pos, geo_vector dir, float d, float iw, float ih, int pw, int ph) {}
+    //virtual void pointLight(geo_point pos, geo_point rgb) {}
+    //virtual void directionalLight(geo_point dir, geo_point rgb) {}
+    //virtual void ambientLight(geo_point rgb) {}
+    virtual void parse_material(rgb_triple diff, rgb_triple spec, float r, rgb_triple refl) {}
 
- public:
-  virtual void parse(const char *file);
+public:
+    virtual void parse(const char *file);
 };
 
 #endif
