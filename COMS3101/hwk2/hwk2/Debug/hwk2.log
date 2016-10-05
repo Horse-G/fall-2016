@@ -1,4 +1,2 @@
 ﻿  hwk2.cpp
-c:\nogueira\projects\programs\fall-2016\coms3101\hwk2\hwk2\hwk2.cpp(29): error C2248: 'Game::numberOfPlayers': cannot access private member declared in class 'Game'
-  c:\nogueira\projects\programs\fall-2016\coms3101\hwk2\hwk2\hwk2.cpp(9): note: see declaration of 'Game::numberOfPlayers'
-  c:\nogueira\projects\programs\fall-2016\coms3101\hwk2\hwk2\hwk2.cpp(7): note: see declaration of 'Game'
+  hwk2.vcxproj -> C:\nogueira\projects\programs\fall-2016\COMS3101\hwk2\Debug\hwk2.exe

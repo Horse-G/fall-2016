@@ -24,100 +24,58 @@ public:
 	Sudoku()
 	{
 		numberOfPlayers = 1;
-		for (int i = 8; i > -1; --i)
-			for (int j = 8; j > -1; --j)
+		for (int i = 0; i < 9; ++i)
+			for (int j = 0; j < 9; ++j)
 				values[i][j] = 0;
 	}
 	Sudoku(int v[9][9])
 	{
 		numberOfPlayers = 1;
-		for (int i = 8; i > -1; --i)
-			for (int j = 8; j > -1; --j)
+		for (int i = 0; i < 9; ++i)
+			for (int j = 0; j < 9; ++j)
 				values[i][j] = v[i][j];
 	}
 	void readDataFromFile(char *fileName)
 	{
 		FILE *fp = NULL;
-		if ((fp = fopen(fileName, "r")) == NULL)
+		//if ((fp = fopen(fileName, "r")) == NULL)
+		if ((fopen_s(&fp,fileName, "r")) != 0)
 		{
 			std::cout << "Can't open file for reading" << std::endl;
 			return;
 		}
 		for (int i = 0; i < 9; i++)
 			for (int j = 0; j < 9; j++)
-				fscanf(fp, "%d", &values[i][j]);
+				//fscanf(fp, "%d", &values[i][j]);
+		        fscanf_s(fp, "%d", &values[i][j]);
 		fclose(fp);
 	}
 	bool isValid()
 	{
-		for (int i = 8; i > -1; --i)
-			for (int j = 8; j > -1; --j)
+		for (int i = 0; i < 9; ++i)
+			for (int j = 0; j < 9; ++j)
 				if (values[i][j] > 9 || values[i][j] < 0)
 					return false;
 		return true;
 	}
 	bool isCorrect()
 	{
-		bool present[9] = {false,false,false,false,false,false,false,false,false};
-		int i, j;
-		// rows
-		for (i = 8; i > -1; --i)
-		{
-			for(j = 9; j >= 0; --j)
-				present[j] = false;
-			for (j = 8; i > -1; --i)
-			{
-				if (present[values[i][j]] == true)
-					return false;
-				if (present[values[i][j]] == false)
-					present[values[i][j]] = true;
-			}
-		}
-		// columns
-		for (i = 8; i > -1; --i)
-		{
-			for (j = 9; j >= 0; --j)
-				present[j] = false;
-			for (j = 8; i > -1; --i)
-			{
-				if (present[values[j][i]] == true)
-					return false;
-				if (present[values[j][i]] == false)
-					present[values[j][i]] = true;
-			}
-		}
-		// squares
-		/*for (i = 0; i < 3; i++)
-		{
-			for (j = 9; j >= 0; --j)
-				present[j] = false;
-			for (j = 0; i > -1; --i)
-			{
-				if (present[values[j][i]] == true)
-					return false;
-				if (present[values[j][i]] == false)
-					present[values[j][i]] = true;
-			}
-			i++;
-		}*/
+		if (values[0][0] == values[1][1])
+			std::cout << "oops" << std::endl;
 		return true;
 	}
 	bool isOver()
 	{
-		for (int i = 8; i > -1; --i)
-			for (int j = 8; j > -1; --j)
-				if (values[i][j] < 0)
+		for (int i = 0; i < 9; ++i)
+			for (int j = 0; j < 9; ++j)
+				if (values[i][j] <= 0)
 					return false;
 		return true;
 	}
 	void PrintGamePosition()
 	{
-		for (int i = 8; i > -1; --i)
-		{
-			for (int j = 8; j > -1; --j)
-				std::cout << values[i][j];
-			std::cout << std::endl;
-		}
+		for (int i = 0; i < 9; ++i)
+			std::cout << values[0][i] << std::endl;
 		return;
 	}
 };
@@ -125,8 +83,25 @@ public:
 int main()
 {
 	Sudoku sdk;
+	Sudoku s1 = Sudoku();
 	sdk.readDataFromFile("file.txt");
-	
+	sdk.PrintGamePosition();
+	if (sdk.isOver())
+		std::cout << "it is over" << std::endl;
+	else
+		std::cout << "it is not over" << std::endl;
+	if (sdk.isValid())
+		std::cout << "it is valid" << std::endl;
+	else
+		std::cout << "it is not valid" << std::endl;
+	sdk.isCorrect();
+	s1.PrintGamePosition();
+	/*
+	if (sdk.isCorrect())
+		std::cout << "it is correct" << std::endl;
+	else
+		std::cout << "it is not correct" << std::endl;
+	*/
     return 0;
 }
 
