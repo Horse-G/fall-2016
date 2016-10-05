@@ -1,12 +1,15 @@
 #include "TwoDSceneSVGRenderer.h"
+#include "TwoDimensionalDisplayController.h"
 
-TwoDSceneSVGRenderer::TwoDSceneSVGRenderer( const TwoDScene& scene, const std::vector<renderingutils::Color>& particle_colors, const std::vector<renderingutils::Color>& edge_colors, const std::vector<renderingutils::ParticlePath>& particle_paths, int imagewidth, int imageheight, const renderingutils::Color& bgcolor )
+TwoDSceneSVGRenderer::TwoDSceneSVGRenderer( const TwoDScene& scene, const TwoDimensionalDisplayController &dc, const std::vector<renderingutils::Color>& particle_colors, const std::vector<renderingutils::Color>& edge_colors, const std::vector<renderingutils::Color> &halfplane_colors, const std::vector<renderingutils::ParticlePath>& particle_paths, int imagewidth, int imageheight, const renderingutils::Color& bgcolor )
 : m_scene(scene)
+, m_dc(dc)
 , m_w(imagewidth)
 , m_h(imageheight)
 , m_bgcolor(bgcolor)
 , m_particle_colors(particle_colors)
 , m_edge_colors(edge_colors)
+, m_halfplane_colors(halfplane_colors)
 , m_particle_paths(particle_paths)
 , m_circle_points()
 , m_semi_circle_points()
@@ -29,50 +32,15 @@ std::string TwoDSceneSVGRenderer::intToHexString( int integer ) const
   return newstring.str();
 }
 
-void TwoDSceneSVGRenderer::computeBoundingBox( const VectorXs& x, const std::vector<scalar>& radii, scalar& xmin, scalar& xmax, scalar& ymin, scalar& ymax ) const
+void TwoDSceneSVGRenderer::computeSimToImageMap(scalar& scale, scalar& xmin, scalar& ymin, scalar& xshift, scalar& yshift ) const
 {
-  assert( x.size()%2 == 0 );
-  int numparticles = x.size()/2;
-  assert( numparticles == (int) radii.size() );
-  
-  xmin =  std::numeric_limits<double>::infinity();
-  xmax = -std::numeric_limits<double>::infinity();
-  ymin =  std::numeric_limits<double>::infinity();
-  ymax = -std::numeric_limits<double>::infinity();
+  scalar xwidth = m_dc.getWorldWidth();
+  scalar ywidth = m_dc.getWorldHeight();
 
-  for( int i = 0; i < numparticles; ++i )
-  {
-    if( x(2*i)   - radii[i] < xmin ) xmin = x(2*i)   - radii[i];
-    if( x(2*i)   + radii[i] > xmax ) xmax = x(2*i)   + radii[i];
-    if( x(2*i+1) - radii[i] < ymin ) ymin = x(2*i+1) - radii[i];
-    if( x(2*i+1) + radii[i] > ymax ) ymax = x(2*i+1) + radii[i];
-  }
+  xmin = m_dc.getCenterX()-xwidth/2.0;
+  ymin = m_dc.getCenterY()-ywidth/2.0;
 
-  // Also include particle paths in bounding box computation
-  for( std::vector<renderingutils::ParticlePath>::size_type i = 0; i < m_particle_paths.size(); ++i )
-  {
-    const std::list<Vector2s>& ppath = m_particle_paths[i].getPath();    
-    for( std::list<Vector2s>::const_iterator itr = ppath.begin(); itr != ppath.end(); ++itr )
-    {
-      if( itr->x() < xmin ) xmin = itr->x();
-      if( itr->x() > xmax ) xmax = itr->x();
-      if( itr->y() < ymin ) ymin = itr->y();
-      if( itr->y() > ymax ) ymax = itr->y();
-    }
-  }    
-}
-
-void TwoDSceneSVGRenderer::computeSimToImageMap( const VectorXs& x, const std::vector<scalar>& radii, scalar& scale, scalar& xmin, scalar& ymin, scalar& xshift, scalar& yshift ) const
-{
-  scalar xmax, ymax;
-  computeBoundingBox( x, radii, xmin, xmax, ymin, ymax );
-  scalar xwidth = xmax-xmin;
-  scalar ywidth = ymax-ymin;
-
-  scalar scalex = ((scalar)m_w)/xwidth;
-  scalar scaley = ((scalar)m_h)/ywidth;
-  scale  = std::min(scalex,scaley); // Multiplication is to give the border some extra width
-
+  scale = m_w/(2.0*m_dc.getScaleFactor());
   scalar remainderx = ((scalar)m_w) - scale*xwidth;
   scalar remaindery = ((scalar)m_h) - scale*ywidth;
 
@@ -123,6 +91,40 @@ void TwoDSceneSVGRenderer::renderSweptEdge( std::fstream& file, const Vector2s& 
   renderSolidCircle( file, x1, r, color );
 }
 
+void TwoDSceneSVGRenderer::renderImpulse( std::fstream &file, const TwoDScene &scene, const CollisionInfo &impulse, bool buggy) const
+{
+  scalar scale, xmin, ymin, xshift, yshift;
+  computeSimToImageMap(scale, xmin, ymin, xshift, yshift );
+  
+  std::string color = (buggy ? "#FF0000" : "#00FF00");
+  assert(impulse.m_idx1 < scene.getNumParticles());
+  double x = scene.getX()[2*impulse.m_idx1];
+  double y = scene.getX()[2*impulse.m_idx1+1];
+
+  double x2 = x + impulse.m_n[0];
+  double y2 = y + impulse.m_n[1];
+
+  x = scale*(x-xmin)+xshift;
+  y = m_h-(scale*(y-ymin)+yshift);
+
+  x2 = scale*(x2-xmin)+xshift;
+  y2 = m_h-(scale*(y2-ymin)+yshift);
+
+  file << "<line x1=\"" << x << "\" y1=\"" << y << "\" x2=\"" << x2 << "\" y2=\"" << y2 << "\" style=\"stroke:" << color << ";stroke-width:2\"/>" << std::endl;
+}
+
+void TwoDSceneSVGRenderer::renderHalfplane( std::fstream &file, const VectorXs &x, const VectorXs &n, const renderingutils::Color &color) const
+{
+  double p0x = x[0] - 1000*n[1];
+  double p0y = x[1] + 1000*n[0];
+  double cx = x[0] - 1000*n[0];
+  double cy = x[1] - 1000*n[1];
+  double p1x = x[0] + 1000*n[1];
+  double p1y = x[1] - 1000*n[0];
+  
+  file << "<polygon points=\"" << p0x << "," << p0y << " " << cx << "," << cy << " " << p1x << "," << p1y <<  "\" style=\"fill:#" << intToHexString(floor(255.0*color.r+0.5)) << intToHexString(floor(255.0*color.g+0.5)) << intToHexString(floor(255.0*color.b+0.5)) << "; stroke:#000000;stroke-width:0\"/>" << std::endl;
+}
+
 void TwoDSceneSVGRenderer::renderShared( std::fstream& file, const VectorXs& x, const std::vector<std::pair<int,int> >& edges, const std::vector<scalar>& radii, const std::vector<scalar>& edgeradii, const scalar& scale, const scalar& xmin, const scalar& ymin, const scalar& xshift, const scalar& yshift  ) const
 {
   int numparticles = x.size()/2;
@@ -164,6 +166,17 @@ void TwoDSceneSVGRenderer::renderShared( std::fstream& file, const VectorXs& x, 
     
     renderSweptEdge( file, p0, p1, scale*edgeradii[i], m_edge_colors[i] );
   }
+
+  // Render halfplanes
+  for(int i=0; i < m_scene.getNumHalfplanes(); i++)
+    {
+      Vector2s p0;
+      p0 << scale * (m_scene.getHalfplane(i).first[0]-xmin) + xshift, ((scalar)m_h) - scale*(m_scene.getHalfplane(i).first[1]-ymin) - yshift;
+      Vector2s n0;
+      n0 << m_scene.getHalfplane(i).second[0], -m_scene.getHalfplane(i).second[1];
+      n0.normalize();
+      renderHalfplane(file, p0, n0, m_halfplane_colors[i]);
+    }
   
   // Render particles
   for( int i = 0; i < numparticles; ++i )
@@ -192,7 +205,7 @@ void TwoDSceneSVGRenderer::renderScene( const std::string& filename ) const
   }
   
   scalar scale, xmin, ymin, xshift, yshift;
-  computeSimToImageMap( x, radii, scale, xmin, ymin, xshift, yshift );
+  computeSimToImageMap( scale, xmin, ymin, xshift, yshift );
   
   file << "<?xml version=\"1.0\" encoding=\"utf-8\"?> <!-- Generator: Adobe Illustrator 13.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 14948)  --> <svg version=\"1.2\" baseProfile=\"tiny\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" width=\"";
   file << m_w;
@@ -217,10 +230,8 @@ void TwoDSceneSVGRenderer::renderScene( const std::string& filename ) const
   file.close();
 }
 
-void TwoDSceneSVGRenderer::renderComparisonScene( const std::string& filename, const TwoDScene& otherscene, const scalar& eps ) const
+void TwoDSceneSVGRenderer::renderComparisonScene( const std::string& filename, const TwoDScene& otherscene, const std::vector<CollisionInfo> *impulses, const std::vector<CollisionInfo> *otherimpulses, const scalar &eps) const
 {
-  //std::cout << "comparison" << std::endl;
-
   const VectorXs& x = m_scene.getX();
   const VectorXs& v = m_scene.getV();
   assert( x.size()%2 == 0 );
@@ -237,7 +248,7 @@ void TwoDSceneSVGRenderer::renderComparisonScene( const std::string& filename, c
   }
   
   scalar scale, xmin, ymin, xshift, yshift;
-  computeSimToImageMap( x, radii, scale, xmin, ymin, xshift, yshift );
+  computeSimToImageMap(scale, xmin, ymin, xshift, yshift );
   
   file << "<?xml version=\"1.0\" encoding=\"utf-8\"?> <!-- Generator: Adobe Illustrator 13.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 14948)  --> <svg version=\"1.2\" baseProfile=\"tiny\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" width=\"";
   file << m_w;
@@ -273,37 +284,59 @@ void TwoDSceneSVGRenderer::renderComparisonScene( const std::string& filename, c
     }
   }
   
+  if(impulses)
+    {
+      int i=0, j=0;
+
+      // loop over the real impulses
+      while(i < (int)impulses->size())
+	{
+	  int curvert = (*impulses)[i].m_idx1;
+	  CollisionInfo::collisiontype curtype = (*impulses)[i].m_type;
+	  int curidx2 = (*impulses)[i].m_idx2;
+	  
+	  // all student impulses less than this correct impulse are buggy
+	  while(j < (int)otherimpulses->size()
+		&& (*otherimpulses)[j].m_idx1 < curvert
+		&& (*otherimpulses)[j].m_type < curtype
+		&& (*otherimpulses)[j].m_idx2 < curidx2)
+	    {
+	      renderImpulse( file, otherscene, (*otherimpulses)[j], true);
+	      j++;
+	    }
+
+	  // check for missed collision
+	  if( ! (j < (int)otherimpulses->size()
+		 && (*otherimpulses)[j].m_idx1 == curvert
+		 && (*otherimpulses)[j].m_type == curtype
+		 && (*otherimpulses)[j].m_idx2 == curidx2))
+	    {
+	      renderImpulse( file, otherscene, (*impulses)[i], false);
+	    }
+	  else
+	    {
+	      // check for buggy normal
+	      if( ((*otherimpulses)[j].m_n - (*impulses)[i].m_n).norm() > eps)
+		{
+		  renderImpulse( file, otherscene, (*impulses)[i], false);
+		  renderImpulse( file, otherscene, (*otherimpulses)[j], true);
+		}
+	      j++;
+	    }
+	  
+	  i++;
+	}
+      // Any remaining student impulses are buggy
+      while(j < (int)otherimpulses->size())
+	{
+	  renderImpulse( file, otherscene, (*otherimpulses)[j], true);
+	  j++;
+	}
+    }
+  
   
   file << "</svg>" << std::endl;
   
   file.close();  
   
 }
-
-
-
-
-//void TwoDSceneRenderer::circleMajorResiduals( const TwoDScene& oracle_scene, const TwoDScene& testing_scene, scalar eps ) const
-//{
-//  assert(   oracle_scene.getNumParticles() == testing_scene.getNumParticles() );
-//  assert( 2*oracle_scene.getNumParticles() == oracle_scene.getX().size() );
-//  assert( 2*oracle_scene.getNumParticles() == testing_scene.getX().size() );
-//  assert( 2*oracle_scene.getNumParticles() == oracle_scene.getV().size() );
-//  assert( 2*oracle_scene.getNumParticles() == testing_scene.getV().size() );
-//
-//  const VectorXs& oracle_x = oracle_scene.getX();
-//  const VectorXs& testing_x = testing_scene.getX();
-//
-//  const VectorXs& oracle_v = oracle_scene.getV();
-//  const VectorXs& testing_v = testing_scene.getV();
-//
-//  glColor3d(1.0,0.0,0.0);
-//  for( int i = 0; i < oracle_scene.getNumParticles(); ++i )
-//  {
-//    scalar x_resid = (oracle_x.segment<2>(2*i)-testing_x.segment<2>(2*i)).norm();
-//    scalar v_resid = (oracle_v.segment<2>(2*i)-testing_v.segment<2>(2*i)).norm();
-//    if( x_resid > eps || v_resid > eps )
-//      renderCircle( oracle_x.segment<2>(2*i), 2.0*oracle_scene.getRadius(i) );
-//  }
-//}
-
