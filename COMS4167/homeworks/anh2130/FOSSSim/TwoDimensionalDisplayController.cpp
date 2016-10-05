@@ -31,6 +31,17 @@ void TwoDimensionalDisplayController::reshape( int w, int h )
   assert( renderingutils::checkGLErrors() );
 }
 
+int TwoDimensionalDisplayController::getWorldWidth() const
+{
+  double ratio = m_window_height/m_window_width;
+  return 2*m_scale_factor/ratio;
+}
+
+int TwoDimensionalDisplayController::getWorldHeight() const
+{
+  return 2*m_scale_factor;
+}
+
 void TwoDimensionalDisplayController::keyboard( unsigned char key, int x, int y )
 {
   if( key == '-' || key == '_' )
@@ -173,6 +184,11 @@ void TwoDimensionalDisplayController::setCenterY( double y )
 void TwoDimensionalDisplayController::setScaleFactor( double scale )
 {
   m_scale_factor = scale;
+}
+
+double TwoDimensionalDisplayController::getScaleFactor() const
+{
+  return m_scale_factor;
 }
 
 

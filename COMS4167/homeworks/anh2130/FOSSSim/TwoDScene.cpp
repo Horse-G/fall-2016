@@ -1,4 +1,5 @@
 #include "TwoDScene.h"
+#include <iostream>
 
 TwoDScene::TwoDScene()
 : m_x()
@@ -7,6 +8,7 @@ TwoDScene::TwoDScene()
 , m_fixed()
 , m_radii()
 , m_edges()
+, m_halfplanes()
 , m_edge_radii()
 , m_forces()
 , m_particle_tags()
@@ -19,6 +21,7 @@ TwoDScene::TwoDScene( int num_particles )
 , m_fixed(num_particles)
 , m_radii()
 , m_edges()
+, m_halfplanes()
 , m_edge_radii()
 , m_forces()
 , m_particle_tags()
@@ -33,6 +36,7 @@ TwoDScene::TwoDScene( const TwoDScene& otherscene )
 , m_fixed(otherscene.m_fixed)
 , m_radii()
 , m_edges()
+, m_halfplanes()
 , m_edge_radii()
 , m_forces()
 , m_particle_tags()
@@ -59,6 +63,11 @@ int TwoDScene::getNumParticles() const
 int TwoDScene::getNumEdges() const
 {
   return m_edges.size();
+}
+
+int TwoDScene::getNumHalfplanes() const
+{
+  return m_halfplanes.size();
 }
 
 const VectorXs& TwoDScene::getX() const
@@ -170,6 +179,11 @@ void TwoDScene::clearEdges()
   m_edges.clear();
 }
 
+void TwoDScene::clearHalfplanes()
+{
+  m_halfplanes.clear();
+}
+
 void TwoDScene::insertEdge( const std::pair<int,int>& edge, scalar radius )
 {
   assert( edge.first >= 0 );  assert( edge.first < getNumParticles() );
@@ -180,9 +194,21 @@ void TwoDScene::insertEdge( const std::pair<int,int>& edge, scalar radius )
   m_edge_radii.push_back(radius);
 }
 
+void TwoDScene::insertHalfplane( const std::pair<VectorXs, VectorXs> &halfplane)
+{
+  assert(halfplane.first.size() == 2 && halfplane.second.size() == 2);
+  assert(halfplane.second.norm() > 1e-8);
+  m_halfplanes.push_back(halfplane);
+}
+
 const std::vector<std::pair<int,int> >& TwoDScene::getEdges() const
 {
   return m_edges;
+}
+
+const std::vector<std::pair<VectorXs, VectorXs> > &TwoDScene::getHalfplanes() const
+{
+  return m_halfplanes;
 }
 
 const std::vector<scalar>& TwoDScene::getEdgeRadii() const
@@ -196,6 +222,13 @@ const std::pair<int,int>& TwoDScene::getEdge(int edg) const
   assert( edg < (int) m_edges.size() );
 
   return m_edges[edg];
+}
+
+const std::pair<VectorXs, VectorXs> &TwoDScene::getHalfplane(int idx) const
+{
+  assert( idx >= 0);
+  assert( idx < (int)m_halfplanes.size());
+  return m_halfplanes[idx];
 }
 
 void TwoDScene::insertForce( Force* newforce )

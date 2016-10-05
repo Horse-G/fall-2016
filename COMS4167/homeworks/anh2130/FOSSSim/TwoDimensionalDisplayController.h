@@ -28,6 +28,9 @@ public:
   
   int getWindowWidth() const;  
   int getWindowHeight() const;
+
+  int getWorldWidth() const;
+  int getWorldHeight() const;
   
   double getCenterX() const;
   double getCenterY() const;
@@ -35,6 +38,7 @@ public:
   void setCenterY( double y );
   
   void setScaleFactor( double scale );
+  double getScaleFactor() const;
   
 private:
   // Width of the window in pixels
