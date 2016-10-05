@@ -1,7 +1,7 @@
 # FOSSSim Executable
 
-append_files (Headers "h" .)
-append_files (Sources "cpp" .)
+append_files (Headers "h" . RigidBodies)
+append_files (Sources "cpp" . RigidBodies)
 
 #find_package (TCLAP REQUIRED)
 #include_directories (${TCLAP_INCLUDE_DIR})
