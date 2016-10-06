@@ -62,11 +62,11 @@ void input_scene(s_scene &sc, const char *file_name)
                 iss >> gp1 >> s1;
                 sc.surfaces.push_back(new c_surf_sphere(gp1,s1,sc.materials.size()));
                 break;}
-            //// light
-            //case 'l':{
-            //    iss >> cmd;
-            //    switch(cmd[0])
-            //    {
+            // light
+            case 'l':{
+                iss >> cmd;
+                switch(cmd[0])
+                {
             //        // point
             //        case 'p':{
             //            iss >>gp1 >>r1;
@@ -78,15 +78,15 @@ void input_scene(s_scene &sc, const char *file_name)
             //            gv1 = gv1*1e5;
             //            lights.push_back(new lit_direct(gv1,r1));
             //            break;}
-            //        // ambient
-            //        case 'a':{
-            //            iss >>r1;
-            //            lights.push_back(new lit_ambient(r1));
-            //            break;}
-            //        default:{
-            //            std::cerr <<"Parser error: invalid light command at line " <<line <<std::endl;}
-            //    }
-            //    break;}
+                    // ambient
+                    case 'a':{
+                        iss >>r1;
+                        sc.ambient = s_light_ambient(r1);
+                        break;}
+                    default:{
+                        std::cerr <<"Parser error: invalid light command at line " <<line <<std::endl;}
+                }
+                break;}
             // camera
             case 'c':{
                 iss >>gp1 >>gv1 >>s1 >>s2 >>s3 >>u1 >>u2;

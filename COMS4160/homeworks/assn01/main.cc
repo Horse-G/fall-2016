@@ -69,8 +69,6 @@ int main(int argc, char **argv)
     
     //write to file
     output_image(FILE_OUT, img_pixels, scene.viewport.px, scene.viewport.py);
-    
-    // closing the routine
     }
     catch(const std::exception &e)
     {

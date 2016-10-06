@@ -54,9 +54,12 @@ struct s_scene
     s_viewport viewport;
     std::vector<c_surface*> surfaces;
     std::vector<s_material> materials;
+    s_light_ambient ambient;
+
     s_scene()
     {
         materials.push_back(MATERIAL_DEFAULT);
+        ambient = s_light_ambient(AMBIENT_DEFAULT);
     }
     void print(void)
     {
@@ -80,11 +83,10 @@ struct s_scene
             materials[i].print(OUT_TAB);
             std::cout <<"}"                      <<std::endl;
         }
-        //// print ambient light
-        //std::cout <<"global_settings{ ambient_light rgb <0,0,>}" <<std::endl;
-        // std::cout <<"global_settings {"<<std::endl;
-        // std::cout <<"    ambient_light color "<<this.rgb<<std::endl;
-        // std::cout <<"}"<<std::endl;
+        // print ambient light
+        std::cout <<"global_settings {"<<std::endl;
+        ambient.print(OUT_TAB);
+        std::cout <<"}"                <<std::endl;
         // print light list
         //for(i = 0; i < lights.size(); ++i)
         //{
