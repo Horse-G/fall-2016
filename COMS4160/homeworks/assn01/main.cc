@@ -12,6 +12,13 @@
 //************************************************************************
 int main(int argc, char **argv)
 {
+    if (argc != 3)
+    {
+        std::cerr
+            <<"invalid usage of command: `" <<argv[0] <<"`" <<std::endl
+            <<"correct usage: `" <<argv[0] <<" <input_file.scn> <output_file.exr>`" <<std::endl;
+        return 1;
+    }
     // try necessary for OpenEXR API
     try{
     // memory allocation
@@ -68,7 +75,7 @@ int main(int argc, char **argv)
     }
     
     //write to file
-    output_image(FILE_OUT, img_pixels, scene.viewport.px, scene.viewport.py);
+    output_image(argv[2], img_pixels, scene.viewport.px, scene.viewport.py);
     }
     catch(const std::exception &e)
     {
