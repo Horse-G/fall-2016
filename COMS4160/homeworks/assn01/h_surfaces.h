@@ -23,7 +23,7 @@ class surf_plane: public Surface
     {
         scalar t;
         scalar dN = gr.dir % normal;
-        if(dN < 1e-6)
+        if(dN < EPSILON)
             return Intersect();
         t = -(gr.origin % normal + dist)/dN;
         return Intersect(t, gr.pos(t), normal, mat_ptr);
@@ -64,7 +64,7 @@ class surf_triangle: public Surface
         e2 = v3 - v1;
         P = gr.dir * e2;
         det = e1 % P;
-        if(det > -1e-6 && det < 1e-6)
+        if(abs(det) < EPSILON)
             return Intersect();
         inv_det = 1.0/det;
 
@@ -79,7 +79,7 @@ class surf_triangle: public Surface
             return Intersect();
 
         t = (e2 % Q) * inv_det;
-        if(t > 1e-6)
+        if(t > EPSILON)
             return Intersect(t, gr.pos(t), normal, mat_ptr);
         return Intersect();
     }
@@ -119,7 +119,7 @@ class surf_sphere: public Surface
         if(discrim < 0)
             return Intersect();
         // graze
-        else if (discrim < 1e-6)
+        else if (discrim < EPSILON)
         {
             t = (-b - sqrt(discrim))/a;
         }

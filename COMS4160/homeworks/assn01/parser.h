@@ -1,6 +1,3 @@
-#ifndef PARSER_H
-#define PARSER_H
-
 #include <cstdlib>
 #include <cmath>
 #include <iostream>
@@ -14,7 +11,6 @@
 #include <ImfArray.h>
 
 #include "h_common.h"
-
 #include "h_geometry.h"
 #include "h_surfaces.h"
 #include "h_materials.h"
@@ -28,5 +24,3 @@ class Parser
     std::vector<Material> materials {Material(rgb_triple(0.0,0.0,1.0))};
     virtual void parse(const char* name);
 };
-
-#endif

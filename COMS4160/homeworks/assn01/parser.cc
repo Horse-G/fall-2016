@@ -1,24 +1,6 @@
 #include "parser.h"
 
 /*
-void POVRayParser::triangle(float3 p1, float3 p2, float3 p3) {
-    finalizeObject();
-    ostringstream os;
-    os << "triangle {" << endl;
-  os << "  " << p1 << ", " << p2 << ", " << p3 << endl;
-  oStr = os.str();
-}
-*/
-/*
-void POVRayParser::plane(float3 n, float d) {
-  finalizeObject();
-  ostringstream os;
-  os << "plane {" << endl;
-  os << "  " << n << ", " << d << endl;
-  oStr = os.str();
-}
-*/
-/*
 void POVRayParser::pointLight(float3 pos, float3 rgb) {
   cout << "light_source {" << endl;
   cout << "  " << pos << endl;
@@ -49,10 +31,12 @@ void POVRayParser::ambientLight(float3 rgb) {
 
 void Parser::parse(const char *file)
 {
-    uint i;
-    uint line;
-    //Parser::parse(name);
-
+    uint i, line;
+    uint u1, u2;
+    scalar s1, s2, s3;
+    geo_vector gv1;
+    geo_point gp1, gp2, gp3;
+    rgb_triple r1, r2;
     // parse file
     std::ifstream in(file);
     char buffer[1025];
@@ -76,26 +60,22 @@ void Parser::parse(const char *file)
             // plane
             case 'p':
             {
-                geo_vector normal; scalar d;
-                iss >> normal >> d;
-                surfaces.push_back(new surf_plane(normal,d,cur_material));
+                iss >> gv1 >> s1;
+                surfaces.push_back(new surf_plane(gv1,s1,cur_material));
                 break;
             }
             // triangle
             case 't':
             {
-                geo_point a,b,c;
-                iss >> a >> b >> c;
-                surfaces.push_back(new surf_triangle(a,b,c,cur_material));
+                iss >> gp1 >> gp2 >> gp3;
+                surfaces.push_back(new surf_triangle(gp1,gp2,gp3,cur_material));
                 break;
             }
             // sphere
             case 's':
             {
-                geo_point pos; scalar r;
-                iss >> pos >> r;
-                surfaces.push_back(new surf_sphere(pos,r,cur_material));
-                //parse_sphere(pos,r);
+                iss >> gp1 >> s1;
+                surfaces.push_back(new surf_sphere(gp1,s1,cur_material));
                 break;
             }
             //// light
@@ -138,25 +118,18 @@ void Parser::parse(const char *file)
             // camera
             case 'c':
             {
-                geo_point pos;
-                geo_vector dir;
-                scalar d, iw, ih;
-                uint pw, ph;
-                iss >> pos >> dir >> d >> iw >> ih >> pw >> ph;
-                viewport = Viewport(pos,dir,d,iw,ih,pw,ph);
+                iss >> gp1 >> gv1 >> s1 >> s2 >> s3 >> u1 >> u2;
+                viewport = Viewport(gp1,gv1,s1,s2,s3,u1,u2);
                 break;
             }
             // material
             case 'm':
             {
-                rgb_triple diff,spec;
-                scalar r;
-                geo_vector refl;
-                iss >> diff >> spec >> r >> refl;
+                iss >> r1 >> r2 >> s1 >> gv1;
                 // povray doesn't take reflective color, so just approximate a blend
                 // weight:
                 // float dlen = sqrt(refl.x*refl.x+refl.y*refl.y+refl.z*refl.z);
-                materials.push_back(Material(diff,spec,r,refl));
+                materials.push_back(Material(r1,r2,s1,gv1));
                 cur_material++;
                 break;
             }
