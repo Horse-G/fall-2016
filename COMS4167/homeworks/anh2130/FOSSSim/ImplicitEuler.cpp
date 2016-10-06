@@ -204,12 +204,12 @@ bool ImplicitEuler::stepScene( TwoDScene& scene, scalar dt )
         // This is the residual that should actually indicate if there is a problem
         right.setZero();
         scene.accumulateGradU(right,dx,dv);
-		for(int i = count - 1; i >= 0; --i)
+	for(int i = count - 1; i >= 0; --i)
         if(scene.isFixed(i))
-		{
+        {
             right.segment<2>(2*i).setZero();
         }
-        zeroFixedDoFs(scene,right);
+        //zeroFixedDoFs(scene,right);
         right *= dt;
         right += (m.array()*dv.array()).matrix();
         scalar vresid = right.array().abs().maxCoeff();

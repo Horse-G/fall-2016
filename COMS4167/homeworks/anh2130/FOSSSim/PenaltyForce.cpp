@@ -78,14 +78,23 @@ Force* PenaltyForce::createNewCopy()
 //          gradient to this total gradient.
 void PenaltyForce::addParticleParticleGradEToTotal(const VectorXs &x, int idx1, int idx2, VectorXs &gradE)
 {
-    VectorXs x1 = x.segment<2>(2*idx1);
-    VectorXs x2 = x.segment<2>(2*idx2);
+    Vector2s x1 = x.segment<2>(2*idx1);
+    Vector2s x2 = x.segment<2>(2*idx2);
+    scalar r1 = m_scene.getRadius(idx1);
+    scalar r2 = m_scene.getRadius(idx2);
     
-    double r1 = m_scene.getRadius(idx1);
-    double r2 = m_scene.getRadius(idx2);
-    
-    // your implementation here
-    
+    Vector2s n = x2 - x1;
+    scalar length = n.norm();
+    Vector2s n_hat = n/length;
+    scalar len = length - r1 - r2 - m_thickness;
+
+    if(len <= 0)
+    {
+        n_hat *= m_k * len;
+        gradE.segment<2>(2*idx1) -= n_hat;
+        gradE.segment<2>(2*idx2) += n_hat;
+    }
+    return;
 }
 
 // Adds the gradient of the penalty potential (-1 * force) for a particle-edge
@@ -103,14 +112,30 @@ void PenaltyForce::addParticleParticleGradEToTotal(const VectorXs &x, int idx1, 
 //          gradient to this total gradient.
 void PenaltyForce::addParticleEdgeGradEToTotal(const VectorXs &x, int vidx, int eidx, VectorXs &gradE)
 {
-    VectorXs x1 = x.segment<2>(2*vidx);
-    VectorXs x2 = x.segment<2>(2*m_scene.getEdge(eidx).first);
-    VectorXs x3 = x.segment<2>(2*m_scene.getEdge(eidx).second);
+    Vector2s x1 = x.segment<2>(2*vidx);
+    Vector2s x2 = x.segment<2>(2*m_scene.getEdge(eidx).first);
+    Vector2s x32 = x.segment<2>(2*m_scene.getEdge(eidx).second) - x2;
+    scalar r1 = m_scene.getRadius(vidx);
+    scalar r2 = m_scene.getEdgeRadii()[eidx];
     
-    double r1 = m_scene.getRadius(vidx);
-    double r2 = m_scene.getEdgeRadii()[eidx];
-    
-    // your implementation here
+    scalar alpha = (x1 - x2).dot(x32)/x32.dot(x32);
+    if(alpha < 0.0)
+        alpha = 0.0;
+    if(alpha > 1.0)
+        alpha = 1.0;
+
+    Vector2s n = x2 + alpha*x32 - x1;
+    Vector2s n_hat = n/n.norm();
+    scalar len = n.norm() - r1 - r2 - m_thickness;
+
+    if(len <= 0)
+    {
+        n_hat *= m_k * len;
+        gradE.segment<2>(2*vidx)                         -= n_hat;
+        gradE.segment<2>(2*m_scene.getEdge(eidx).first)  += n_hat*(1.0 - alpha);
+        gradE.segment<2>(2*m_scene.getEdge(eidx).second) += n_hat*alpha;
+    }
+    return;
     
 }
 
@@ -128,9 +153,16 @@ void PenaltyForce::addParticleEdgeGradEToTotal(const VectorXs &x, int vidx, int 
 //          half-plane gradient to this total gradient.
 void PenaltyForce::addParticleHalfplaneGradEToTotal(const VectorXs &x, int vidx, int pidx, VectorXs &gradE)
 {
-    VectorXs x1 = x.segment<2>(2*vidx);
-    VectorXs nh = m_scene.getHalfplane(pidx).second;
+    Vector2s _x = x.segment<2>(2*vidx);
+    Vector2s xh = m_scene.getHalfplane(pidx).first;
+    Vector2s nh = m_scene.getHalfplane(pidx).second;
     
-    // your implementation here
+    Vector2s n_partial = nh/nh.dot(nh);
+    Vector2s n = (xh - _x).dot(nh) * n_partial;
+    Vector2s n_hat = n/n.norm();
+    scalar len = n.norm() - m_scene.getRadius(vidx) - m_thickness;
     
+    if(len <= 0)
+        gradE.segment<2>(2*vidx) += -m_k * len * n_hat.dot(nh) * n_partial;
+    return; 
 }

@@ -39,7 +39,7 @@ bool g_rendering_enabled = true;
 double g_sec_per_frame;
 double g_last_time = timingutils::seconds();
 
-TwoDimensionalDisplayController g_display_controller(512,512);
+TwoDimensionalDisplayController g_display_controller(1280,720);
 renderingutils::Color g_bgcolor(1.0,1.0,1.0);
 
 

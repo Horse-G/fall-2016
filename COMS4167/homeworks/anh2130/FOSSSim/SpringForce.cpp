@@ -111,7 +111,7 @@ void SpringForce::addHessXToTotal( const VectorXs& x, const VectorXs& v, const V
         Vector2s spring_vec = x.segment<2>(2*m_endpoints.second) - x.segment<2>(2*m_endpoints.first);
         Vector2s spring_vel = v.segment<2>(2*m_endpoints.second) - v.segment<2>(2*m_endpoints.first); 
         scalar length = spring_vec.norm();
-		assert(length !- 0);
+        assert(length != 0);
         Vector2s n_hat = spring_vec/length;
         Matrix2s id = Matrix2s::Identity();
         Matrix2s nnT = n_hat*n_hat.transpose();
