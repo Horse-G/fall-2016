@@ -1,55 +1,64 @@
-//
-// RGB_TRIPLE
-//
-struct rgb_triple
-{
-    scalar r,g,b;
-    // constructors
-    rgb_triple(){}
-    rgb_triple(scalar _r, scalar _g, scalar _b): r(_r), g(_g), b(_b) {}
-    rgb_triple(const rgb_triple &rgb): r(rgb.r), g(rgb.g), b(rgb.b) {}
-    };// i/o
-    inline std::ostream& operator<<(std::ostream& os, const rgb_triple& rgb)
-    {
-        return os<<"`"<<rgb.r<<","<<rgb.g<<","<<rgb.b<<"`";
-    }
-    inline std::istream& operator>>(std::istream& is, rgb_triple& rgb)
-    {
-        return is>>rgb.r>>rgb.g>>rgb.b;
-    }
-// END RGB_TRIPLE
+/*
+ * Filename:    h_materials.h
+ * Author:      Adam Hadar, anh2130
+ * Purpose:     Definitions for materials in a simple raytracer.
+ * Edited:      2016-10-06
+ */
 
-//
-// MATERIAL
-//
-struct Material
+//************************************************************************
+// RGB_TRIPLE
+//************************************************************************
+struct s_rgb_triple
 {
-    rgb_triple diff, spec;
-    scalar r;
-    geo_vector refl;
+    t_scalar r,g,b;
+    // constructors
+    s_rgb_triple(){}
+    s_rgb_triple(t_scalar _r, t_scalar _g, t_scalar _b): r(_r), g(_g), b(_b) {}
+    s_rgb_triple(const s_rgb_triple &rgb): r(rgb.r), g(rgb.g), b(rgb.b) {}
+};
+inline std::ostream& operator<<(std::ostream& os, const s_rgb_triple& rgb)
+{
+    return os <<"`" <<rgb.r <<"," <<rgb.g <<"," <<rgb.b <<"`";
+}
+inline std::istream& operator>>(std::istream& is, s_rgb_triple& rgb)
+{
+    return is >>rgb.r >>rgb.g >>rgb.b;
+}
+
+//************************************************************************
+// MATERIAL
+//************************************************************************
+struct s_material
+{
+    s_rgb_triple diff, spec;
+    t_scalar r;
+    s_geo_vector refl;
     //constructors
-    Material(){}
-    Material(rgb_triple _diff):
+    s_material(){}
+    s_material(s_rgb_triple _diff):
         diff(_diff),
-        spec(rgb_triple(0.0,0.0,0.0)),
+        spec(s_rgb_triple(0.0,0.0,0.0)),
         r(0.0),
-        refl(geo_vector(0.0,0.0,0.0)) {}
-    Material(rgb_triple _diff, rgb_triple _spec, scalar _r, geo_vector _refl):
+        refl(s_geo_vector(0.0,0.0,0.0)) {}
+    s_material(s_rgb_triple _diff, s_rgb_triple _spec, t_scalar _r, s_geo_vector _refl):
         diff(_diff),
         spec(_spec),
         r(_r),
         refl(_refl) {}
 
-    rgb_triple get_mat()
+    s_rgb_triple get_mat()
     {
         return diff;
     }
-    };// i/o
-    inline std::ostream& operator<<(std::ostream& os, const Material& mat)
+    void print(const char* tab)
     {
-        return os<< "    diffuse " << mat.diff <<std::endl
-            << "    specular " << mat.spec <<std::endl
-            << "    reflection " << mat.refl <<std::endl
-            << "    phong " << mat.r  << std::endl;
+        std::cout
+            <<tab<<"diffuse "    << diff <<std::endl
+            <<tab<<"specular "   << spec <<std::endl
+            <<tab<<"reflection " << refl <<std::endl
+            <<tab<<"phong "      << r    <<std::endl;
+        return;
     }
-// END MATERIAL
+};
+
+//// EOF ////
