@@ -67,17 +67,17 @@ void input_scene(s_scene &sc, const char *file_name)
                 iss >> cmd;
                 switch(cmd[0])
                 {
-            //        // point
-            //        case 'p':{
-            //            iss >>gp1 >>r1;
-            //            lights.push_back(new lit_point(gp1,r1));
-            //            break;}
-            //        // directional
-            //        case 'd':{
-            //            iss >>gv1 >>r1;
-            //            gv1 = gv1*1e5;
-            //            lights.push_back(new lit_direct(gv1,r1));
-            //            break;}
+                    // point
+                    case 'p':{
+                        iss >>gp1 >>r1;
+                        sc.lights.push_back(new c_light_point(gp1,r1));
+                        break;}
+                    // directional
+                    case 'd':{
+                        iss >>gv1 >>r1;
+                        gv1 = gv1*1e5;
+                        sc.lights.push_back(new c_light_direct(gv1,r1));
+                        break;}
                     // ambient
                     case 'a':{
                         iss >>r1;

@@ -27,9 +27,12 @@ int main(int argc, char **argv)
     t_uint x,y,z;
     t_scalar d_x, d_y, o_x, o_y;
     s_geo_ray    i_ray;
-    s_intersect  i_sct;
+    t_uint which_sct = 0;
+    s_intersect i_sct;
+    std::vector<s_intersect>  i_scts;
     s_rgb_triple i_clr;
     Imf::Rgba*   i_pxl;
+    //bool first_surf = true;
     
     // parse the scene file
     input_scene(scene, argv[1]);
@@ -59,15 +62,44 @@ int main(int argc, char **argv)
         for(z = 0; z < scene.surfaces.size(); ++z)
         {
             i_sct = scene.surfaces[z]->find_intersection(i_ray);
-            // break when first surface is found
             if(i_sct.is_true)
-                break;
+                i_scts.push_back(i_sct);
+            // break when first surface is found
+            /*
+            if(ii_sct.is_true)
+            {
+                if(first_surf == true)
+                {
+                    i_sct = ii_sct;
+                    first_surf = false;
+                }
+                else if (i_sct.t > ii_sct.t)
+                    i_sct = ii_sct;
+            }
+            */
+            //if(i_sct.is_true)
+            //    break;
+        }
+        if(i_scts.size() == 0)
+            i_clr = PIXEL_EMPTY;
+        else if(i_scts.size() == 1)
+            i_clr = scene.materials[i_scts[0].mat_ptr - 1].get_mat();
+        else
+        {
+            for(z = 1; z < i_scts.size(); ++z)
+            {
+                if(i_scts[which_sct].t > i_scts[z].t)
+                    which_sct = z;
+            }
+            i_clr = scene.materials[i_scts[which_sct].mat_ptr - 1].get_mat();
         }
         // assign appropriate color
+        /*
         i_clr =
             i_sct.is_true
             ? scene.materials[i_sct.mat_ptr - 1].get_mat()
             : PIXEL_EMPTY;
+        */
         i_pxl->r = i_clr.r;
         i_pxl->g = i_clr.g;
         i_pxl->b = i_clr.b;

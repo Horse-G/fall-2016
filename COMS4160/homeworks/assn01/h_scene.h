@@ -55,6 +55,7 @@ struct s_scene
     std::vector<c_surface*> surfaces;
     std::vector<s_material> materials;
     s_light_ambient ambient;
+    std::vector<c_light*> lights;
 
     s_scene()
     {
@@ -88,19 +89,12 @@ struct s_scene
         ambient.print(OUT_TAB);
         std::cout <<"}"                <<std::endl;
         // print light list
-        //for(i = 0; i < lights.size(); ++i)
-        //{
-        //    std::cout<< "light source " << i+1 << " {"<<std::endl;
-        //    std::cout<< lights[i];
-        //    // point light
-        //    // std::cout <<"    position "<<this.pos<<std::endl;
-        //    // std::cout <<"    color "<<this.rgb<<std::endl:
-        //    // 
-        //    // directional light
-        //    // std::cout <<"    direction "<<this.dir<<std::endl;
-        //    // std::cout <<"    color "<<this.rgb<<std::endl;
-        //    std::cout<< "}" << std::endl;
-        //}
+        for(i = 0; i < lights.size(); ++i)
+        {
+            std::cout <<"light_source " <<i+1 <<" {" <<std::endl;
+            lights[i]->print(OUT_TAB);
+            std::cout <<"}" <<std::endl;
+        }
         return;
     }
 };

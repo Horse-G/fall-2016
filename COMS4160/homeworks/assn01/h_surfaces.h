@@ -35,7 +35,7 @@ class c_surf_plane: public c_surface
         t_scalar dN = gr.dir % normal;
         if(dN < EPSILON)
             return s_intersect();
-        t = -(gr.origin % normal + dist)/dN;
+        t = -(gr.origin % normal - dist)/dN;
         return s_intersect(t, gr.pos(t), normal, mat_ptr);
     }
     void print(const char* tab)
