@@ -354,14 +354,68 @@ for each pixel:
 - intersect ray with scene
 - if ray missed all objects, set color to background value
 
+## Lecture 05, 2016-10-06
+Homework will include shading, and ray plane intersections.
 
+### Scattering & absorption
+Reflection vs transmission
 
+Specular reflection comes straight off
 
+diffuse reflection bounces in object and then leaves, independent of viewer position.
 
+### difuse component
+diffusely reflected ligh = diffuse coefficeint * illuination from source * max(0, n_hat dot l)
 
+### specular component
+strongest when object is basically acting like a mirror with the light
 
+specularly reflected light = specular coefficeint * illumination from source * max(0, n dot h)^(phong exponent)
 
+where h = bisector(v,l) = (v + l)/(v + l).norm()
 
+### ambient contribution
+reflected ambient light = ambient coefficient * illumination from sourc
+
+### Blinn-Phong shading
+L = l_ambient + l_diffuse + l_specular
+
+= k_a*I_a + k_d*I*max(0,n dot l) + k_s*I*max(0,n dot h)^p
+
+### types of lights
+- point
+- directional
+- area
+- spotlight (w flaps)
+- volumetric
+- ambient
+
+```class point
+ point position
+ rgb triple
+ float intensity
+ ```
+ ### homework 1.1
+ shading calcuatioin
+ - surface normal at interesection point
+ - normlized vector from interesection point to light
+ - normalized vector opposite camera ray direction
+ - diffuse & speculat coeeficients of hte material, and its phong exponents
+
+### code overview
+DELETE ALLOCATED MEMORY YOURSELF
+
+MAKE VECTOR INVERT A FUNCTION
+
+MAKE VECTOR NORMALIZE
+
+MAKE VECTOR A 3 SCALAR ARRAY
+
+friend istream &operator>> FOR INSIDE A CLASS
+
+NORMALIZE HAS TO ASSERT THAT IT IS NOT ALL ZERO
+
+PUT VIRTUAL IN ALL THE SUBCLASS VIRTUAL FUNCTIONS
 
 
 

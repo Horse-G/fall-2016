@@ -311,6 +311,10 @@ _(Force total) dot (grad g) >= 0_
 
 Those last two were complementary; either lambda or force dot grad can be a positive nonzero, but not both.
 
+## Lecture 07, 2016-10-04
+I MISSED THIS CLASS
+
+## Lecture 08, 2016-10-06
 
 
 
