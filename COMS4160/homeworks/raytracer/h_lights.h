@@ -10,9 +10,13 @@
 //************************************************************************
 struct s_light_ambient
 {
+    private:
     s_rgb_triple rgb;
-    s_light_ambient() {}
+    public:
+    // constructors
+    s_light_ambient(void) {}
     s_light_ambient(s_rgb_triple _rgb): rgb(_rgb) {}
+    // get contents
     s_rgb_triple get_mat(void)
     {
         return rgb;
@@ -26,26 +30,33 @@ struct s_light_ambient
 };
 
 //************************************************************************
-// VIRTUAL_CLASS_LIGHT_POINT
+// VIRTUAL_CLASS_LIGHT
 //************************************************************************
 class c_light
 {
-    public:
+    protected:
     s_rgb_triple rgb;
+    public:
+    // subclass destructor
+    virtual ~c_light(void) =0;
+    // subclass get
     virtual s_rgb_triple get_mat(void) =0;
+    // subclass print
     virtual void print(const char* tab) =0;
 };
+c_light::~c_light(void){}
 
 //************************************************************************
 // CLASS_LIGHT_POINT
 //************************************************************************
 class c_light_point: public c_light
 {
-    public:
+    private:
     s_geo_point p;
     t_scalar i;
-
-    c_light_point(){}
+    public:
+    // constructors
+    c_light_point(void){}
     c_light_point(s_geo_point _p, s_rgb_triple _rgb):
         p(_p)
         { rgb = _rgb; }
@@ -53,11 +64,18 @@ class c_light_point: public c_light
         p(_p),
         i(_i)
         { rgb = _rgb; }
-
+    // destructor
+    ~c_light_point(void){}
+    // get contents
     s_rgb_triple get_mat(void)
     {
         return rgb;
     }
+    s_geo_point get_pos(void)
+    {
+        return p;
+    }
+    // print
     void print(const char* tab)
     {
         std::cout
@@ -73,16 +91,26 @@ class c_light_point: public c_light
 //************************************************************************
 class c_light_direct: public c_light
 {
-    public:
+    private:
     s_geo_vector v;
-    c_light_direct(){}
+    public:
+    // constructors
+    c_light_direct(void){}
     c_light_direct(s_geo_vector _v, s_rgb_triple _rgb):
         v(_v)
         { rgb = _rgb; }
+    // destructor
+    ~c_light_direct(void){}
+    // get contents
     s_rgb_triple get_mat(void)
     {
         return rgb;
     }
+    s_geo_vector get_vec(void)
+    {
+        return v;
+    }
+    // print
     void print(const char* tab)
     {
         std::cout

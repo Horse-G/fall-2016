@@ -57,11 +57,22 @@ struct s_scene
     s_light_ambient ambient;
     std::vector<c_light*> lights;
 
+    // constructor
     s_scene()
     {
-        materials.push_back(MATERIAL_DEFAULT);
-        ambient = s_light_ambient(AMBIENT_DEFAULT);
+        materials.push_back(DEFAULT_MATERIAL);
+        ambient = s_light_ambient(DEFAULT_AMBIENT);
     }
+    // destructor
+    ~s_scene()
+    {
+        t_uint i;
+        for(i = 0; i < surfaces.size(); i++)
+            delete surfaces[i];
+        for(i = 0; i < lights.size(); i++)
+            delete lights[i];
+    }
+    // printing the entire scene
     void print(void)
     {
         t_uint i;
@@ -74,7 +85,7 @@ struct s_scene
             std::cout <<"object " <<i+1 <<" {"                 <<std::endl;
             surfaces[i]->print(OUT_TAB);
             std::cout
-                <<OUT_TAB <<"material " <<surfaces[i]->mat_ptr <<std::endl
+                <<OUT_TAB <<"material " <<surfaces[i]->get_mat() <<std::endl
                 << "}"                                         <<std::endl;
         }
         // print material list

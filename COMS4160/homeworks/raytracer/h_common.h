@@ -28,8 +28,8 @@
 //************************************************************************
 #define FILE_OUT "hw1.exr"
 #define EPSILON 1e-7
-#define MATERIAL_DEFAULT s_material(s_rgb_triple(0.0,0.0,1.0))
-#define AMBIENT_DEFAULT s_rgb_triple(0.0,0.0,0.0)
+#define DEFAULT_MATERIAL s_material(s_rgb_triple(0.0,0.0,1.0))
+#define DEFAULT_AMBIENT s_rgb_triple(0.0,0.0,0.0)
 #define PIXEL_EMPTY s_rgb_triple(0.0,0.0,0.0)
 #define OUT_TAB "    "
 typedef unsigned int t_uint;

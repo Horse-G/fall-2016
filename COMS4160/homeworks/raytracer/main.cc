@@ -62,8 +62,10 @@ int main(int argc, char **argv)
         for(z = 0; z < scene.surfaces.size(); ++z)
         {
             i_sct = scene.surfaces[z]->find_intersection(i_ray);
+            /*
             if(i_sct.is_true)
                 i_scts.push_back(i_sct);
+            */
             // break when first surface is found
             /*
             if(ii_sct.is_true)
@@ -77,9 +79,10 @@ int main(int argc, char **argv)
                     i_sct = ii_sct;
             }
             */
-            //if(i_sct.is_true)
-            //    break;
+            if(i_sct.is_true)
+                break;
         }
+        /*
         if(i_scts.size() == 0)
             i_clr = PIXEL_EMPTY;
         else if(i_scts.size() == 1)
@@ -93,13 +96,14 @@ int main(int argc, char **argv)
             }
             i_clr = scene.materials[i_scts[which_sct].mat_ptr - 1].get_mat();
         }
+        */
         // assign appropriate color
-        /*
+        
         i_clr =
             i_sct.is_true
             ? scene.materials[i_sct.mat_ptr - 1].get_mat()
             : PIXEL_EMPTY;
-        */
+        
         i_pxl->r = i_clr.r;
         i_pxl->g = i_clr.g;
         i_pxl->b = i_clr.b;

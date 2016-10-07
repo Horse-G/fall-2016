@@ -10,25 +10,50 @@
 //************************************************************************
 class c_surface
 {
+    protected:
+    t_uint _mat;
     public:
-    uint mat_ptr;
+    // subclass destructor
+    virtual ~c_surface(void) =0;
+    // get content
+    t_uint get_mat()
+    {
+        return _mat;
+    }
+    // subclass find intersection
     virtual s_intersect find_intersection(const s_geo_ray &gr) =0;
+    // subclass print
     virtual void print(const char* tab) =0;
 };
+c_surface::~c_surface(void){}
 
 //************************************************************************
 // SURF_PLANE
 //************************************************************************
 class c_surf_plane: public c_surface
 {
-    public:
+    private:
     s_geo_vector normal;
     t_scalar dist;
-    c_surf_plane(){}
-    c_surf_plane(s_geo_vector _n, t_scalar _d, t_uint _p):
+    public:
+    // constructors
+    c_surf_plane(void){}
+    c_surf_plane(s_geo_vector _n, t_scalar _d, t_uint m):
         normal(_n.norm()),
         dist(_d)
-        { mat_ptr = _p; }
+        { _mat = m; }
+    // destructor
+    ~c_surf_plane(void){}
+    // get contents
+    s_geo_vector get_normal(void)
+    {
+        return normal;
+    }
+    t_scalar get_dist(void)
+    {
+        return dist;
+    }
+    // compute intersection
     s_intersect find_intersection(const s_geo_ray &gr)
     {
         t_scalar t;
@@ -36,8 +61,9 @@ class c_surf_plane: public c_surface
         if(dN < EPSILON)
             return s_intersect();
         t = -(gr.origin % normal - dist)/dN;
-        return s_intersect(t, gr.pos(t), normal, mat_ptr);
+        return s_intersect(t, gr.pos(t), normal, _mat);
     }
+    // print
     void print(const char* tab)
     {
         std::cout
@@ -53,17 +79,39 @@ class c_surf_plane: public c_surface
 //************************************************************************
 class c_surf_triangle: public c_surface
 {
-    public:
+    private:
     s_geo_point v1, v2, v3;
     s_geo_vector normal;
-    c_surf_triangle(){}
-    c_surf_triangle(s_geo_point _v1, s_geo_point _v2, s_geo_point _v3, t_uint _p):
+    public:
+    // constructors
+    c_surf_triangle(void){}
+    c_surf_triangle(s_geo_point _v1, s_geo_point _v2, s_geo_point _v3, t_uint m):
         v1(_v1),
         v2(_v2),
         v3(_v3){
         normal = ((v2 - v1) * (v3 - v1)).norm();
-        mat_ptr = _p;
+        _mat = m;
     }
+    // destructor
+    ~c_surf_triangle(void){}
+    // get contents
+    s_geo_point get_v1(void)
+    {
+        return v1;
+    }
+    s_geo_point get_v2(void)
+    {
+        return v2;
+    }
+    s_geo_point get_v3(void)
+    {
+        return v3;
+    }
+    s_geo_vector get_normal(void)
+    {
+        return normal;
+    }
+    // computer intersection
     // Moller-Trumbore, ripped from en.wikipedia.org/wiki/Moller-Trumbore_intersection_algorithm
     s_intersect find_intersection(const s_geo_ray &gr)
     {
@@ -91,9 +139,10 @@ class c_surf_triangle: public c_surface
 
         t = (e2 % Q) * inv_det;
         if(t > EPSILON)
-            return s_intersect(t, gr.pos(t), normal, mat_ptr);
+            return s_intersect(t, gr.pos(t), normal, _mat);
         return s_intersect();
     }
+    // print
     void print(const char* tab)
     {
         std::cout
@@ -110,14 +159,28 @@ class c_surf_triangle: public c_surface
 //************************************************************************
 class c_surf_sphere: public c_surface
 {
-    public:
+    private:
     s_geo_point origin;
     t_scalar r;
-    c_surf_sphere(){}
-    c_surf_sphere(s_geo_point _origin, t_scalar _r, t_uint _p):
+    public:
+    // constructors
+    c_surf_sphere(void){}
+    c_surf_sphere(s_geo_point _origin, t_scalar _r, t_uint m):
         origin(_origin),
         r(_r)
-        { mat_ptr = _p; }
+        { _mat = m; }
+    // destructor
+    ~c_surf_sphere(void){}
+    // get contents
+    s_geo_point get_origin(void)
+    {
+        return origin;
+    }
+    t_scalar get_radius(void)
+    {
+        return r;
+    }
+    // find intersection
     s_intersect find_intersection(const s_geo_ray &gr)
     {
         t_scalar t, _t;
@@ -144,8 +207,9 @@ class c_surf_sphere: public c_surface
                 t += _t;
         }
         pt = gr.pos(t);
-        return s_intersect(t, pt, (origin - pt).norm(), mat_ptr);
+        return s_intersect(t, pt, (origin - pt).norm(), _mat);
     }
+    // print
     void print(const char* tab)
     {
         std::cout
