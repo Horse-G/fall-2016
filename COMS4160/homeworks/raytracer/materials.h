@@ -1,5 +1,5 @@
 /*
- * Filename:    h_materials.h
+ * Filename:    materials.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definitions for materials in a simple raytracer.
  * Edited:      2016-10-06

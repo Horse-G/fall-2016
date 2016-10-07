@@ -1,5 +1,5 @@
 /*
- * Filename:    h_common.h
+ * Filename:    common.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     The main header for a simple raytracer.
  * Edited:      2016-10-06
@@ -38,11 +38,13 @@ typedef double t_scalar;
 //************************************************************************
 // CUSTOM_LIBRARIES
 //************************************************************************
-#include "h_geometry.h"
-#include "h_surfaces.h"
-#include "h_materials.h"
-#include "h_lights.h"
-#include "h_scene.h"
-#include "h_io.h"
+#include "geometry.h"
+#include "intersection.h"
+#include "surfaces.h"
+#include "materials.h"
+#include "lights.h"
+#include "viewport.h"
+#include "scene.h"
+#include "io.h"
 
 //// EOF ////

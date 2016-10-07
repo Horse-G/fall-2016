@@ -1,7 +1,7 @@
 /*
- * Filename:    h_geometry.h
+ * Filename:    geometry.h
  * Author:      Adam Hadar, anh2130
- * Purpose:     Definitions for vectors, points, rays, and intersections for a simple raytracer.
+ * Purpose:     Definitions for vectors, points, and rays for a simple raytracer.
  * Edited:      2016-10-06
  */
 
@@ -136,25 +136,5 @@ inline std::ostream& operator<<(std::ostream& os, const s_geo_ray& gr)
         <<"origin " <<gr.origin <<std::endl
         <<"direct " <<gr.dir    <<std::endl;
 }
-
-//************************************************************************
-// Intersection
-//************************************************************************
-struct s_intersect
-{
-    bool is_true;
-    t_scalar t;
-    s_geo_point point;
-    s_geo_vector normal;
-    t_uint mat_ptr;
-    // constructors
-    s_intersect(): is_true(false) {}
-    s_intersect(t_scalar _t, s_geo_point _pt, s_geo_vector _norm, t_uint _ptr):
-        is_true(true),
-        t(_t),
-        point(_pt),
-        normal(_norm),
-        mat_ptr(_ptr) {}
-};
 
 //// EOF ////

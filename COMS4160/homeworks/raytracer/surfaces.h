@@ -1,5 +1,5 @@
 /*
- * Filename:    h_surfaces.h
+ * Filename:    surfaces.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Surface definitions for a simple raytracer.
  * Edited:      2016-10-06
