@@ -2,7 +2,7 @@
  * Filename:    io.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     The file input/output for a simple raytracer.
- * Edited:      2016-10-06
+ * Edited:      2016-10-07
  */
 
 //************************************************************************

@@ -2,7 +2,7 @@
  * Filename:    viewport.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definition of a viewport for a simple raytracer.
- * Edited:      2016-10-06
+ * Edited:      2016-10-07
  */
 
 //************************************************************************
@@ -16,7 +16,7 @@ struct s_viewport
     t_uint ix, iy;
     t_scalar px, py;
 
-    s_viewport(){}
+    s_viewport(void){}
     s_viewport(s_geo_point _eye, s_geo_vector dir, t_scalar _fl, t_uint _ix, t_uint _iy, t_scalar _px, t_scalar _py):
         eye(_eye),
         fl(_fl),
@@ -25,6 +25,7 @@ struct s_viewport
         px(_px),
         py(_py)
     {
+        // TODO fix u if dir too close to `up`
         u = dir * s_geo_vector(0.0,1.0,0.0);
         v = u * dir;
         w = -dir;

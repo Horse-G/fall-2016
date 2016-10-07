@@ -2,7 +2,7 @@
  * Filename:    scene.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definition of a scene for a simple raytracer.
- * Edited:      2016-10-06
+ * Edited:      2016-10-07
  */
 
 //************************************************************************
@@ -44,7 +44,7 @@ struct s_scene
             std::cout <<"object " <<i+1 <<" {"                 <<std::endl;
             surfaces[i]->print(OUT_TAB);
             std::cout
-                <<OUT_TAB <<"material " <<surfaces[i]->get_mat() <<std::endl
+                <<OUT_TAB <<"material " <<surfaces[i]->get_material() <<std::endl
                 << "}"                                         <<std::endl;
         }
         // print material list

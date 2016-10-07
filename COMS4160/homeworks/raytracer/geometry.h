@@ -2,7 +2,7 @@
  * Filename:    geometry.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definitions for vectors, points, and rays for a simple raytracer.
- * Edited:      2016-10-06
+ * Edited:      2016-10-07
  */
 
 //************************************************************************
@@ -10,131 +10,209 @@
 //************************************************************************
 struct s_geo_vector
 {
-    t_scalar x,y,z;
+    // friends only to geo structs
+    friend struct s_geo_point;
+    friend struct s_geo_ray;
     
-    // Constructor
-    s_geo_vector(){}
-    s_geo_vector(t_scalar _x, t_scalar _y, t_scalar _z): x(_x), y(_y), z(_z) {}
-    s_geo_vector(const s_geo_vector &v) : x(v.x), y(v.y), z(v.z) {}
-    // cross product
-    s_geo_vector operator *(const s_geo_vector &gv) const
+    private:
+    t_scalar _x,_y,_z;
+    
+    public:
+    // constructors
+    s_geo_vector(void){}
+    s_geo_vector(const t_scalar& s1, const t_scalar& s2, const t_scalar& s3):
+        _x(s1),
+        _y(s2),
+        _z(s3){}
+    s_geo_vector(const s_geo_vector& gv):
+        _x(gv._x),
+        _y(gv._y),
+        _z(gv._z){}
+    
+    // destructor
+    ~s_geo_vector(void){}
+
+    // vector operations
+    /*  - cross product
+     *  - dot product
+     *  - addition
+     *  - subtraction
+     */
+    s_geo_vector operator *(const s_geo_vector& gv) const
     {
-        return s_geo_vector(y*gv.z - z*gv.y, z*gv.x - x*gv.z, x*gv.y - y*gv.x);
+        return s_geo_vector(_y*gv._z - _z*gv._y, _z*gv._x - _x*gv._z, _x*gv._y - _y*gv._x);
     }
-    // dot product
-    //// we'll pretend the actual modulo doesn't exist
-    t_scalar operator %(const s_geo_vector &gv) const
+    t_scalar operator %(const s_geo_vector& gv) const
     {
-        return x*gv.x + y*gv.y + z*gv.z;
+        return _x*gv._x + _y*gv._y + _z*gv._z;
     }
-    s_geo_vector operator *(t_scalar multi) const
+    s_geo_vector operator +(const s_geo_vector& gv) const
     {
-        return s_geo_vector(x*multi, y*multi, z*multi);
+        return s_geo_vector(_x+gv._x, _y+gv._y, _z+gv._z);
     }
-    s_geo_vector operator +(const s_geo_vector &gv) const
+    s_geo_vector operator -(const s_geo_vector& gv) const
     {
-        return s_geo_vector(x+gv.x, y+gv.y, z+gv.z);
+        return s_geo_vector(_x-gv._x, _y-gv._y, _z-gv._z);
     }
-    s_geo_vector operator -(const s_geo_vector &gv) const
+
+    // scalar operations
+    /*  - multiplication
+     *  - negation
+     *  - division
+     */
+    s_geo_vector operator *(const t_scalar& s) const
     {
-        return s_geo_vector(x-gv.x, y-gv.y, z-gv.z);
+        return s_geo_vector(_x*s, _y*s, _z*s);
     }
     s_geo_vector operator -(void) const
     {
-        return s_geo_vector(-x,-y,-z);
+        return s_geo_vector(-_x,-_y,-_z);
     }
-    s_geo_vector operator /(t_scalar divisor) const
+    s_geo_vector operator /(const t_scalar& s) const
     {
-        return s_geo_vector(x/divisor, y/divisor, z/divisor);
+        return s_geo_vector(_x/s, _y/s, _z/s);
     }
-    s_geo_vector norm() const
+
+    // normalize
+    s_geo_vector norm(void) const
     {
-        return *this / sqrt(x*x + y*y + z*z);
+        return *this / sqrt(_x*_x + _y*_y + _z*_z);
+    }
+
+    // input/output
+    friend std::ostream& operator<<(std::ostream& os, const s_geo_vector& gv)
+    {
+    return os <<"<" <<gv._x <<"," <<gv._y <<"," <<gv._z <<">";
+
+    }
+    friend std::istream& operator>>(std::istream& is, s_geo_vector& gv)
+    {
+        return is >>gv._x >>gv._y >>gv._z;
     }
 };
-inline std::ostream& operator<<(std::ostream& os, const s_geo_vector& gv)
-{
-    return os <<"<" <<gv.x <<"," <<gv.y <<"," <<gv.z <<">";
-}
-inline std::istream& operator>>(std::istream& is, s_geo_vector& gv)
-{
-    return is >>gv.x >>gv.y >>gv.z;
-}
 
 //************************************************************************
 // GEO_POINT
 //************************************************************************
 struct s_geo_point
 {
-    t_scalar x,y,z;
+    // friends only to geo structs
+    friend struct s_geo_vector;
+    friend struct s_geo_ray;
     
-    // Constructors
-    s_geo_point(){}
-    s_geo_point(t_scalar _x, t_scalar _y, t_scalar _z) : x(_x), y(_y), z(_z) {}
-    s_geo_point(const s_geo_point &gp) : x(gp.x), y(gp.y), z(gp.z) {}
-   
-    // cross product with geo_vector
-    t_scalar operator %(const s_geo_vector &gv) const
+    private:
+    t_scalar _x,_y,_z;
+
+    public:
+    // constructors
+    s_geo_point(void){}
+    s_geo_point(const t_scalar& s1, const t_scalar& s2, const t_scalar& s3):
+        _x(s1),
+        _y(s2),
+        _z(s3){}
+    s_geo_point(const s_geo_point& gp):
+        _x(gp._x),
+        _y(gp._y),
+        _z(gp._z){}
+
+    // destructor
+    ~s_geo_point(void){}
+    
+    // vector operations
+    /*  - dot product
+     */
+    t_scalar operator %(const s_geo_vector& gv) const
     {
-        return x*gv.x + y*gv.y + z*gv.z;
+        return _x*gv._x + _y*gv._y + _z*gv._z;
     }
-    s_geo_vector operator +(const s_geo_point &gp) const
+    
+    // point operations
+    /*  - subtraction
+     */
+    s_geo_vector operator -(const s_geo_point& gp) const
     {
-        return s_geo_vector(x + gp.x, y + gp.y, z + gp.z);
+        return s_geo_vector(_x - gp._x, _y - gp._y, _z - gp._z);
     }
-    s_geo_vector operator -(const s_geo_point &gp) const
+
+    // input/output
+    friend std::ostream& operator<<(std::ostream& os, const s_geo_point& gp)
     {
-        return s_geo_vector(x - gp.x, y - gp.y, z - gp.z);
+        return os <<"[" <<gp._x <<"," <<gp._y <<"," <<gp._z <<"]";
+    }
+    friend std::istream& operator>>(std::istream& is, s_geo_point& gp)
+    {
+        return is >>gp._x >>gp._y >>gp._z;
     }
 };
-inline std::ostream& operator<<(std::ostream& os, const s_geo_point& gp)
-{
-    return os <<"[" <<gp.x <<"," <<gp.y <<"," <<gp.z <<"]";
-}
-inline std::istream& operator>>(std::istream& is, s_geo_point& gp)
-{
-    return is >>gp.x >>gp.y >>gp.z;
-}
 
 //************************************************************************
 // GEO_RAY
 //************************************************************************
 struct s_geo_ray
 {
-    s_geo_point origin;
-    s_geo_vector dir;
-    // Constructors
-    s_geo_ray(){}
-    s_geo_ray(s_geo_point _origin, s_geo_vector _dir): origin(_origin), dir(_dir.norm()) {}
+    // friends only to geo structs
+    friend struct s_geo_vector;
+    friend struct s_geo_point;
 
-    s_geo_ray operator +(const s_geo_ray &r) const
+    private:
+    s_geo_point _origin;
+    s_geo_vector _direction;
+
+    public:
+    // constructors
+    s_geo_ray(void){}
+    s_geo_ray(const s_geo_point& gp, const s_geo_vector& gv):
+        _origin(gp),
+        _direction(gv.norm()){}
+    
+    // destructor
+    ~s_geo_ray(void){}
+    
+    // get contents
+    s_geo_point get_origin(void) const
     {
-        return s_geo_ray(origin, dir+r.dir);
+        return _origin;
     }
-    s_geo_ray operator -(const s_geo_ray &r) const
+    s_geo_vector get_direction(void) const
     {
-        return s_geo_ray(origin, dir - r.dir);
+        return _direction;
+    }
+
+    // ray operations
+    /*  - addition
+     *  - subtraction
+     *  - cross product
+     */
+    s_geo_ray operator +(const s_geo_ray& gr) const
+    {
+        return s_geo_ray(_origin, _direction + gr._direction);
+    }
+    s_geo_ray operator -(const s_geo_ray& gr) const
+    {
+        return s_geo_ray(_origin, _direction - gr._direction);
     }
     // cross product
-    s_geo_ray operator *(const s_geo_ray &r) const
+    s_geo_ray operator *(const s_geo_ray& gr) const
     {
-        return s_geo_ray(origin, dir * r.dir);
+        return s_geo_ray(_origin, _direction * gr._direction);
     }
-    s_geo_point pos(t_scalar _pos) const
+    s_geo_point pos(t_scalar s) const
     {
-        s_geo_point out = origin;
-        out.x += dir.x * _pos;
-        out.y += dir.y * _pos;
-        out.z += dir.z * _pos;
+        s_geo_point out = _origin;
+        out._x += _direction._x * s;
+        out._y += _direction._y * s;
+        out._z += _direction._z * s;
         return out;
     }
+
+    // output
+    friend std::ostream& operator<<(std::ostream& os, const s_geo_ray& gr)
+    {
+        return os
+            <<"Ray"                     <<std::endl
+            <<"origin " <<gr._origin    <<std::endl
+            <<"direct " <<gr._direction <<std::endl;
+    }
 };
-inline std::ostream& operator<<(std::ostream& os, const s_geo_ray& gr)
-{
-    return os
-        <<"Ray"                 <<std::endl
-        <<"origin " <<gr.origin <<std::endl
-        <<"direct " <<gr.dir    <<std::endl;
-}
 
 //// EOF ////

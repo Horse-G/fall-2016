@@ -2,7 +2,7 @@
  * Filename:    main.cc
  * Author:      Adam Hadar, anh2130
  * Purpose:     The main function for a simple raytracer.
- * Edited:      2016-10-06
+ * Edited:      2016-10-07
  */
 
 #include "common.h"
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
                     i_sct = ii_sct;
             }
             */
-            if(i_sct.is_true)
+            if(i_sct.get_is_true())
                 break;
         }
         /*
@@ -100,13 +100,13 @@ int main(int argc, char **argv)
         // assign appropriate color
         
         i_clr =
-            i_sct.is_true
-            ? scene.materials[i_sct.mat_ptr - 1].get_mat()
+            i_sct.get_is_true()
+            ? scene.materials[i_sct.get_material() - 1].get_mat()
             : PIXEL_EMPTY;
         
-        i_pxl->r = i_clr.r;
-        i_pxl->g = i_clr.g;
-        i_pxl->b = i_clr.b;
+        i_pxl->r = i_clr.get_r();
+        i_pxl->g = i_clr.get_g();
+        i_pxl->b = i_clr.get_b();
         i_pxl->a = 1.0;
     }
     
