@@ -2,7 +2,7 @@
  * Filename:    intersection.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definitions for intersections for a simple raytracer.
- * Edited:      2016-10-07
+ * Edited:      2016-10-08
  */
 
 //************************************************************************

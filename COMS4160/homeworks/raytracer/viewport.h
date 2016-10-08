@@ -2,7 +2,7 @@
  * Filename:    viewport.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definition of a viewport for a simple raytracer.
- * Edited:      2016-10-07
+ * Edited:      2016-10-08
  */
 
 //************************************************************************
@@ -10,39 +10,85 @@
 //************************************************************************
 struct s_viewport
 {
-    s_geo_point eye;
-    t_scalar fl;
-    s_geo_vector u, v, w;
-    t_uint ix, iy;
-    t_scalar px, py;
+    private:
+    s_geo_point _eye;
+    t_scalar _fl;
+    s_geo_vector _uvw[3];
+    t_uint _ix, _iy;
+    t_scalar _px, _py;
 
+    public:
+    // constructors
     s_viewport(void){}
-    s_viewport(s_geo_point _eye, s_geo_vector dir, t_scalar _fl, t_uint _ix, t_uint _iy, t_scalar _px, t_scalar _py):
-        eye(_eye),
-        fl(_fl),
-        ix(_ix),
-        iy(_iy),
-        px(_px),
-        py(_py)
+    s_viewport(s_geo_point gp, s_geo_vector gv, t_scalar s1, t_uint u1, t_uint u2, t_scalar s2, t_scalar s3):
+        _eye(gp),
+        _fl(s1),
+        _ix(u1),
+        _iy(u2),
+        _px(s2),
+        _py(s3)
     {
         // TODO fix u if dir too close to `up`
-        u = dir * s_geo_vector(0.0,1.0,0.0);
-        v = u * dir;
-        w = -dir;
-        u = u.norm();
-        v = v.norm();
-        w = w.norm();
+        _uvw[0] = gv * s_geo_vector(0.0,1.0,0.0);
+        _uvw[1] = _uvw[0] * gv;
+        _uvw[2] = -gv;
+        _uvw[0] = _uvw[0].norm();
+        _uvw[1] = _uvw[1].norm();
+        _uvw[2] = _uvw[2].norm();
     }
+
+    // destructor
+    ~s_viewport(void){}
+
+    // get contents
+    s_geo_point get_eye(void) const
+    {
+        return _eye;
+    }
+    s_geo_vector get_u(void) const
+    {
+        return _uvw[0];
+    }
+    s_geo_vector get_v(void) const
+    {
+        return _uvw[1];
+    }
+    s_geo_vector get_w(void) const
+    {
+        return _uvw[2];
+    }
+    t_scalar get_fl(void) const
+    {
+        return _fl;
+    }
+    t_uint get_ix(void) const
+    {
+        return _ix;
+    }
+    t_uint get_iy(void) const
+    {
+        return _iy;
+    }
+    t_uint get_px(void) const
+    {
+        return _px;
+    }
+    t_uint get_py(void) const
+    {
+        return _py;
+    }
+
+    // print
     void print(const char* tab)
     {
         std::cout
-            <<tab <<"eye "   <<eye         <<std::endl
-            <<tab <<"u "     <<u           <<std::endl
-            <<tab <<"v "     <<v           <<std::endl
-            <<tab <<"w "     <<w           <<std::endl
-            <<tab <<"fl "    <<fl          <<std::endl
-            <<tab <<"ix,iy " <<ix<<","<<iy <<std::endl
-            <<tab <<"px,py " <<px<<","<<iy <<std::endl;
+            <<tab <<"eye "   <<_eye          <<std::endl
+            <<tab <<"u "     <<_uvw[0]       <<std::endl
+            <<tab <<"v "     <<_uvw[1]       <<std::endl
+            <<tab <<"w "     <<_uvw[2]       <<std::endl
+            <<tab <<"fl "    <<_fl           <<std::endl
+            <<tab <<"ix,iy " <<_ix<<","<<_iy <<std::endl
+            <<tab <<"px,py " <<_px<<","<<_iy <<std::endl;
         return;
     }
 };

@@ -2,7 +2,7 @@
  * Filename:    surfaces.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Surface definitions for a simple raytracer.
- * Edited:      2016-10-07
+ * Edited:      2016-10-08
  */
 
 //************************************************************************
@@ -15,7 +15,7 @@ class c_surface
     
     public:
     // subclass destructor
-    virtual ~c_surface(void) =0;
+    virtual ~c_surface(void) {}
     
     // get content
     t_uint get_material(void)
@@ -24,12 +24,12 @@ class c_surface
     }
     
     // subclass find intersection
-    virtual s_intersect find_intersection(const s_geo_ray &gr) =0;
+    virtual s_intersect is_intersect(const s_geo_ray &gr) =0;
     
     // subclass print
     virtual void print(const char* tab) =0;
 };
-c_surface::~c_surface(void){}
+//c_surface::~c_surface(void){}
 
 //************************************************************************
 // SURF_PLANE
@@ -49,7 +49,7 @@ class c_surf_plane: public c_surface
         { _material = u; }
     
     // destructor
-    ~c_surf_plane(void){}
+    virtual ~c_surf_plane(void){}
     
     // get contents
     s_geo_vector get_normal(void)
@@ -62,7 +62,7 @@ class c_surf_plane: public c_surface
     }
     
     // compute intersection
-    s_intersect find_intersection(const s_geo_ray& gr)
+    virtual s_intersect is_intersect(const s_geo_ray& gr)
     {
         t_scalar t;
 
@@ -74,7 +74,7 @@ class c_surf_plane: public c_surface
     }
     
     // print
-    void print(const char* tab)
+    virtual void print(const char* tab)
     {
         std::cout
             <<tab <<"type "     <<"plane"   <<std::endl
@@ -105,7 +105,7 @@ class c_surf_triangle: public c_surface
     }
 
     // destructor
-    ~c_surf_triangle(void){}
+    virtual ~c_surf_triangle(void){}
 
     // get contents
     s_geo_point get_v1(void)
@@ -127,7 +127,7 @@ class c_surf_triangle: public c_surface
 
     // computer intersection
     // Moller-Trumbore, ripped from en.wikipedia.org/wiki/Moller-Trumbore_intersection_algorithm
-    s_intersect find_intersection(const s_geo_ray& gr)
+    virtual s_intersect is_intersect(const s_geo_ray& gr)
     {
         s_geo_vector e1,e2;
         s_geo_vector P,Q,T;
@@ -158,7 +158,7 @@ class c_surf_triangle: public c_surface
     }
 
     // print
-    void print(const char* tab)
+    virtual void print(const char* tab)
     {
         std::cout
             <<tab <<"type "   <<"triangle" <<std::endl
@@ -188,7 +188,7 @@ class c_surf_sphere: public c_surface
         { _material = u; }
 
     // destructor
-    ~c_surf_sphere(void){}
+    virtual ~c_surf_sphere(void){}
     
     // get contents
     s_geo_point get_origin(void)
@@ -201,7 +201,7 @@ class c_surf_sphere: public c_surface
     }
 
     // find intersection
-    s_intersect find_intersection(const s_geo_ray& gr)
+    virtual s_intersect is_intersect(const s_geo_ray& gr)
     {
         t_scalar t, _t;
         s_geo_point pt;
@@ -232,7 +232,7 @@ class c_surf_sphere: public c_surface
         return s_intersect(t, pt, (_origin - pt).norm(), _material);
     }
     // print
-    void print(const char* tab)
+    virtual void print(const char* tab)
     {
         std::cout
             <<tab <<"type "   <<"sphere" <<std::endl

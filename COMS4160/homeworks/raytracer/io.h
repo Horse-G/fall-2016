@@ -2,7 +2,7 @@
  * Filename:    io.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     The file input/output for a simple raytracer.
- * Edited:      2016-10-07
+ * Edited:      2016-10-08
  */
 
 //************************************************************************
@@ -70,13 +70,13 @@ void input_scene(s_scene &sc, const char *file_name)
                     // point
                     case 'p':{
                         iss >>gp1 >>r1;
-                        sc.lights.push_back(new c_light_point(gp1,r1));
+                        sc.point_lights.push_back(new c_light_point(gp1,r1));
                         break;}
                     // directional
                     case 'd':{
                         iss >>gv1 >>r1;
                         gv1 = gv1*1e5;
-                        sc.lights.push_back(new c_light_direct(gv1,r1));
+                        sc.directional_lights.push_back(new c_light_direct(gv1,r1));
                         break;}
                     // ambient
                     case 'a':{

@@ -2,7 +2,7 @@
  * Filename:    common.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     The main header for a simple raytracer.
- * Edited:      2016-10-07
+ * Edited:      2016-10-08
  */
 
 //************************************************************************
@@ -28,9 +28,9 @@
 //************************************************************************
 #define FILE_OUT "hw1.exr"
 #define EPSILON 1e-7
+#define NO_MATERIAL      s_material(s_rgb_triple(0.0,0.0,0.0))
 #define DEFAULT_MATERIAL s_material(s_rgb_triple(0.0,0.0,1.0))
 #define DEFAULT_AMBIENT s_rgb_triple(0.0,0.0,0.0)
-#define PIXEL_EMPTY s_rgb_triple(0.0,0.0,0.0)
 #define OUT_TAB "    "
 typedef unsigned int t_uint;
 typedef double t_scalar;
@@ -46,5 +46,6 @@ typedef double t_scalar;
 #include "viewport.h"
 #include "scene.h"
 #include "io.h"
+#include "shading.h"
 
 //// EOF ////

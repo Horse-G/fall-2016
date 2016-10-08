@@ -2,7 +2,7 @@
  * Filename:    materials.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definitions for materials in a simple raytracer.
- * Edited:      2016-10-07
+ * Edited:      2016-10-08
  */
 
 //************************************************************************
@@ -37,6 +37,39 @@ struct s_rgb_triple
     t_scalar get_b(void) const
     {
         return _b;
+    }
+
+    // color operations
+    /*  - addition
+     *  - subtraction
+     *  - multiplication
+     *  - increment assignemnt
+     */
+    s_rgb_triple operator +(const s_rgb_triple& rgb) const
+    {
+        return s_rgb_triple(_r + rgb._r, _g + rgb._g, _b + rgb._b);
+    }
+    s_rgb_triple operator -(const s_rgb_triple& rgb) const
+    {
+        return s_rgb_triple(_r - rgb._r, _g - rgb._g, _b - rgb._b);
+    }
+    s_rgb_triple operator *(const s_rgb_triple& rgb) const
+    {
+        return s_rgb_triple(_r * rgb._r, _g * rgb._g, _b * rgb._b);
+    }
+    s_rgb_triple& operator +=(const s_rgb_triple& rgb)
+    {
+        _r += rgb._r;
+        _g += rgb._g;
+        _b += rgb._b;
+        return *this;
+    }
+    // scalar operations
+    /*  - multiplication
+     */
+    s_rgb_triple operator *(const t_scalar& s) const
+    {
+        return s_rgb_triple(_r * s, _g * s, _b * s);
     }
 
     // input/output
@@ -75,9 +108,17 @@ struct s_material
         _refl(gv){}
 
     // get content
-    s_rgb_triple get_mat(void) const
+    s_rgb_triple get_diff(void) const
     {
         return _diff;
+    }
+    s_rgb_triple get_spec(void) const
+    {
+        return _spec;
+    }
+    t_scalar get_phng(void) const
+    {
+        return _phng;
     }
 
     // print
