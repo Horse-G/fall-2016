@@ -2,19 +2,19 @@
  * Filename:    shading.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     The shading functions for a simple raytracer.
- * Edited:      2016-10-08
+ * Edited:      2016-10-09
  */
 
 //************************************************************************
 // SUBROUTINE_SHADING_BLINN_PHONG
 //************************************************************************
 void shading_blinn_phong(
-        s_rgb_triple& pixel,
-        const s_rgb_triple& comp_diff,
-        const s_rgb_triple& comp_spec,
+        s_clr_color& pixel,
+        const s_clr_color& comp_diff,
+        const s_clr_color& comp_spec,
         const s_intersect& i_sct,
         const s_geo_point& origin,
-        const s_rgb_triple& ambient,
+        const s_clr_color& ambient,
         const std::vector<c_light_point*>& point_lights)
 {
     t_uint i;

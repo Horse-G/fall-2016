@@ -2,7 +2,7 @@
  * Filename:    viewport.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definition of a viewport for a simple raytracer.
- * Edited:      2016-10-08
+ * Edited:      2016-10-09
  */
 
 //************************************************************************
@@ -29,7 +29,10 @@ struct s_viewport
         _py(s3)
     {
         // TODO fix u if dir too close to `up`
-        _uvw[0] = gv * s_geo_vector(0.0,1.0,0.0);
+        _uvw[0] =
+            (gv.get_x() < EPSILON && -gv.get_x() < EPSILON && gv.get_z() < EPSILON && -gv.get_z() < EPSILON)
+            ? s_geo_vector(0.0,0.0,1.0)
+            : gv * s_geo_vector(0.0,1.0,0.0);
         _uvw[1] = _uvw[0] * gv;
         _uvw[2] = -gv;
         _uvw[0] = _uvw[0].norm();

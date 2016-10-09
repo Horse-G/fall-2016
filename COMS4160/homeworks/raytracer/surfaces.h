@@ -2,7 +2,7 @@
  * Filename:    surfaces.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Surface definitions for a simple raytracer.
- * Edited:      2016-10-08
+ * Edited:      2016-10-09
  */
 
 //************************************************************************
@@ -12,6 +12,7 @@ class c_surface
 {
     protected:
     t_uint _material;
+    t_surface _type;
     
     public:
     // subclass destructor
@@ -21,6 +22,10 @@ class c_surface
     t_uint get_material(void)
     {
         return _material;
+    }
+    t_surface get_type(void)
+    {
+        return _type;
     }
     
     // subclass find intersection
@@ -45,8 +50,9 @@ class c_surf_plane: public c_surface
     c_surf_plane(void){}
     c_surf_plane(const s_geo_vector& gv, const t_scalar& s, const t_uint& u):
         _normal(gv.norm()),
-        _distance(s)
-        { _material = u; }
+        _distance(s){
+        _material = u; 
+        _type = PLANE; }
     
     // destructor
     virtual ~c_surf_plane(void){}
@@ -67,7 +73,7 @@ class c_surf_plane: public c_surface
         t_scalar t;
 
         t_scalar dN = gr.get_direction() % _normal;
-        if(dN < EPSILON)
+        if(dN <= 0.0)
             return s_intersect();
         t = -(gr.get_origin() % _normal - _distance)/dN;
         return s_intersect(t, gr.pos(t), _normal, _material);
@@ -90,18 +96,20 @@ class c_surf_plane: public c_surface
 class c_surf_triangle: public c_surface
 {
     private:
-    s_geo_point _v1, _v2, _v3;
+    s_geo_point _v[3];
     s_geo_vector _normal;
 
     public:
     // constructors
     c_surf_triangle(void){}
-    c_surf_triangle(const s_geo_point& gp1, const s_geo_point& gp2, const s_geo_point& gp3, const t_uint u):
-        _v1(gp1),
-        _v2(gp2),
-        _v3(gp3){
-        _normal = ((_v2 - _v1) * (_v3 - _v1)).norm();
+    c_surf_triangle(const s_geo_point& gp1, const s_geo_point& gp2, const s_geo_point& gp3, const t_uint u)
+    {
+        _v[0] = gp1;
+        _v[1] = gp2;
+        _v[2] = gp3;
+        _normal = ((_v[1] - _v[0]) * (_v[2] - _v[1])).norm();
         _material = u;
+        _type = TRIANGLE;
     }
 
     // destructor
@@ -110,15 +118,15 @@ class c_surf_triangle: public c_surface
     // get contents
     s_geo_point get_v1(void)
     {
-        return _v1;
+        return _v[0];
     }
     s_geo_point get_v2(void)
     {
-        return _v2;
+        return _v[1];
     }
     s_geo_point get_v3(void)
     {
-        return _v3;
+        return _v[2];
     }
     s_geo_vector get_normal(void)
     {
@@ -133,15 +141,15 @@ class c_surf_triangle: public c_surface
         s_geo_vector P,Q,T;
         t_scalar det, inv_det, u, v;
         t_scalar t;
-        e1 = _v2 - _v1;
-        e2 = _v3 - _v1;
+        e1 = _v[1] - _v[0];
+        e2 = _v[2] - _v[0];
         P = gr.get_direction() * e2;
         det = e1 % P;
         if(abs(det) < EPSILON)
             return s_intersect();
         inv_det = 1.0/det;
 
-        T = gr.get_origin() - _v1;
+        T = gr.get_origin() - _v[0];
         u = (T % P) * inv_det;
         if(u < 0.0 || u > 1.0)
             return s_intersect();
@@ -162,9 +170,9 @@ class c_surf_triangle: public c_surface
     {
         std::cout
             <<tab <<"type "   <<"triangle" <<std::endl
-            <<tab <<"v1 "     <<_v1        <<std::endl
-            <<tab <<"v2 "     <<_v2        <<std::endl
-            <<tab <<"v3 "     <<_v3        <<std::endl
+            <<tab <<"v1 "     <<_v[0]      <<std::endl
+            <<tab <<"v2 "     <<_v[1]      <<std::endl
+            <<tab <<"v3 "     <<_v[2]      <<std::endl
             <<tab <<"normal " <<_normal    << std::endl;
         return;
     }
@@ -184,8 +192,10 @@ class c_surf_sphere: public c_surface
     c_surf_sphere(void){}
     c_surf_sphere(const s_geo_point& gp, const t_scalar& s, const t_uint u):
         _origin(gp),
-        _radius(s)
-        { _material = u; }
+        _radius(s){
+        _material = u;
+        _type = SPHERE;
+        }
 
     // destructor
     virtual ~c_surf_sphere(void){}

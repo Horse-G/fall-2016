@@ -2,7 +2,7 @@
  * Filename:    main.cc
  * Author:      Adam Hadar, anh2130
  * Purpose:     The main function for a simple raytracer.
- * Edited:      2016-10-08
+ * Edited:      2016-10-09
  */
 
 #include "common.h"
@@ -31,16 +31,13 @@ int main(int argc, char **argv)
                                 v_fl,
                                 v_px, v_py;
     s_geo_ray                   i_ray;
-    s_intersect                 i_sct;
-    s_rgb_triple                i_clr;
+    s_intersect                 i_sct, ii_sct;
+    s_clr_color                 i_clr;
     Imf::Rgba*                  i_pxl;
     s_material                  i_mat;
     s_geo_point                 v_eye;
     s_geo_vector                v_u, v_v, v_w;
     
-    // set emptiness to black
-    i_sct = s_intersect();
-
     // parse the scene filei
     input_scene(scene, argv[1]);
     v_eye = scene.viewport.get_eye();
@@ -69,24 +66,23 @@ int main(int argc, char **argv)
     {
         // generate pixel reference
         i_pxl = &img_pixels[y][x];
+        // generate the default blackness
+        i_sct = BLACKNESS;
         // generate ray
         i_ray = s_geo_ray(v_eye,
               v_u * d_x * (x - o_x)
             + v_v * d_y * (o_y - y)
             - v_w * v_fl);
         // iterate through surfaces
-        //bool first = true;
         for(z = 0; z < scene.surfaces.size(); ++z)
         {
-            i_sct = scene.surfaces[z]->is_intersect(i_ray);
-            if(i_sct.get_is_true())
-                break;
+            ii_sct = scene.surfaces[z]->is_intersect(i_ray);
+            if(ii_sct.get_is_true() && ii_sct.get_t() < i_sct.get_t())
+                i_sct = ii_sct;
         }
 
         // compute color
-        i_mat = i_sct.get_is_true()
-            ? scene.materials[i_sct.get_material() - 1]
-            : scene.materials[0];
+        i_mat = scene.materials[i_sct.get_material() - 1];
         
         shading_blinn_phong(
             i_clr,
@@ -94,8 +90,8 @@ int main(int argc, char **argv)
             i_mat.get_spec(),
             i_sct,
             i_ray.get_origin(),
-            scene.ambient.get_color(),
-            scene.point_lights
+            scene.light_ambient.get_color(),
+            scene.lights_point
         );
         
         // store color
