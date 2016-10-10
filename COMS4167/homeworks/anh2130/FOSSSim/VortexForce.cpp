@@ -22,6 +22,11 @@ void VortexForce::addEnergyToTotal( const VectorXs& x, const VectorXs& v, const 
   assert( m_particles.first >= 0 );  assert( m_particles.first < x.size()/2 );
   assert( m_particles.second >= 0 ); assert( m_particles.second < x.size()/2 );
 
+//  scalar r = (x.segment<2>(2*m_particles.second)-x.segment<2>(2*m_particles.first)).norm();
+//  scalar m1 = m(2*m_particles.second);
+//  scalar m2 = m(2*m_particles.first);
+//  E += -m_G*m1*m2/r;
+
   std::cerr << outputmod::startred << "ERROR IN VORTEXFORCE: " << outputmod::endred << "No energy defined for VortexForce." << std::endl;
   exit(1);
 }
@@ -61,6 +66,22 @@ void VortexForce::addHessXToTotal( const VectorXs& x, const VectorXs& v, const V
   assert( x.size() == hessE.rows() );
   assert( x.size() == hessE.cols() );
   assert( x.size()%2 == 0 );
+
+//  scalar m1 = m(2*m_particles.second);
+//  scalar m2 = m(2*m_particles.first);
+//  
+//  Vector2s nhat = x.segment<2>(2*m_particles.second)-x.segment<2>(2*m_particles.first); 
+//  scalar r = nhat.norm(); 
+//  assert( r != 0.0 ); 
+//  nhat /= r;
+//
+//  Matrix2s entry = Matrix2s::Identity()-3.0*nhat*nhat.transpose();
+//  entry *= m_G*m1*m2/r*r*r;
+//  
+//  hessE.block<2,2>(2*m_particles.first,2*m_particles.first)   += entry;
+//  hessE.block<2,2>(2*m_particles.second,2*m_particles.second) += entry;
+//  hessE.block<2,2>(2*m_particles.first,2*m_particles.second)  -= entry;
+//  hessE.block<2,2>(2*m_particles.second,2*m_particles.first)  -= entry;
 
   std::cerr << outputmod::startred << "ERROR IN VORTEXFORCE: " << outputmod::endred << "No addHessXToTotal defined for VortexForce." << std::endl;
   exit(1);

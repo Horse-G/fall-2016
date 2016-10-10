@@ -1,1 +1,0 @@
-g++ -O2 assn0/*.cc -I. -I/usr/include/OpenEXR -lIlmImf -lImath -lHalf -Wall -o prog_optimized

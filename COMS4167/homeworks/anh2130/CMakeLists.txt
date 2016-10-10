@@ -47,5 +47,5 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory (FOSSSim)
 #add_subdirectory (TestFOSSSim)
 execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/FOSSSim/assets )
-execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/extracreditassets ${CMAKE_CURRENT_BINARY_DIR}/FOSSSim/extracreditassets )
-
+execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/theme2assets ${CMAKE_CURRENT_BINARY_DIR}/FOSSSim/theme2assets )
+execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/theme3assets ${CMAKE_CURRENT_BINARY_DIR}/FOSSSim/theme3assets )

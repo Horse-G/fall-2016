@@ -1,14 +1,11 @@
 #include "TwoDSceneXMLParser.h"
 
-void TwoDSceneXMLParser::loadSceneFromXML( const std::string& filename, TwoDScene& twodscene, SceneStepper** scenestepper, scalar& dt, scalar& max_t, scalar& maxfreq, std::vector<renderingutils::Color>& particle_colors, std::vector<renderingutils::Color>& edge_colors, std::vector<renderingutils::ParticlePath>& particle_paths, renderingutils::Color& bgcolor, std::string& description, std::string& scenetag )
+void TwoDSceneXMLParser::loadExecutableSimulation( const std::string& file_name, bool simulate_comparison, bool rendering_enabled, TwoDimensionalDisplayController& display_controller, ExecutableSimulation** execsim, renderingutils::Viewport& view, scalar& dt, scalar& max_time, scalar& steps_per_sec_cap, renderingutils::Color& bgcolor, std::string& description, std::string& scenetag )
 {
-  assert( *scenestepper == NULL );
-  //std::cout << "Loading scene: " << filename << std::endl;
-  
   // Load the xml document
   std::vector<char> xmlchars;
   rapidxml::xml_document<> doc;
-  loadXMLFile( filename, xmlchars, doc );
+  loadXMLFile( file_name, xmlchars, doc );
 
   // Attempt to locate the root node
   rapidxml::xml_node<>* node = doc.first_node("scene");
@@ -16,35 +13,119 @@ void TwoDSceneXMLParser::loadSceneFromXML( const std::string& filename, TwoDScen
   {
     std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse xml scene file. Failed to locate root <scene> node. Exiting." << std::endl;
     exit(1);
-  }    
+  }
   
-  // TODO: Clear old state
+  // Determine what simulation type this is (particle, rigid body, etc)
+  std::string simtype;
+  loadSimulationType( node, simtype );
+  
+  // Parse common state
+  loadMaxTime( node, max_time );
+  loadMaxSimFrequency( node, steps_per_sec_cap );
+  loadViewport( node, view );
+  loadBackgroundColor( node, bgcolor );
+  loadSceneDescriptionString( node, description );
+  loadSceneTag( node, scenetag );
+  
+  // Parse the user-requested simulation type. The default is a particle simulation.
+  if( simtype == "" || simtype == "particle-system" )
+  {
+    loadParticleSimulation( simulate_comparison, rendering_enabled, display_controller, execsim, view, dt, bgcolor, node );
+  }
+  else if( simtype == "rigid-body" )
+  {
+    loadRigidBodySimulation( simulate_comparison, rendering_enabled, display_controller, execsim, view, dt, bgcolor, node );
+    //std::cout << "MAX_TIME: " << max_time << std::endl;
+    //std::cout << "DT: " << dt << std::endl;
+  }
+  else 
+  {
+    std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Invalid simtype '" << simtype << "' specified. Valid options are 'particle-system' and 'rigid-body'. Exiting." << std::endl;
+    exit(1);
+  }
+}
+
+void TwoDSceneXMLParser::loadParticleSimulation( bool simulate_comparison, bool rendering_enabled, TwoDimensionalDisplayController& display_controller, ExecutableSimulation** execsim, renderingutils::Viewport& view, scalar& dt, renderingutils::Color& bgcolor, rapidxml::xml_node<>* node )
+{
+  TwoDScene* scene = new TwoDScene;
 
   // Scene
-  loadParticles( node, twodscene );
-  loadEdges( node, twodscene );
-  loadSceneTag( node, scenetag );
+  loadParticles( node, *scene );
+  loadEdges( node, *scene );
+  loadHalfplanes( node, *scene );
+
   // Forces
-  loadSpringForces( node, twodscene );
-  loadSimpleGravityForces( node, twodscene );
-  loadGravitationalForces( node, twodscene );
-  loadDragDampingForces( node, twodscene );
-  loadVorexForces( node, twodscene );
+  loadSpringForces( node, *scene );
+  loadSimpleGravityForces( node, *scene );
+  loadGravitationalForces( node, *scene );
+  loadConstantForces( node, *scene );
+  loadDragDampingForces( node, *scene );
+  loadVorexForces( node, *scene );
+
   // Integrator/solver
-  loadIntegrator( node, scenestepper, dt );
-  loadMaxTime( node, max_t );
-  // UI
-  loadMaxSimFrequency( node, maxfreq );  
+  SceneStepper* scene_stepper = NULL;
+  loadIntegrator( node, &scene_stepper, dt );
+  assert( scene_stepper != NULL );
+  assert( dt > 0.0 );
+
+  CollisionHandler* collision_handler = NULL;
+  loadCollisionHandler(node, *scene, &collision_handler);
+
   // Rendering state
-  particle_colors.resize(twodscene.getNumParticles(),renderingutils::Color(0.650980392156863,0.294117647058824,0.0));
+  std::vector<renderingutils::Color> particle_colors;
+  particle_colors.resize(scene->getNumParticles(),renderingutils::Color(0.650980392156863,0.294117647058824,0.0));
   loadParticleColors( node, particle_colors );
-  edge_colors.resize(twodscene.getNumEdges(),renderingutils::Color(0.0,0.388235294117647,0.388235294117647));
+
+  std::vector<renderingutils::Color> edge_colors;
+  edge_colors.resize(scene->getNumEdges(),renderingutils::Color(0.0,0.388235294117647,0.388235294117647));
   loadEdgeColors( node, edge_colors );
-  loadBackgroundColor( node, bgcolor );
-  loadParticlePaths( node, dt, particle_paths );
+
+  std::vector<renderingutils::Color> halfplane_colors;
+  halfplane_colors.resize(scene->getNumHalfplanes(), renderingutils::Color(0,0,0));
+  loadHalfplaneColors( node, halfplane_colors );
+
+  std::vector<renderingutils::ParticlePath> particle_paths;
+  loadParticlePaths( node, dt, particle_paths );  
   
-  std::string description_string;
-  loadSceneDescriptionString( node, description );
+  
+  TwoDScene* comparison_scene = NULL;
+  if( simulate_comparison )
+  {
+    comparison_scene = new TwoDScene;
+    comparison_scene->copyState(*scene);
+  }
+  
+  TwoDSceneRenderer* scene_renderer = NULL;
+  if( rendering_enabled )
+  {
+    scene_renderer = new TwoDSceneRenderer(*scene,display_controller,particle_colors,edge_colors,halfplane_colors,particle_paths);
+    scene_renderer->updateParticleSimulationState(*scene);
+  }
+  
+  TwoDSceneSVGRenderer* svg_renderer = new TwoDSceneSVGRenderer(*scene,display_controller,particle_colors,edge_colors,halfplane_colors,particle_paths,512,512,bgcolor);
+  svg_renderer->updateState();
+  
+  *execsim = new ParticleSimulation(scene, comparison_scene, collision_handler, scene_stepper, scene_renderer, svg_renderer);
+}
+
+void TwoDSceneXMLParser::loadRigidBodySimulation( bool simulate_comparison, bool rendering_enabled, TwoDimensionalDisplayController& display_controller, ExecutableSimulation** execsim, renderingutils::Viewport& view, scalar& dt, renderingutils::Color& bgcolor, rapidxml::xml_node<>* node )
+{
+  RigidBodyScene* scene = new RigidBodyScene;
+
+  // Load locations and masses of rigid body boundary vertices
+  std::vector<Vector2s> rbvrts;
+  std::vector<scalar> rbmasses;
+  loadRigidBodyVertices( node, rbvrts, rbmasses );
+  assert( rbvrts.size() == rbmasses.size() );
+
+  // Load the rigid bodies themselves
+  std::vector<RigidBody> rigidbodies;
+  loadRigidBodies( node, rbvrts, rbmasses, rigidbodies );
+  for( std::vector<RigidBody>::size_type i = 0; i < rigidbodies.size(); ++i ) scene->addRigidBody(rigidbodies[i]);
+  rbvrts.clear(); rbmasses.clear(); rigidbodies.clear();
+
+  TwoDSceneRenderer* scene_renderer = new TwoDSceneRenderer(display_controller);
+  *execsim = new RigidBodySimulation(scene,scene_renderer);
 }
 
 void TwoDSceneXMLParser::loadXMLFile( const std::string& filename, std::vector<char>& xmlchars, rapidxml::xml_document<>& doc )
@@ -79,6 +160,218 @@ bool TwoDSceneXMLParser::loadTextFileIntoString( const std::string& filename, st
   
   return true;
 }
+
+void TwoDSceneXMLParser::loadSimulationType( rapidxml::xml_node<>* node, std::string& simtype )
+{
+  assert( node != NULL );
+  rapidxml::xml_node<>* nd = node->first_node("simtype");
+  
+  if( node->first_node("simtype") ) if( node->first_node("simtype")->first_attribute("type") ) simtype = node->first_node("simtype")->first_attribute("type")->value();
+}
+
+void TwoDSceneXMLParser::loadRigidBodyVertices( rapidxml::xml_node<>* node, std::vector<Vector2s>& vertices, std::vector<scalar>& masses )
+{
+  assert( node != NULL );
+
+  int vertex = 0;
+  for( rapidxml::xml_node<>* nd = node->first_node("rigidbodyvertex"); nd; nd = nd->next_sibling("rigidbodyvertex") )
+  {
+    // Extract the vertex's initial position
+    Vector2s pos(0.0,0.0);
+    if( nd->first_attribute("x") ) 
+    {
+      std::string attribute(nd->first_attribute("x")->value());
+      if( !stringutils::extractFromString(attribute,pos.x()) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of x attribute for rigidbodyvertex " << vertex << ". Value must be numeric. Exiting." << std::endl;
+        exit(1);
+      }
+    }
+    else 
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse x attribute for rigidbodyvertex " << vertex << ". Exiting." << std::endl;
+      exit(1);
+    }
+
+    if( nd->first_attribute("y") ) 
+    {
+      std::string attribute(nd->first_attribute("y")->value());
+      if( !stringutils::extractFromString(attribute,pos.y()) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of y attribute for rigidbodyvertex " << vertex << ". Value must be numeric. Exiting." << std::endl;
+        exit(1);
+      }
+    }
+    else 
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse y attribute for rigidbodyvertex " << vertex << ". Exiting." << std::endl;
+      exit(1);
+    }
+    vertices.push_back(pos);
+
+    // Extract the particle's mass
+    scalar mass = std::numeric_limits<scalar>::signaling_NaN();
+    if( nd->first_attribute("m") ) 
+    {
+      std::string attribute(nd->first_attribute("m")->value());
+      if( !stringutils::extractFromString(attribute,mass) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of m attribute for rigidbodyvertex " << vertex << ". Value must be numeric. Exiting." << std::endl;
+        exit(1);
+      }
+    }
+    else 
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse m attribute for rigidbodyvertex " << vertex << ". Exiting." << std::endl;
+      exit(1);
+    }
+    masses.push_back(mass);   
+    
+//    // Extract the particle's initial velocity
+//    Vector2s vel;
+//    if( nd->first_attribute("vx") ) 
+//    {
+//      std::string attribute(nd->first_attribute("vx")->value());
+//      if( !stringutils::extractFromString(attribute,vel.x()) )
+//      {
+//        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of vx attribute for particle " << particle << ". Value must be numeric. Exiting." << std::endl;
+//        exit(1);
+//      }
+//    }
+//    else 
+//    {
+//      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse vx attribute for particle " << particle << ". Exiting." << std::endl;
+//      exit(1);
+//    }
+//    
+//    if( nd->first_attribute("vy") ) 
+//    {
+//      std::string attribute(nd->first_attribute("vy")->value());
+//      if( !stringutils::extractFromString(attribute,vel.y()) )
+//      {
+//        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of vy attribute for particle " << particle << ". Value must be numeric. Exiting." << std::endl;
+//        exit(1);
+//      }
+//    }
+//    else 
+//    {
+//      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse vy attribute for particle " << particle << ". Exiting." << std::endl;
+//      exit(1);
+//    }
+//    twodscene.setVelocity( particle, vel );
+//
+//    // Determine if the particle is fixed
+//    bool fixed;
+//    if( nd->first_attribute("fixed") ) 
+//    {
+//      std::string attribute(nd->first_attribute("fixed")->value());
+//      if( !stringutils::extractFromString(attribute,fixed) )
+//      {
+//        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of fixed attribute for particle " << particle << ". Value must be boolean. Exiting." << std::endl;
+//        exit(1);
+//      }
+//    }
+//    else 
+//    {
+//      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse fixed attribute for particle " << particle << ". Exiting." << std::endl;
+//      exit(1);
+//    }
+//    twodscene.setFixed( particle, fixed );
+//    
+//    // Extract the particle's radius, if present
+//    scalar radius = 0.1;
+//    if( nd->first_attribute("radius") )
+//    {
+//      std::string attribute(nd->first_attribute("radius")->value());
+//      if( !stringutils::extractFromString(attribute,radius) )
+//      {
+//        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse radius attribute for particle " << particle << ". Value must be scalar. Exiting." << std::endl;
+//        exit(1);
+//      }
+//    }    
+//    twodscene.setRadius( particle, radius );
+//    
+//    // Extract the particle's tag, if present
+//    if( nd->first_attribute("tag") )
+//    {
+//      std::string tag(nd->first_attribute("tag")->value());
+//      tags[particle] = tag;
+//    }    
+//    
+//    //std::cout << "Particle: " << particle << "    x: " << pos.transpose() << "   v: " << vel.transpose() << "   m: " << mass << "   fixed: " << fixed << std::endl;
+//    //std::cout << tags[particle] << std::endl;
+//    
+    ++vertex;
+  }  
+}
+
+void TwoDSceneXMLParser::loadRigidBodies( rapidxml::xml_node<>* node, const std::vector<Vector2s>& vertices, const std::vector<scalar>& masses, std::vector<RigidBody>& rigidbodies )
+{
+  int body = 0;
+  for( rapidxml::xml_node<>* nd = node->first_node("rigidbody"); nd; nd = nd->next_sibling("rigidbody") )
+  {
+    // Extract the indices that make up this rigid body
+    std::vector<int> vrtidxs;
+    for( rapidxml::xml_attribute<>* vrtnd = nd->first_attribute("p"); vrtnd; vrtnd = vrtnd->next_attribute("p") )
+    {
+      vrtidxs.push_back(-1);
+      if( !stringutils::extractFromString(vrtnd->value(),vrtidxs.back()) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of p attribute for rigidbody " << body << ". Value must be integer. Exiting." << std::endl;
+        exit(1);
+      }
+      // Ensure that the requested vertex actually was specified
+      if( vrtidxs.back() < 0 || vrtidxs.back() >= (int) masses.size() )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of p attribute for rigidbody " << body << ". Value must be in range [0," << (masses.size()-1) << "] inclusive. Value given of " << vrtidxs.back() << ". Exiting." << std::endl;
+        exit(1);
+      }
+    }
+
+    // Must have at least 3 indices
+    if( vrtidxs.size() < 3 ) 
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse rigidbody " << body << ". Must specify at least 3 vertices. Exiting." << std::endl;
+      exit(1);
+    }
+    
+    // Extract the radius of the rigid body
+    scalar radius = std::numeric_limits<scalar>::signaling_NaN();
+    if( nd->first_attribute("r") ) 
+    {
+      std::string attribute(nd->first_attribute("r")->value());
+      if( !stringutils::extractFromString(attribute,radius) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of r attribute for rigidbody " << body << ". Value must be numeric. Exiting." << std::endl;
+        exit(1);
+      }
+      if( radius <= 0.0 )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of r attribute for rigidbody " << body << ". Value must be positive. Value give of " << radius << ". Exiting." << std::endl;
+        exit(1);
+      }
+    }
+    else 
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse r attribute for rigidbody " << body << ". Exiting." << std::endl;
+      exit(1);
+    }
+
+    // Create the rigid body
+    VectorXs bodiesverts(2*vrtidxs.size());
+    for( std::vector<int>::size_type i = 0; i < vrtidxs.size(); ++i ) bodiesverts.segment<2>(2*i) = vertices[vrtidxs[i]];
+    VectorXs bodiesmasses(vrtidxs.size());
+    for( std::vector<int>::size_type i = 0; i < vrtidxs.size(); ++i ) bodiesmasses(i) = masses[vrtidxs[i]];
+
+    rigidbodies.push_back(RigidBody(bodiesverts,bodiesmasses,radius));
+    
+    ++body;
+  }  
+}
+
+
+
+
 
 void TwoDSceneXMLParser::loadParticles( rapidxml::xml_node<>* node, TwoDScene& twodscene )
 {
@@ -230,7 +523,6 @@ void TwoDSceneXMLParser::loadSceneTag( rapidxml::xml_node<>* node, std::string& 
 {
   assert( node != NULL );
 
-  std::cout << "Calling loadSceneTag" << std::endl;
   if( node->first_node("scenetag") )
   {
     if( node->first_node("scenetag")->first_attribute("tag") )
@@ -243,6 +535,80 @@ void TwoDSceneXMLParser::loadSceneTag( rapidxml::xml_node<>* node, std::string& 
       exit(1);
     }
   }
+}
+
+void TwoDSceneXMLParser::loadHalfplanes( rapidxml::xml_node<> *node, TwoDScene &twodscene)
+{
+  assert( node != NULL );
+
+  twodscene.clearHalfplanes();
+
+  int halfplane = 0;
+  for( rapidxml::xml_node<> *nd = node->first_node("halfplane"); nd; nd = nd->next_sibling("halfplane") )
+    {
+      VectorXs x(2);
+      VectorXs n(2);
+      
+      if( nd->first_attribute("px") )
+	{
+	  std::string attribute(nd->first_attribute("px")->value());
+	  if( !stringutils::extractFromString(attribute, x[0]) )
+	    {
+	      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of px attribute for halfplane " << halfplane << ". Value must be real number. Exiting." << std::endl;
+	      exit(0);
+	    }
+	}
+      else
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of px attribute for halfplane " << halfplane << ". Exiting." << std::endl;
+	  exit(0);
+	}
+      if( nd->first_attribute("py") )
+	{
+	  std::string attribute(nd->first_attribute("py")->value());
+	  if( !stringutils::extractFromString(attribute, x[1]) )
+	    {
+	      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of py attribute for halfplane " << halfplane << ". Value must be real number. Exiting." << std::endl;
+	      exit(0);
+	    }
+	}
+      else
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of py attribute for halfplane " << halfplane << ". Exiting." << std::endl;
+	  exit(0);
+	}
+      if( nd->first_attribute("nx") )
+	{
+	  std::string attribute(nd->first_attribute("nx")->value());
+	  if( !stringutils::extractFromString(attribute, n[0]) )
+	    {
+	      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of nx attribute for halfplane " << halfplane << ". Value must be real number. Exiting." << std::endl;
+	      exit(0);
+	    }
+	}
+      else
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of nx attribute for halfplane " << halfplane << ". Exiting." << std::endl;
+	  exit(0);
+	}
+      if( nd->first_attribute("ny") )
+	{
+	  std::string attribute(nd->first_attribute("ny")->value());
+	  if( !stringutils::extractFromString(attribute, n[1]) )
+	    {
+	      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of ny attribute for halfplane " << halfplane << ". Value must be real number. Exiting." << std::endl;
+	      exit(0);
+	    }
+	}
+      else
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of ny attribute for halfplane " << halfplane << ". Exiting." << std::endl;
+	  exit(0);
+	}
+      twodscene.insertHalfplane(std::pair<VectorXs, VectorXs>(x,n));
+
+      ++halfplane;
+    }
 }
 
 void TwoDSceneXMLParser::loadEdges( rapidxml::xml_node<>* node, TwoDScene& twodscene )
@@ -453,6 +819,58 @@ void TwoDSceneXMLParser::loadGravitationalForces( rapidxml::xml_node<>* node, Tw
   //SpringForce( const std::pair<int,int>& endpoints, const scalar& k, const scalar& l0 )  
 }
 
+
+void TwoDSceneXMLParser::loadConstantForces( rapidxml::xml_node<>* node, TwoDScene& twodscene )
+{
+  assert( node != NULL );
+
+  // Load each constant force
+  int forcenum = 0;
+  for( rapidxml::xml_node<>* nd = node->first_node("constantforce"); nd; nd = nd->next_sibling("constantforce") )
+  {
+    Vector2s constforce;
+    constforce.setConstant(std::numeric_limits<scalar>::signaling_NaN());
+    
+    // Extract the x component of the force
+    if( nd->first_attribute("fx") ) 
+    {
+      std::string attribute(nd->first_attribute("fx")->value());
+      if( !stringutils::extractFromString(attribute,constforce.x()) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of fx attribute for constantforce " << forcenum << ". Value must be numeric. Exiting." << std::endl;
+        exit(1);
+      }
+    }
+    else 
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse fx attribute for constantforce " << forcenum << ". Exiting." << std::endl;
+      exit(1);
+    }
+
+    // Extract the y component of the force
+    if( nd->first_attribute("fy") ) 
+    {
+      std::string attribute(nd->first_attribute("fy")->value());
+      if( !stringutils::extractFromString(attribute,constforce.y()) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of fy attribute for constantforce " << forcenum << ". Value must be numeric. Exiting." << std::endl;
+        exit(1);
+      }
+    }
+    else 
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse fy attribute for constantforce " << forcenum << ". Exiting." << std::endl;
+      exit(1);
+    }
+
+    //std::cout << "x: " << constforce.transpose() << std::endl;
+
+    twodscene.insertForce(new ConstantForce(constforce));
+
+    ++forcenum;
+  }
+}
+
 void TwoDSceneXMLParser::loadDragDampingForces( rapidxml::xml_node<>* node, TwoDScene& twodscene )
 {
   assert( node != NULL );
@@ -620,6 +1038,73 @@ void TwoDSceneXMLParser::loadSimpleGravityForces( rapidxml::xml_node<>* node, Tw
   }  
 }
 
+void TwoDSceneXMLParser::loadCollisionHandler( rapidxml::xml_node<>* node, TwoDScene &scene, CollisionHandler **handler )
+{
+  assert( node != NULL );
+
+  rapidxml::xml_node<>* nd = node->first_node("collision");
+  if( nd == NULL )
+    {
+      *handler = NULL;
+      return;
+    }
+
+  // Load value of COR
+  double cor = 1.0;
+  rapidxml::xml_attribute<> *cornd = nd->first_attribute("COR");
+  if( cornd != NULL )
+    { 
+      if( !stringutils::extractFromString(std::string(cornd->value()),cor) )
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'COR' attribute for collision handler. Value must be numeric. Exiting." << std::endl;
+	  exit(1);
+	}
+    }
+  
+  // Attempt to load the collision handler type
+  rapidxml::xml_attribute<> *typend = nd->first_attribute("type");
+  if( typend == NULL )
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m No collision handler 'type' attribute specified. Exiting." << std::endl;
+      exit(1);
+    }
+  std::string handlertype(typend->value());
+  if(handlertype == "none") *handler = NULL;
+  else if(handlertype == "simple") *handler = new SimpleCollisionHandler(cor);
+  else if(handlertype == "penalty")
+    {
+      // Attempt to load stiffness attribute
+      double k=100;
+      rapidxml::xml_attribute<> *knd = nd->first_attribute("k");
+      if(knd != NULL)
+	{
+	  if(!stringutils::extractFromString(std::string(knd->value()), k))
+	    {
+	      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'k' attribute for collision handler. Value must be numeric. Exiting." << std::endl;
+	      exit(1);
+	    }
+	}
+
+      double thickness=0.01;
+      rapidxml::xml_attribute<> *thicknd = nd->first_attribute("thickness");
+      if(thicknd != NULL)
+	{
+	  if(!stringutils::extractFromString(std::string(thicknd->value()), thickness))
+	    {
+	      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'thickness' attribute for collision handler. Value must be numeric. Exiting." << std::endl;
+	      exit(1);
+	    }
+	}
+      *handler = NULL;
+      scene.insertForce(new PenaltyForce(scene, k, thickness));
+    }
+  else
+  {
+    std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Invalid collision handler 'type' attribute specified. Exiting." << std::endl;
+    exit(1);
+  }
+
+}
 
 void TwoDSceneXMLParser::loadIntegrator( rapidxml::xml_node<>* node, SceneStepper** scenestepper, scalar& dt )
 {
@@ -645,7 +1130,7 @@ void TwoDSceneXMLParser::loadIntegrator( rapidxml::xml_node<>* node, SceneSteppe
   std::string integratortype(typend->value());
   
   if( integratortype == "explicit-euler" ) *scenestepper = new ExplicitEuler;
-  else if( integratortype == "symplectic-euler" ) *scenestepper = new SymplecticEuler;
+  else if( integratortype == "forward-backward-euler" || integratortype == "symplectic-euler" ) *scenestepper = new SemiImplicitEuler;
   else if( integratortype == "implicit-euler" ) *scenestepper = new ImplicitEuler;
   else if( integratortype == "linearized-implicit-euler" ) *scenestepper = new LinearizedImplicitEuler;
   else
@@ -698,6 +1183,48 @@ void TwoDSceneXMLParser::loadMaxTime( rapidxml::xml_node<>* node, scalar& max_t 
     std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'time' attribute for duration. Value must be numeric. Exiting." << std::endl;
     exit(1);
   }
+}
+
+void TwoDSceneXMLParser::loadViewport(rapidxml::xml_node<>* node, renderingutils::Viewport &view)
+{
+  assert( node != NULL );
+
+  if(node->first_node("viewport") )
+    {
+      rapidxml::xml_attribute<> *cx = node->first_node("viewport")->first_attribute("cx");
+      if(cx == NULL)
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m No viewport 'cx' attribute specified. Exiting." << std::endl;
+	  exit(1);
+	}
+      if(!stringutils::extractFromString(std::string(cx->value()),view.cx))
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'cx' attribute for viewport. Value must be scalar. Exiting." << std::endl;
+	  exit(1);
+	}
+      rapidxml::xml_attribute<> *cy = node->first_node("viewport")->first_attribute("cy");
+      if(cy == NULL)
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m No viewport 'cy' attribute specified. Exiting." << std::endl;
+	  exit(1);
+	}
+      if(!stringutils::extractFromString(std::string(cy->value()),view.cy))
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'cy' attribute for viewport. Value must be scalar. Exiting." << std::endl;
+	  exit(1);
+	}
+      rapidxml::xml_attribute<> *size = node->first_node("viewport")->first_attribute("size");
+      if(size == NULL)
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m No viewport 'size' attribute specified. Exiting." << std::endl;
+	  exit(1);
+	}
+      if(!stringutils::extractFromString(std::string(size->value()),view.size))
+	{
+	  std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'size' attribute for viewport. Value must be scalar. Exiting." << std::endl;
+	  exit(1);
+	}
+    }
 }
 
 void TwoDSceneXMLParser::loadMaxSimFrequency( rapidxml::xml_node<>* node, scalar& max_freq )
@@ -831,7 +1358,7 @@ void TwoDSceneXMLParser::loadParticleColors( rapidxml::xml_node<>* node, std::ve
       exit(1);
     }
     
-    if( particle < 0 || particle > (int) particle_colors.size() )
+    if( particle < 0 || particle >= (int) particle_colors.size() )
     {
       std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of i attribute for particlecolor " << particlecolornum << ". Invalid particle specified. Valid range is " << 0 << "..." << particle_colors.size()-1 << std::endl;
       exit(1);
@@ -1020,6 +1547,113 @@ void TwoDSceneXMLParser::loadEdgeColors( rapidxml::xml_node<>* node, std::vector
     edge_colors[edge] = renderingutils::Color(red,green,blue);
     
     ++edgecolornum;
+  }  
+}
+
+void TwoDSceneXMLParser::loadHalfplaneColors( rapidxml::xml_node<>* node, std::vector<renderingutils::Color>& halfplane_colors )
+{
+  int halfplanecolornum = 0;
+  for( rapidxml::xml_node<>* nd = node->first_node("halfplanecolor"); nd; nd = nd->next_sibling("halfplanecolor") )
+  {
+    // Determine which particle this color corresponds to
+    int halfplane = -1;
+    if( nd->first_attribute("i") )
+    {
+      std::string attribute(nd->first_attribute("i")->value());
+      if( !stringutils::extractFromString(attribute,halfplane) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of i attribute for halfplanecolor " << halfplanecolornum << ". Value must be integer. Exiting." << std::endl;
+        exit(1);
+      }        
+    }
+    else
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of i attribute for halfplanecolor " << halfplanecolornum << ". Exiting." << std::endl;
+      exit(1);
+    }
+    
+    if( halfplane < 0 || halfplane > (int) halfplane_colors.size() )
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of i attribute for halfplanecolor " << halfplanecolornum << ". Invalid half-plane specified. Valid range is " << 0 << "..." << halfplane_colors.size()-1 << std::endl;
+      exit(1);
+    }
+    
+    
+    // Read in the red color channel 
+    double red = -1.0;
+    if( nd->first_attribute("r") )
+    {
+      std::string attribute(nd->first_attribute("r")->value());
+      if( !stringutils::extractFromString(attribute,red) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of r attribute for halfplanecolor " << halfplanecolornum << ". Value must be scalar. Exiting." << std::endl;
+        exit(1);
+      }        
+    }
+    else
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of r attribute for halfplanecolor " << halfplanecolornum << ". Exiting." << std::endl;
+      exit(1);
+    }
+    
+    if( red < 0.0 || red > 1.0 )
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of r attribute for halfplanecolor " << halfplanecolornum << ". Invalid color specified. Valid range is " << 0.0 << "..." << 1.0 << std::endl;
+      exit(1);
+    }
+    
+    
+    // Read in the green color channel 
+    double green = -1.0;
+    if( nd->first_attribute("g") )
+    {
+      std::string attribute(nd->first_attribute("g")->value());
+      if( !stringutils::extractFromString(attribute,green) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of g attribute for halfplanecolor " << halfplanecolornum << ". Value must be scalar. Exiting." << std::endl;
+        exit(1);
+      }        
+    }
+    else
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of g attribute for halfplanecolor " << halfplanecolornum << ". Exiting." << std::endl;
+      exit(1);
+    }
+    
+    if( green < 0.0 || green > 1.0 )
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of g attribute for halfplanecolor " << halfplanecolornum << ". Invalid color specified. Valid range is " << 0.0 << "..." << 1.0 << std::endl;
+      exit(1);
+    }
+    
+    
+    // Read in the blue color channel 
+    double blue = -1.0;
+    if( nd->first_attribute("b") )
+    {
+      std::string attribute(nd->first_attribute("b")->value());
+      if( !stringutils::extractFromString(attribute,blue) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of b attribute for halfplanecolor " << halfplanecolornum << ". Value must be scalar. Exiting." << std::endl;
+        exit(1);
+      }        
+    }
+    else
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of b attribute for halfplanecolor " << halfplanecolornum << ". Exiting." << std::endl;
+      exit(1);
+    }
+    
+    if( blue < 0.0 || blue > 1.0 )
+    {
+      std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of b attribute for halfplanecolor " << halfplanecolornum << ". Invalid color specified. Valid range is " << 0.0 << "..." << 1.0 << std::endl;
+      exit(1);
+    }
+    
+    
+    halfplane_colors[halfplane] = renderingutils::Color(red,green,blue);
+    
+    ++halfplanecolornum;
   }  
 }
 

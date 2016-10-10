@@ -57,6 +57,17 @@ private:
   Color m_color;
 };
 
+struct Viewport
+{
+public:
+  Viewport() : cx(0.0), cy(0.0), size(0.) {}
+  double cx;
+  double cy;
+  double rx;
+  double ry;
+  double size;
+};
+
 }
 
 #endif

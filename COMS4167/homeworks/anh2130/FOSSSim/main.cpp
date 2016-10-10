@@ -1,65 +1,71 @@
-#include "TT.h"
-DEFINE_TESTS;
-
 #include <Eigen/StdVector>
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include <tclap/CmdLine.h>
 
+// TODO: Clean these up, we don't need them all anymore.
 #include "TwoDScene.h"
 #include "Force.h"
 #include "SpringForce.h"
 #include "ExplicitEuler.h"
+#include "SemiImplicitEuler.h"
 #include "TwoDimensionalDisplayController.h"
 #include "TwoDSceneRenderer.h"
 #include "TwoDSceneXMLParser.h"
 #include "TwoDSceneSerializer.h"
+#include "TwoDSceneGrader.h"
 #include "StringUtilities.h"
 #include "MathDefs.h"
 #include "TimingUtilities.h"
 #include "RenderingUtilities.h"
 #include "TwoDSceneSVGRenderer.h"
 #include "YImage.h"
-#include "Clogs.h" // logging utilities
+#include "CollisionHandler.h"
 
-#include "Macros.h" // for IGNORE_UNUSED
+#include "ExecutableSimulation.h"
+#include "ParticleSimulation.h"
+
+///////////////////////////////////////////////////////////////////////////////
+// Contains the actual simulation, renderer, parser, and serializer
+ExecutableSimulation* g_executable_simulation;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Rendering State
-TwoDimensionalDisplayController g_display_controller(512,512);
-TwoDSceneRenderer* g_scene_renderer = NULL;
-renderingutils::Color g_bgcolor(1.0,1.0,1.0);
 bool g_rendering_enabled = true;
-
-// if true, we enter testmain instead of anything else.
-bool g_testmode = false;
-bool g_suppress_logs = false;
-
 double g_sec_per_frame;
 double g_last_time = timingutils::seconds();
 
+TwoDimensionalDisplayController g_display_controller(1280,720);
+renderingutils::Color g_bgcolor(1.0,1.0,1.0);
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // SVG Rendering State
-
 bool g_svg_enabled = false;
 std::string g_movie_dir;
-TwoDSceneSVGRenderer* g_svg_renderer = NULL;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parser state
 std::string g_xml_scene_file;
-TwoDSceneXMLParser g_xml_scene_parser;
 std::string g_description;
+std::string g_scene_tag = "";
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Scene input/output/comparison state
-TwoDSceneSerializer g_scene_serializer;
-
 bool g_save_to_binary = false;
 std::string g_binary_file_name;
 std::ofstream g_binary_output;
+
+bool g_simulate_comparison = false;
+std::string g_comparison_file_name;
+std::ifstream g_binary_input;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Simulation state
@@ -67,12 +73,8 @@ bool g_paused = true;
 scalar g_dt = 0.0;
 int g_num_steps = 0;
 int g_current_step = 0;
-TwoDScene g_scene;
-SceneStepper* g_scene_stepper = NULL;
 bool g_simulation_ran_to_completion = false;
 
-
-std::string g_scene_tag = "";
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,50 +86,65 @@ void dumpPNG(const std::string &filename);
 
 void stepSystem()
 {
-  assert( g_scene_stepper != NULL );
-  
+  assert( !(g_save_to_binary&&g_simulate_comparison) );
+
   // Determine if the simulation is complete
   if( g_current_step >= g_num_steps )
   {
-    std::cout << std::endl;
     std::cout << outputmod::startpink << "FOSSSim message: " << outputmod::endpink << "Simulation complete at time " << g_current_step*g_dt << ". Exiting." << std::endl;
     g_simulation_ran_to_completion = true;
     exit(0);
+  }  
+
+  // If comparing simulations, copy state of comparison scene to simulated scene
+  if( g_simulate_comparison ) {
+    g_executable_simulation->copyComparisonSceneToScene();
   }
 
-  // Step the simulated scene forward
-  g_scene_stepper->stepScene( g_scene, g_dt );
-  
-  // Check for obvious problems in the simulated scene
-  #ifdef DEBUG
-    g_scene.checkConsistency();
-  #endif
-
-  //g_t += g_dt;
+  // Step the system forward in time
+  g_executable_simulation->stepSystem(g_dt);
   g_current_step++;
+
+  // If the user wants to save output to a binary
+  if( g_save_to_binary ) 
+    {
+      g_executable_simulation->serializeScene(g_binary_output);
+    }
   
-  // If saving the simulation output, do it!
-  if( g_save_to_binary ) g_scene_serializer.serializeScene( g_scene, g_binary_output );
-  
+
+  // Update the state of the renderers
+  if( g_rendering_enabled ) g_executable_simulation->updateOpenGLRendererState();
+  g_executable_simulation->updateSVGRendererState();
+
+  // If comparing simulations, load comparison scene's equivalent step
+  if( g_simulate_comparison ) g_executable_simulation->loadComparisonScene(g_binary_input);
+
+  // If the user wants to generate a SVG movie
   if( g_svg_enabled )
   {
     // Generate a filename
     std::stringstream name;
     name << std::setfill('0');
     name << g_movie_dir << "/frame" << std::setw(20) << g_current_step << ".svg";    
-    
-    g_svg_renderer->renderScene(name.str());
-  }
+    // Actually write the svg out
+    g_executable_simulation->renderSceneSVG(name.str());    
+  }  
+  
+  // If comparing simulations, compute the accumulated residual
+  if( g_simulate_comparison ) g_executable_simulation->updateSceneComparison();
   
   // If the user wants to generate a PNG movie
-#ifdef PNGOUT
-  std::stringstream oss;
-  oss << "pngs/frame" << std::setw(5) << std::setfill('0') << g_current_step << ".png";
-  dumpPNG(oss.str());
-#endif
+  #ifdef PNGOUT
+    std::stringstream oss;
+    oss << "pngs/frame" << std::setw(5) << std::setfill('0') << g_current_step << ".png";
+    dumpPNG(oss.str());
+  #endif
 
-  sceneScriptingCallback();
+  // Execute the user-customized output callback
   miscOutputCallback();
+
+  // Execute the user-customized scripting callback
+  sceneScriptingCallback();
 }
 
 void headlessSimLoop()
@@ -135,7 +152,6 @@ void headlessSimLoop()
   scalar nextpercent = 0.02;
   std::cout << outputmod::startpink << "Progress: " << outputmod::endpink;
   for( int i = 0; i < 50; ++i ) std::cout << "-";
-  //std::cout << "]" << std::endl;
   std::cout << std::endl;
   std::cout << "          ";
   while( true )
@@ -152,28 +168,27 @@ void headlessSimLoop()
 
 
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Rendering and UI functions
 
 void dumpPNG(const std::string &filename)
 {
-#ifdef PNGOUT
-  YImage image;
-  image.resize(g_display_controller.getWindowWidth(), g_display_controller.getWindowHeight());
-  
-  glPixelStorei(GL_PACK_ALIGNMENT, 4);
-  glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-  glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-  glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-  glReadBuffer(GL_BACK);
-  
-  glFinish();
-  glReadPixels(0, 0, g_display_controller.getWindowWidth(), g_display_controller.getWindowHeight(), GL_RGBA, GL_UNSIGNED_BYTE, image.data());
-  image.flip();
-  
-  image.save(filename.c_str());
-#endif
+  #ifdef PNGOUT
+    YImage image;
+    image.resize(g_display_controller.getWindowWidth(), g_display_controller.getWindowHeight());
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+    glReadBuffer(GL_BACK);
+
+    glFinish();
+    glReadPixels(0, 0, g_display_controller.getWindowWidth(), g_display_controller.getWindowHeight(), GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+    image.flip();
+
+    image.save(filename.c_str());
+  #endif
 }
 
 void reshape( int w, int h ) 
@@ -220,7 +235,7 @@ void drawHUD()
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
-  
+
   assert( renderingutils::checkGLErrors() );
 }
 
@@ -230,10 +245,11 @@ void display()
 
 	glMatrixMode(GL_MODELVIEW);
 
-  g_scene_renderer->renderScene();
-  
+  assert( g_executable_simulation != NULL );
+  g_executable_simulation->renderSceneOpenGL();
+
   drawHUD();
-  
+
   glutSwapBuffers();
 
   assert( renderingutils::checkGLErrors() );
@@ -241,37 +257,17 @@ void display()
 
 void centerCamera()
 {
-  const VectorXs& x = g_scene.getX();
-  assert( (int) x.size() == 2*g_scene.getNumParticles() );
-  
-  // Compute the bounds on all particle positions
-  scalar max_x = -std::numeric_limits<scalar>::infinity();
-  scalar min_x =  std::numeric_limits<scalar>::infinity();
-  scalar max_y = -std::numeric_limits<scalar>::infinity();
-  scalar min_y =  std::numeric_limits<scalar>::infinity();
-  for( int i = 0; i < g_scene.getNumParticles(); ++i )
-  {
-    if( x(2*i) > max_x ) max_x = x(2*i);
-    if( x(2*i) < min_x ) min_x = x(2*i);
-    if( x(2*i+1) > max_y ) max_y = x(2*i+1);
-    if( x(2*i+1) < min_y ) min_y = x(2*i+1);
-  }
-  
-  // Set center of view to center of bounding box
-  g_display_controller.setCenterX(0.5*(max_x+min_x));
-  g_display_controller.setCenterY(0.5*(max_y+min_y));
+  renderingutils::Viewport view;
 
-  // Set the zoom such that all particles are in view
-  scalar radius_x = 0.5*(max_x-min_x);
-  if( radius_x == 0.0 ) radius_x = 1.0;
-  scalar radius_y = 0.5*(max_y-min_y);
-  if( radius_y == 0.0 ) radius_y = 1.0;
+  g_executable_simulation->computeCameraCenter(view);
+
   scalar ratio = ((scalar)g_display_controller.getWindowHeight())/((scalar)g_display_controller.getWindowWidth());
-  
-  g_display_controller.setScaleFactor( 1.2*std::max(ratio*radius_x,radius_y) );
 
-  // OpenGL must be initialized before calling this function
-  //assert( checkGLErrors() );
+  view.size = 1.2*std::max(ratio*view.rx,view.ry);
+
+  g_display_controller.setCenterX(view.cx);
+  g_display_controller.setCenterY(view.cy);
+  g_display_controller.setScaleFactor(view.size);
 }
 
 void keyboard( unsigned char key, int x, int y )
@@ -285,8 +281,6 @@ void keyboard( unsigned char key, int x, int y )
   else if( key == 's' || key =='S' )
   {
     stepSystem();
-    g_scene_renderer->updateState();
-    g_svg_renderer->updateState();
     glutPostRedisplay();
   }
   else if( key == ' ' )
@@ -301,7 +295,8 @@ void keyboard( unsigned char key, int x, int y )
   }
   else if( key == 'i' || key == 'I' )
   {
-    g_svg_renderer->renderScene("output.svg");
+    std::cout << outputmod::startpink << "FOSSSim message: " << outputmod::endpink << "Saving screenshot as 'output.svg'." << std::endl;
+    g_executable_simulation->renderSceneSVG("output.svg");
   }
 
   assert( renderingutils::checkGLErrors() );
@@ -340,8 +335,6 @@ void idle()
   {
     g_last_time = current_time;
     stepSystem();
-    g_scene_renderer->updateState();
-    g_svg_renderer->updateState();
     glutPostRedisplay();
   }
   
@@ -350,9 +343,6 @@ void idle()
 
 void initializeOpenGLandGLUT( int argc, char** argv )
 {
-  // Center the camera on the scene
-  centerCamera();
-
   // Initialize GLUT
   glutInit(&argc,argv);
   glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
@@ -368,7 +358,7 @@ void initializeOpenGLandGLUT( int argc, char** argv )
   
   // Initialize OpenGL
 	reshape(g_display_controller.getWindowWidth(),g_display_controller.getWindowHeight());
-  glClearColor(g_bgcolor.r, g_bgcolor.g, g_bgcolor.b, 0.0);
+  glClearColor(g_bgcolor.r, g_bgcolor.g, g_bgcolor.b, 1.0);
   
   assert( renderingutils::checkGLErrors() );
 }
@@ -379,112 +369,100 @@ void initializeOpenGLandGLUT( int argc, char** argv )
 
 void loadScene( const std::string& file_name )
 {
-  assert( g_scene_stepper == NULL );
-  
-  // TODO: Just pass scene renderer to xml scene parser
+  // Maximum time in the simulation to run for. This has nothing to do with run time, cpu time, etc. This is time in the 'virtual world'.
   scalar max_time;
-  std::vector<renderingutils::Color> particle_colors;
-  std::vector<renderingutils::Color> edge_colors;
-  std::vector<renderingutils::ParticlePath> particle_paths;
-  scalar steps_per_sec_cap = 100;
-  g_xml_scene_parser.loadSceneFromXML( file_name, g_scene, &g_scene_stepper, g_dt, max_time, steps_per_sec_cap, particle_colors, edge_colors, particle_paths, g_bgcolor, g_description, g_scene_tag );
-    
-  g_sec_per_frame = 1.0/steps_per_sec_cap;
-  
-  if( g_rendering_enabled )
+  // Maximum frequency, in wall clock time, to execute the simulation for. This serves as a cap for simulations that run too fast to see a solution.
+  scalar steps_per_sec_cap = 100.0;
+  // Contains the center and 'scale factor' of the view
+  renderingutils::Viewport view;
+
+  // Load the simulation and pieces of rendring and UI state
+  assert( g_executable_simulation == NULL );
+  TwoDSceneXMLParser xml_scene_parser;
+  xml_scene_parser.loadExecutableSimulation( file_name, g_simulate_comparison, g_rendering_enabled, g_display_controller, &g_executable_simulation,
+                                             view, g_dt, max_time, steps_per_sec_cap, g_bgcolor, g_description, g_scene_tag );
+  assert( g_executable_simulation != NULL );
+
+  // If the user did not request a custom viewport, try to compute a reasonable default.
+  if( view.size <= 0.0 )
   {
-    g_scene_renderer = new TwoDSceneRenderer(g_scene,particle_colors,edge_colors,particle_paths);
-    g_scene_renderer->updateState();
+    centerCamera();
   }
-  
-  //if( g_svg_enabled ) 
-  //{
-  g_svg_renderer = new TwoDSceneSVGRenderer(g_scene,particle_colors,edge_colors,particle_paths,512,512,g_bgcolor);
-  g_svg_renderer->updateState();
-  //}
+  // Otherwise set the viewport per the user's request.
+  else
+  {
+    g_display_controller.setCenterX(view.cx);
+    g_display_controller.setCenterY(view.cy);
+    g_display_controller.setScaleFactor(view.size);
+  }
 
+  // To cap the framerate, compute the minimum time a single timestep should take
+  g_sec_per_frame = 1.0/steps_per_sec_cap;
+  // Integer number of timesteps to take
   g_num_steps = ceil(max_time/g_dt);
-  g_current_step = 0;
-  
-  assert( g_scene_stepper != NULL );
-  assert( g_dt > 0.0 );
-}
-
-bool isTestMode(int argc, char** argv) {
-    for (int i = 0; i < argc; i++) {
-        if (string(argv[i]) == "-t" || string(argv[i]) == "--testmode") {
-            return true;
-        }
-    }
-    return false;
+  // We begin at the 0th timestep
+  g_current_step = 0;  
 }
 
 void parseCommandLine( int argc, char** argv )
 {
-    try 
+  try 
+  {
+    TCLAP::CmdLine cmd("Forty One Sixty Seven Sim");
+    
+    // XML scene file to load
+    TCLAP::ValueArg<std::string> scene("s", "scene", "Simulation to run; an xml scene file", true, "", "string", cmd);
+    
+    // Begin the scene paused or running
+    TCLAP::ValueArg<bool> paused("p", "paused", "Begin the simulation paused if 1, running if 0", false, true, "boolean", cmd);
+    
+    // Run the simulation with rendering enabled or disabled
+    TCLAP::ValueArg<bool> display("d", "display", "Run the simulation with display enabled if 1, without if 0", false, true, "boolean", cmd);
+    
+    // These cannot be set at the same time
+    // File to save output to
+    TCLAP::ValueArg<std::string> output("o", "outputfile", "Binary file to save simulation state to", false, "", "string", cmd);
+    // File to load for comparisons
+    TCLAP::ValueArg<std::string> input("i", "inputfile", "Binary file to load simulation state from for comparison", false, "", "string", cmd);
+    
+    // Save svgs to a movie directory
+    TCLAP::ValueArg<std::string> movie("m", "moviedir", "Directory to output svg screenshot to", false, "", "string", cmd);
+    
+    cmd.parse(argc, argv);
+    
+    if( output.isSet() && input.isSet() ) throw TCLAP::ArgException( "arguments i and o specified simultaneously", "arguments i and o", "invalid argument combination" );
+    
+    assert( scene.isSet() );
+    g_xml_scene_file = scene.getValue();
+    g_paused = paused.getValue();
+    g_rendering_enabled = display.getValue();
+    
+    if( output.isSet() )
     {
-        if (isTestMode(argc, argv)) {
-          g_testmode = true;
-          return;
-        }
-
-        TCLAP::CmdLine cmd("Forty One Sixty Seven Sim");
-        
-        // Will be caught above, but just so that the documentation is there...
-        TCLAP::ValueArg<bool> testmode("t", "testmode", "If present, runs unit tests instead of executing FOSSSim", false, g_testmode, "", cmd);
-
-        // XML scene file to load
-        TCLAP::ValueArg<std::string> scene("s", "scene", "Simulation to run; an xml scene file", true, "", "string", cmd);
-        
-        // Begin the scene paused or running
-        TCLAP::ValueArg<bool> paused("p", "paused", "Begin the simulation paused if 1, running if 0", false, true, "boolean", cmd);
-        
-        // Run the simulation with rendering enabled or disabled
-        TCLAP::ValueArg<bool> display("d", "display", "Run the simulation with display enabled if 1, without if 0", false, true, "boolean", cmd);
-        
-        // If true, suppresses log output to all clogs logs.
-        TCLAP::ValueArg<bool> suppress_logs("l", 
-            "suppress-logs", 
-            "If 1, prevent clogs from writing to any log files.", 
-            false,            // required?
-            g_suppress_logs,  // default value, if none is provided.
-            "boolean", 
-            cmd);
-
-        // File to save output to
-        TCLAP::ValueArg<std::string> output("o", "outputfile", "Binary file to save simulation state to", false, "", "string", cmd);
-        // Save svgs to a movie directory
-        TCLAP::ValueArg<std::string> movie("m", "moviedir", "Directory to output svg screenshot to", false, "", "string", cmd);
-      
-
-      
-        
-        cmd.parse(argc, argv);
-        
-        assert( scene.isSet() );
-        g_xml_scene_file = scene.getValue();
-        g_paused = paused.getValue();
-        g_rendering_enabled = display.getValue();
-        g_suppress_logs = suppress_logs.getValue();
-
-        if( movie.isSet() )
-        {
-          g_svg_enabled = true;
-          g_movie_dir = movie.getValue();
-        }
-
-        if( output.isSet() )
-        {
-            g_save_to_binary = true;
-            g_binary_file_name = output.getValue();
-        }
-    } 
-    catch (TCLAP::ArgException& e) 
-    {
-        std::cerr << "error: " << e.what() << std::endl;
-        exit(1);
+      g_save_to_binary = true;
+      g_binary_file_name = output.getValue();
     }
+    
+    if( input.isSet() )
+    {
+      g_simulate_comparison = true;
+      g_comparison_file_name = input.getValue();
+    }
+
+    if( movie.isSet() )
+    {
+      g_svg_enabled = true;
+      g_movie_dir = movie.getValue();
+    }
+  } 
+  catch (TCLAP::ArgException& e) 
+  {
+    std::cerr << "error: " << e.what() << std::endl;
+    exit(1);
+  }
 }
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Various support functions
@@ -493,31 +471,26 @@ void miscOutputFinalization();
 
 void cleanupAtExit()
 {
-  if( g_scene_renderer != NULL )
-  {
-    delete g_scene_renderer;
-    g_scene_renderer = NULL;
-  }
-  
-  if( g_svg_renderer != NULL )
-  {
-    delete g_svg_renderer;
-    g_svg_renderer = NULL;
-  }
-  
-  if( g_scene_stepper != NULL )
-  {
-    delete g_scene_stepper;
-    g_scene_stepper = NULL;
-  }
-  
   if( g_binary_output.is_open() )
   {
-    std::cout << outputmod::startpink << "FOSSSim message: " << outputmod::endpink << "Saved simulation to file." << std::endl;
+    std::cout << outputmod::startpink << "FOSSSim message: " << outputmod::endpink << "Saved simulation to file '" << g_binary_file_name << "'." << std::endl;
     g_binary_output.close();
   }
 
+  if( g_binary_input.is_open() )
+  {
+    std::cout << outputmod::startpink << "FOSSSim message: " << outputmod::endpink << "Colsing benchmarked simulation file '" << g_comparison_file_name << "'." << std::endl;
+  }
+
+  if( g_executable_simulation != NULL && g_simulate_comparison ) g_executable_simulation->printErrorInformation( g_simulation_ran_to_completion );
+
   miscOutputFinalization();
+
+  if( g_executable_simulation != NULL )
+  {
+    delete g_executable_simulation;
+    g_executable_simulation = NULL;
+  }  
 }
 
 std::ostream& fosssim_header( std::ostream& stream )
@@ -557,34 +530,34 @@ void miscOutputFinalization()
 // Called at the end of each timestep. Intended for adding effects to creative scenes.
 void sceneScriptingCallback()
 {
-  // If the scene is one we wish to 'script'
-  if( g_scene_tag == "ParticleFountain" )
-  {
-    // Get the particle tags
-    const std::vector<std::string>& tags = g_scene.getParticleTags();
-    // Get the particle positions
-    VectorXs& x = g_scene.getX();
-    // Get the particle velocities
-    VectorXs& v = g_scene.getV();
-    // Get the particle colors
-    std::vector<renderingutils::Color>& pcolors = g_scene_renderer->getParticleColors();
-
-    // If any particles are tagged for teleportation and fall below -1.25
-    for( std::vector<std::string>::size_type i = 0; i < tags.size(); ++i ) if( tags[i] == "teleport" && x(2*i+1) < -1.25 )
-    {
-      // Return this particle to the origin
-      x.segment<2>(2*i).setZero();
-      // Give this particle some random upward velocity
-      double vx = 0.2*(((double)rand())/((double)RAND_MAX)-0.5);
-      double vy = 0.15*((double)rand())/((double)RAND_MAX);
-      v.segment<2>(2*i) << vx, vy;
-      // Assign the particle a random color
-      pcolors[i].r = ((double)rand())/((double)RAND_MAX);
-      pcolors[i].g = ((double)rand())/((double)RAND_MAX);
-      pcolors[i].b = ((double)rand())/((double)RAND_MAX);
-    }
-  }
-  else if(g_scene_tag == "Boids_t1m2")
+//  // If the scene is one we wish to 'script'
+//  if( g_scene_tag == "ParticleFountain" )
+//  {
+//    // Get the particle tags
+//    const std::vector<std::string>& tags = g_scene.getParticleTags();
+//    // Get the particle positions
+//    VectorXs& x = g_scene.getX();
+//    // Get the particle velocities
+//    VectorXs& v = g_scene.getV();
+//    // Get the particle colors
+//    std::vector<renderingutils::Color>& pcolors = g_scene_renderer->getParticleColors();
+//
+//    // If any particles are tagged for teleportation and fall below -1.25
+//    for( std::vector<std::string>::size_type i = 0; i < tags.size(); ++i ) if( tags[i] == "teleport" && x(2*i+1) < -1.25 )
+//    {
+//      // Return this particle to the origin
+//      x.segment<2>(2*i).setZero();
+//      // Give this particle some random upward velocity
+//      double vx = 0.2*(((double)rand())/((double)RAND_MAX)-0.5);
+//      double vy = 0.15*((double)rand())/((double)RAND_MAX);
+//      v.segment<2>(2*i) << vx, vy;
+//      // Assign the particle a random color
+//      pcolors[i].r = ((double)rand())/((double)RAND_MAX);
+//      pcolors[i].g = ((double)rand())/((double)RAND_MAX);
+//      pcolors[i].b = ((double)rand())/((double)RAND_MAX);
+//    }
+//  }
+    /*else if(g_scene_tag == "Boids_t1m2")
     {
         const std::vector<std::string>& tags = g_scene.getParticleTags();
         VectorXs& x = g_scene.getX();
@@ -626,28 +599,18 @@ void sceneScriptingCallback()
         }}
         x += v;
     }
+	*/
 }
 
-// sets up clogs so that logging can occur.
-CLOGS_OPEN;
-
 int main( int argc, char** argv )
-{  
+{
   // Parse command line arguments
   parseCommandLine( argc, argv );
-
-  if (g_testmode) {
-    std::cout << "Running tests instead of simulation..." << std::endl;
-    return tt::Test::main();
-  }
-
+  
+  assert( !(g_save_to_binary && g_simulate_comparison) );
+  
   // Function to cleanup at progarm exit
   atexit(cleanupAtExit);
-  
-  if (g_suppress_logs) {
-    // ensures that clogs will do nothing.
-    SUPPRESS_ALL_CLOGS();
-  }
 
   // Load the user-specified scene
   loadScene(g_xml_scene_file);
@@ -655,6 +618,7 @@ int main( int argc, char** argv )
   // If requested, open the binary output file
   if( g_save_to_binary )
   {
+    // Attempt to open the binary
     g_binary_output.open(g_binary_file_name.c_str());
     if( g_binary_output.fail() ) 
     {
@@ -662,15 +626,28 @@ int main( int argc, char** argv )
       exit(1);
     }
     // Save the initial conditions
-    g_scene_serializer.serializeScene( g_scene, g_binary_output );
+    g_executable_simulation->serializeScene(g_binary_output);
   }
+  // If requested, open the input file for the scene to benchmark
+  else if( g_simulate_comparison )
+  {
+    // Attempt to open the binary
+    g_binary_input.open(g_comparison_file_name.c_str());
+    if( g_binary_input.fail() ) 
+    {
+      std::cerr << outputmod::startred << "ERROR IN INITIALIZATION: "  << outputmod::endred << "Failed to open binary input file: " << " `" << argv[3] << "`   Exiting." << std::endl;
+      exit(1);
+    }
+    assert( g_executable_simulation != NULL );
+    g_executable_simulation->loadComparisonScene(g_binary_input);
+  }  
 
   // Initialization for OpenGL and GLUT
   if( g_rendering_enabled ) initializeOpenGLandGLUT(argc,argv);
 
   // Print a header
   std::cout << fosssim_header << std::endl;
-    
+
   // Print some status info about this FOSSSim build
   #ifdef FOSSSIM_VERSION
     std::cout << outputmod::startblue << "FOSSSim Version: "  << outputmod::endblue << FOSSSIM_VERSION << std::endl;
@@ -685,13 +662,15 @@ int main( int argc, char** argv )
   #endif
   
   std::cout << outputmod::startblue << "Scene: " << outputmod::endblue << g_xml_scene_file << std::endl;
-  std::cout << outputmod::startblue << "Integrator: " << outputmod::endblue << g_scene_stepper->getName() << std::endl;
+  std::cout << outputmod::startblue << "Integrator: " << outputmod::endblue << g_executable_simulation->getSolverName() << std::endl;
+  std::cout << outputmod::startblue << "Collision Handling: " << outputmod::endblue << g_executable_simulation->getCollisionHandlerName() << std::endl;
   std::cout << outputmod::startblue << "Description: " << outputmod::endblue << g_description << std::endl;
-  
+
   if( g_save_to_binary ) std::cout << outputmod::startpink << "FOSSSim message: "  << outputmod::endpink << "Saving simulation to: " << g_binary_file_name << std::endl;
-  
+  if( g_simulate_comparison ) std::cout << outputmod::startpink << "FOSSSim message: "  << outputmod::endpink << "Benchmarking simulation in: " << g_comparison_file_name << std::endl;
+
   miscOutputInitialization();
-  
+
   if( g_rendering_enabled ) glutMainLoop();
   else headlessSimLoop();
 

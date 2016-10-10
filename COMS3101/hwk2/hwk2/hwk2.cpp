@@ -111,18 +111,14 @@ public:
 	{
 		for (int i = 0; i < 9; ++i)
 			for (int j = 0; j < 9; ++j)
-				if (!values[i][j])
+				if (values[i][j] <= 0)
 					return false;
 		return true;
 	}
 	void PrintGamePosition()
 	{
 		for (int i = 0; i < 9; ++i)
-		{
-			for (int j = 0; j < 9; ++j)
-				std::cout << values[i][j];
-			std::cout << std::endl;
-		}
+			std::cout << values[0][i] << std::endl;
 		return;
 	}
 };
@@ -130,6 +126,7 @@ public:
 int main()
 {
 	Sudoku sdk;
+	Sudoku s1 = Sudoku();
 	sdk.readDataFromFile("file.txt");
     sdk.PrintGamePosition();
     if(sdk.isOver()) std::cout << "it is over" << std::endl;

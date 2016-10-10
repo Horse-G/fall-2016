@@ -20,6 +20,7 @@ public:
 
   int getNumParticles() const;
   int getNumEdges() const;
+  int getNumHalfplanes() const;
   
   const VectorXs& getX() const;
 
@@ -34,7 +35,7 @@ public:
   VectorXs& getM();
   
   const std::vector<scalar>& getRadii() const;
-  
+
   void resizeSystem( int num_particles );
   
   void setPosition( int particle, const Vector2s& pos );
@@ -51,10 +52,20 @@ public:
   void setRadius( int particle, scalar radius );
   
   void clearEdges();
+
+  void clearHalfplanes();
   
   void insertEdge( const std::pair<int,int>& edge, scalar radius );
+
+  void insertHalfplane( const std::pair<VectorXs, VectorXs> &halfplane);
   
   const std::vector<std::pair<int,int> >& getEdges() const;
+
+  // Each halfplane is a pair of two 2D vectors, a position and a normal.
+  // The the Theme 02 Milestone 01 PDF for a description of these vectors.
+  const std::vector<std::pair<VectorXs, VectorXs> >& getHalfplanes() const;
+
+  const std::pair<VectorXs, VectorXs> &getHalfplane(int idx) const;
 
   const std::vector<scalar>& getEdgeRadii() const;
   
@@ -90,6 +101,7 @@ private:
   // Vertex radii
   std::vector<scalar> m_radii;
   std::vector<std::pair<int,int> > m_edges;
+  std::vector<std::pair<VectorXs, VectorXs> > m_halfplanes;
   std::vector<scalar> m_edge_radii;
   // Forces. Note that the scene inherits responsibility for deleting forces.
   std::vector<Force*> m_forces;
