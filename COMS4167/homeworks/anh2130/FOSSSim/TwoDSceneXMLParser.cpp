@@ -1071,7 +1071,46 @@ void TwoDSceneXMLParser::loadCollisionHandler( rapidxml::xml_node<>* node, TwoDS
   std::string handlertype(typend->value());
   if(handlertype == "none") *handler = NULL;
   else if(handlertype == "simple") *handler = new SimpleCollisionHandler(cor);
-  else if(handlertype == "penalty")
+  else if(handlertype == "continuous-time") *handler = new ContinuousTimeCollisionHandler(cor);
+  else if(handlertype == "hybrid")
+  {
+      // Load max iteration attribute
+      double maxiters=10;
+      rapidxml::xml_attribute<> *maxiternd = nd->first_attribute("maxiters");
+      if(maxiternd != NULL)
+      {
+          if(!stringutils::extractFromString(std::string(maxiternd->value()), maxiters))
+          {
+              std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'maxiters' attribute for collision handler. Value must be numeric. Exiting."<< std::endl;
+              exit(1);
+          }
+      }
+      *handler = new HybridCollisionHandler(maxiters, cor);
+      
+      // Attempt to load stiffness attribute
+      double k=10;
+      rapidxml::xml_attribute<> *knd = nd->first_attribute("k");
+      if(knd != NULL)
+      {
+          if(!stringutils::extractFromString(std::string(knd->value()), k))
+          {
+              std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'k' attribute for collision handler. Value must be numeric. Exiting." << std::endl;
+              exit(1);
+          }
+      }
+      
+      double thickness=0.1;
+      rapidxml::xml_attribute<> *thicknd = nd->first_attribute("thickness");
+      if(thicknd != NULL)
+      {
+          if(!stringutils::extractFromString(std::string(thicknd->value()), thickness))
+          {
+              std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'thickness' attribute for collision handler. Value must be numeric. Exiting." << std::endl;
+              exit(1);
+          }
+      }
+      scene.insertForce(new PenaltyForce(scene, k, thickness));
+  } else if(handlertype == "penalty")
     {
       // Attempt to load stiffness attribute
       double k=100;

@@ -137,6 +137,7 @@ std::string LinearizedImplicitEuler::getName() const
 {
   return "Linearized Implicit Euler";
 }
+
 /*
 void LinearizedImplicitEuler::zeroFixedDoFs( const TwoDScene& scene, VectorXs& vec )
 {

@@ -28,6 +28,8 @@
 #include "CollisionHandler.h"
 
 #include "SimpleCollisionHandler.h"
+#include "ContinuousTimeCollisionHandler.h"
+#include "HybridCollisionHandler.h"
 #include "PenaltyForce.h"
 
 #include "TwoDSceneRenderer.h"

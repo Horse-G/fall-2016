@@ -147,6 +147,20 @@ void stepSystem()
   sceneScriptingCallback();
 }
 
+void syncScene()
+{
+    if( g_save_to_binary ) 
+    {
+        g_executable_simulation->serializeScene(g_binary_output);
+    }
+
+    if( g_simulate_comparison )
+    {
+        g_executable_simulation->loadComparisonScene(g_binary_input);
+        g_executable_simulation->copyComparisonSceneToScene();
+    }
+}
+
 void headlessSimLoop()
 {
   scalar nextpercent = 0.02;
@@ -557,7 +571,7 @@ void sceneScriptingCallback()
 //      pcolors[i].b = ((double)rand())/((double)RAND_MAX);
 //    }
 //  }
-    /*else if(g_scene_tag == "Boids_t1m2")
+/*else if(g_scene_tag == "Boids_t1m2")
     {
         const std::vector<std::string>& tags = g_scene.getParticleTags();
         VectorXs& x = g_scene.getX();

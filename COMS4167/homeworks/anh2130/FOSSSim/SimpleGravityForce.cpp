@@ -17,7 +17,7 @@ void SimpleGravityForce::addEnergyToTotal( const VectorXs& x, const VectorXs& v,
   assert( x.size() == m.size() );
   assert( x.size()%2 == 0 );
 
-  // Assume 0 potential is at origin
+   // Assume 0 potential is at origin
   //for( int i = 0; i < x.size()/2; ++i ) E -= m(2*i)*m_gravity.dot(x.segment<2>(2*i));
   for(int i = x.size()/2 -1; i >= 0; --i)
       E -= m(2*i) * m_gravity.dot(x.segment<2>(2*i));

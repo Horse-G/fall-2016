@@ -25,11 +25,11 @@ void DragDampingForce::addGradEToTotal( const VectorXs& x, const VectorXs& v, co
   assert( x.size() == m.size() );
   assert( x.size() == gradE.size() );
   assert( x.size()%2 == 0 );
-/*
+ /*
   for( int i = 0; i < x.size()/2; ++i ) gradE.segment<2>(2*i) += m_b*v.segment<2>(2*i);
 */
        for(int i = x.size()/2-1; i >= 0; --i)
-            gradE.segment<2>(2*i) += m_b*v.segment<2>(2*i);
+            gradE.segment<2>(2*i) += m_b*v.segment<2>(2*i);  for( int i = 0; i < x.size()/2; ++i ) gradE.segment<2>(2*i) += m_b*v.segment<2>(2*i);
 }
 
 void DragDampingForce::addHessXToTotal( const VectorXs& x, const VectorXs& v, const VectorXs& m, MatrixXs& hessE )
@@ -55,7 +55,6 @@ for(int i = x.size()/2-1; i >= 0; --i)
     hessE.block<2,2>(2*i,2*i) += m_b*Matrix2s::Identity();
 */
         hessE.diagonal().array() += m_b;
-        
 }
 
 Force* DragDampingForce::createNewCopy()

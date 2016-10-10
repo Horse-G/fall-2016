@@ -37,6 +37,7 @@ void SpringForce::addGradEToTotal( const VectorXs& x, const VectorXs& v, const V
   assert( x.size()%2 == 0 );
   assert( m_endpoints.first >= 0 );  assert( m_endpoints.first < x.size()/2 );
   assert( m_endpoints.second >= 0 ); assert( m_endpoints.second < x.size()/2 );
+
 /*
   // Compute the elastic component
   Vector2s nhat = x.segment<2>(2*m_endpoints.second)-x.segment<2>(2*m_endpoints.first); 
@@ -159,7 +160,7 @@ void SpringForce::addHessVToTotal( const VectorXs& x, const VectorXs& v, const V
         hessE.block<2,2>(2*m_endpoints.first,2*m_endpoints.first)   += big_B;
         hessE.block<2,2>(2*m_endpoints.second,2*m_endpoints.second) += big_B;
         hessE.block<2,2>(2*m_endpoints.first,2*m_endpoints.second)  -= big_B;
-        hessE.block<2,2>(2*m_endpoints.second,2*m_endpoints.first)  -= big_B;
+        hessE.block<2,2>(2*m_endpoints.second,2*m_endpoints.first)  -= big_B; 
 }
 
 Force* SpringForce::createNewCopy()

@@ -10,6 +10,8 @@
 #include "TwoDSceneGrader.h"
 #include "CollisionHandler.h"
 #include "TwoDSceneSerializer.h"
+#include "ContinuousTimeCollisionHandler.h"
+#include "ContinuousTimeUtilities.h"
 
 // TODO: Move code out of header!
 
@@ -93,6 +95,7 @@ public:
         if( m_collision_handler != NULL )
         {
             m_collision_handler->clearImpulses();
+            PolynomialIntervalSolver::clearPolynomials();
             m_collision_handler->handleCollisions( *m_scene, oldpos, oldvel, dt );
         }
         
@@ -111,9 +114,6 @@ public:
         assert( m_comparison_scene != NULL );
         assert( m_scene_grader != NULL );
 
-        // position/velocity residuals
-        m_scene_grader->addToAccumulatedResidual( *m_scene, *m_comparison_scene );
-        
         // collision comparison
         if (m_collision_handler)
         {
@@ -148,6 +148,64 @@ public:
                 m_scene_grader->setCollisionsFailed();
             }
         }
+        
+        // continuous time polynomial comparison
+        if (dynamic_cast<ContinuousTimeCollisionHandler *>(m_collision_handler))
+        {
+            bool fail = false;
+            const std::vector<Polynomial> & polynomials = PolynomialIntervalSolver::getPolynomials();
+            if (m_comparison_polynomials.size() != polynomials.size())
+            {
+                std::cout << "Wrong number of polynomials!" << std::endl;
+                fail = true;
+            } else
+            {
+                for (size_t i = 0; i < m_comparison_polynomials.size(); i++)
+                {
+                    const std::vector<double> & coef1 = m_comparison_polynomials[i].getCoeffs();
+                    const std::vector<double> & coef2 = polynomials[i].getCoeffs();
+                    if (coef1.size() != coef2.size())
+                    {
+                        std::cout << "Wrong polynomial degree!" << std::endl;
+                        fail = true;
+                        continue;
+                    }
+                    double sum1 = 0;
+                    double sum2 = 0;
+                    for (size_t j = 0; j < coef1.size(); j++)
+                    {
+                        sum1 += fabs(coef1[j]);
+                        sum2 += fabs(coef2[j]);
+                    }
+                    if (sum1 < 1e-10 && sum2 < 1e-10)
+                    {
+                        continue;
+                    }
+                    if (sum2 < 1e-10)
+                    {
+                        std::cout << "Polynomial coefficients are close to all zero!" << std::endl;
+                        fail = true;
+                        continue;
+                    }
+                    for (size_t j = 0; j < coef1.size(); j++)
+                    {
+                        if (fabs(coef1[j] - coef2[j] * sum1 / sum2) > 1e-10)
+                        {
+                            std::cout << "Wrong polynomial coefficients!" << std::endl;
+                            fail = true;
+                            continue;
+                        }
+                    }
+                }
+            }
+            if (fail)
+            {
+                m_scene_grader->setCollisionsFailed();
+            }
+        }
+        
+        // position/velocity residuals
+        m_scene_grader->addToAccumulatedResidual( *m_scene, *m_comparison_scene );
     }
     
     virtual void printErrorInformation( bool print_pass )
@@ -296,10 +354,15 @@ public:
         assert( m_scene != NULL );
         m_scene_serializer.serializeScene( *m_scene, outputstream );
         
-        if( m_collision_handler != NULL )
+        if (m_collision_handler != NULL)
         {
-            m_collision_handler->serializeImpulses( outputstream );
+            m_collision_handler->serializeImpulses(outputstream);
         }    
+        
+        if (dynamic_cast<ContinuousTimeCollisionHandler *>(m_collision_handler))
+        {
+            PolynomialIntervalSolver::writePolynomials(outputstream);
+        }
     }
     
     virtual void loadComparisonScene( std::ifstream& inputstream )
@@ -307,13 +370,14 @@ public:
         assert( m_comparison_scene != NULL );
         m_scene_serializer.loadScene( *m_comparison_scene, inputstream );
         
-        if( m_collision_handler != NULL )
+        if (m_collision_handler != NULL)
         {
-            m_comparison_impulses.clear();
-            if( m_collision_handler != NULL ) 
-            {
-                m_collision_handler->loadImpulses( m_comparison_impulses, inputstream );
-            }
+            m_collision_handler->loadImpulses(m_comparison_impulses, inputstream);
+        }
+        
+        if (dynamic_cast<ContinuousTimeCollisionHandler *>(m_collision_handler))
+        {
+            PolynomialIntervalSolver::readPolynomials(m_comparison_polynomials, inputstream);
         }
     }
     
@@ -344,6 +408,7 @@ private:
     
     CollisionHandler* m_collision_handler;
     std::vector<CollisionInfo> m_comparison_impulses;
+    std::vector<Polynomial> m_comparison_polynomials;
     
     TwoDSceneRenderer* m_scene_renderer;
     TwoDSceneSVGRenderer* m_svg_renderer;

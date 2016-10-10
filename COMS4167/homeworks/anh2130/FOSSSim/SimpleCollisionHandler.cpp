@@ -73,11 +73,31 @@ std::string SimpleCollisionHandler::getName() const
 //   Returns true if the two particles overlap and are approaching.
 bool SimpleCollisionHandler::detectParticleParticle(TwoDScene &scene, int idx1, int idx2, Vector2s &n)
 {
-    n = scene.getX().segment<2>(2*idx2) - scene.getX().segment<2>(2*idx1);
+//    VectorXs x1 = scene.getX().segment<2>(2*idx1);
+//    VectorXs x2 = scene.getX().segment<2>(2*idx2);
+//    
+//    // your implementation here
+//    
+//    return false;
+    VectorXs x1 = scene.getX().segment<2>(2*idx1);
+    VectorXs x2 = scene.getX().segment<2>(2*idx2);
+    n = x2-x1;
+    if(n.norm() < scene.getRadius(idx1) + scene.getRadius(idx2))
+    {
+        double relvel = (scene.getV().segment<2>(2*idx1)-scene.getV().segment<2>(2*idx2)).dot(n);
+        if(relvel > 0)
+            return true;
+    }
+    return false;
+	
+	/*
+	TODO CHECK WHY MINE DIDN"T WORK
+	n = scene.getX().segment<2>(2*idx2) - scene.getX().segment<2>(2*idx1);
     
     if(n.norm() - scene.getRadius(idx1) - scene.getRadius(idx2) < 0 && (scene.getV().segment<2>(2*idx1) - scene.getV().segment<2>(2*idx2)).dot(n) > 0)
         return true;
     return false;
+	*/
 }
 
 // Detects whether a particle and an edge are overlapping (including the radii 
@@ -94,7 +114,37 @@ bool SimpleCollisionHandler::detectParticleParticle(TwoDScene &scene, int idx1, 
 //   Returns true if the two objects overlap and are approaching.
 bool SimpleCollisionHandler::detectParticleEdge(TwoDScene &scene, int vidx, int eidx, Vector2s &n)
 {
-    Vector2s x1 = scene.getX().segment<2>(2*vidx);
+//    VectorXs x1 = scene.getX().segment<2>(2*vidx);
+//    VectorXs x2 = scene.getX().segment<2>(2*scene.getEdges()[eidx].first);
+//    VectorXs x3 = scene.getX().segment<2>(2*scene.getEdges()[eidx].second);
+//    
+//    // your implementation here
+//    
+//    return false;
+    VectorXs x1 = scene.getX().segment<2>(2*vidx);
+    VectorXs x2 = scene.getX().segment<2>(2*scene.getEdges()[eidx].first);
+    VectorXs x3 = scene.getX().segment<2>(2*scene.getEdges()[eidx].second);
+    double alpha = (x1-x2).dot(x3-x2)/(x3-x2).dot(x3-x2);
+    alpha = std::min(1.0, std::max(0.0, alpha));
+    
+    VectorXs closest = x2 + alpha*(x3-x2);
+    n = closest-x1;
+    
+    if(n.norm() < scene.getRadius(vidx)+scene.getEdgeRadii()[eidx]) 
+    {
+        VectorXs v1 = scene.getV().segment<2>(2*vidx);
+        VectorXs v2 = scene.getV().segment<2>(2*scene.getEdges()[eidx].first);
+        VectorXs v3 = scene.getV().segment<2>(2*scene.getEdges()[eidx].second);
+        double relvel = (v1 - v2 - alpha*(v3-v2)).dot(n);
+        if(relvel > 0)
+        {
+            return true;
+        }
+    }
+    return false;
+	/*
+	TODO CHECK WHY MINE DIDN"T WORK
+	Vector2s x1 = scene.getX().segment<2>(2*vidx);
     Vector2s x2 = scene.getX().segment<2>(2*scene.getEdges()[eidx].first);
     Vector2s x32 = scene.getX().segment<2>(2*scene.getEdges()[eidx].second) - scene.getX().segment<2>(2*scene.getEdges()[eidx].first);
     Vector2s v1 = scene.getV().segment<2>(2*vidx);
@@ -111,6 +161,7 @@ bool SimpleCollisionHandler::detectParticleEdge(TwoDScene &scene, int vidx, int 
     if(n.norm() - scene.getRadius(vidx) - scene.getEdgeRadii()[eidx] < 0 && (v1 - v2 - alpha*v32).dot(n) > 0)
         return true;
     return false;
+	*/
 }
 
 // Detects whether a particle and a half-plane are overlapping (including the 
@@ -127,7 +178,28 @@ bool SimpleCollisionHandler::detectParticleEdge(TwoDScene &scene, int vidx, int 
 //   Returns true if the two objects overlap and are approaching.
 bool SimpleCollisionHandler::detectParticleHalfplane(TwoDScene &scene, int vidx, int pidx, Vector2s &n)
 {
-    VectorXs _x = scene.getX().segment<2>(2*vidx);
+//    VectorXs x1 = scene.getX().segment<2>(2*vidx);
+//    VectorXs px = scene.getHalfplane(pidx).first;
+//    VectorXs pn = scene.getHalfplane(pidx).second;
+//    
+//    // your implementation here
+//    
+//    return false;
+    VectorXs x1 = scene.getX().segment<2>(2*vidx);
+    VectorXs px = scene.getHalfplane(pidx).first;
+    VectorXs pn = scene.getHalfplane(pidx).second;
+    pn.normalize();
+    n = (px-x1).dot(pn)*pn;
+    if(n.norm() < scene.getRadius(vidx))
+    {
+        double relvel = scene.getV().segment<2>(2*vidx).dot(n);
+        if(relvel > 0)
+            return true;
+    }
+    return false;
+	/*
+	TODO CHECK WHY MINE DIDN"T WORK
+	VectorXs _x = scene.getX().segment<2>(2*vidx);
     VectorXs xh = scene.getHalfplane(pidx).first;
     VectorXs nh = scene.getHalfplane(pidx).second;
     
@@ -137,6 +209,7 @@ bool SimpleCollisionHandler::detectParticleHalfplane(TwoDScene &scene, int vidx,
     if(n.norm() - scene.getRadius(vidx) < 0 && scene.getV().segment<2>(2*vidx).dot(n) > 0)
         return true;
     return false;
+	*/
 }
 
 
@@ -152,7 +225,32 @@ bool SimpleCollisionHandler::detectParticleHalfplane(TwoDScene &scene, int vidx,
 //   None.
 void SimpleCollisionHandler::respondParticleParticle(TwoDScene &scene, int idx1, int idx2, const Vector2s &n)
 {
+//    const VectorXs &M = scene.getM();
+//    VectorXs &v = scene.getV();
+//    
+//    // your implementation here
+//    
     const VectorXs &M = scene.getM();
+    VectorXs &v = scene.getV();
+    
+    VectorXs nhat = n;
+    nhat.normalize();
+    
+    double cfactor = (1.0 + getCOR())/2.0;
+    double m1 = scene.isFixed(idx1) ? std::numeric_limits<double>::infinity() : M[2*idx1];
+    double m2 = scene.isFixed(idx2) ? std::numeric_limits<double>::infinity() : M[2*idx2];
+    
+    double numerator = 2*cfactor * (v.segment<2>(2*idx2) - v.segment<2>(2*idx1) ).dot(nhat);
+    double denom1 = 1+m1/m2;
+    double denom2 = m2/m1 + 1;
+    
+    if(!scene.isFixed(idx1))
+        v.segment<2>(2*idx1) += numerator/denom1 * nhat;
+    if(!scene.isFixed(idx2))
+        v.segment<2>(2*idx2) -= numerator/denom2 * nhat;
+	/*
+	TODO CHECK WHY MINE DIDN"T WORK
+	const VectorXs &M = scene.getM();
     VectorXs &v_all = scene.getV();
     
     Vector2s v1 = v_all.segment<2>(2*idx1);
@@ -172,6 +270,7 @@ void SimpleCollisionHandler::respondParticleParticle(TwoDScene &scene, int idx1,
     if(!scene.isFixed(idx1)) v1 += frac_partial/(1.0 + m1/m2);
     if(!scene.isFixed(idx2)) v2 -= frac_partial/(m2/m1 + 1.0);
     return;
+	*/
 }
 
 // Responds to a collision detected between a particle and an edge by applying
@@ -185,7 +284,60 @@ void SimpleCollisionHandler::respondParticleParticle(TwoDScene &scene, int idx1,
 //   None.
 void SimpleCollisionHandler::respondParticleEdge(TwoDScene &scene, int vidx, int eidx, const Vector2s &n)
 {
+//    const VectorXs &M = scene.getM();
+//    
+//    int eidx1 = scene.getEdges()[eidx].first;
+//    int eidx2 = scene.getEdges()[eidx].second;
+//    
+//    VectorXs x1 = scene.getX().segment<2>(2*vidx);
+//    VectorXs x2 = scene.getX().segment<2>(2*eidx1);
+//    VectorXs x3 = scene.getX().segment<2>(2*eidx2);
+//    
+//    VectorXs v1 = scene.getV().segment<2>(2*vidx);
+//    VectorXs v2 = scene.getV().segment<2>(2*eidx1);
+//    VectorXs v3 = scene.getV().segment<2>(2*eidx2);
+//    
+//    // your implementation here
+//    
     const VectorXs &M = scene.getM();
+    
+    int eidx1 = scene.getEdges()[eidx].first;
+    int eidx2 = scene.getEdges()[eidx].second;
+    
+    VectorXs x1 = scene.getX().segment<2>(2*vidx);
+    VectorXs x2 = scene.getX().segment<2>(2*eidx1);
+    VectorXs x3 = scene.getX().segment<2>(2*eidx2);
+    
+    VectorXs v1 = scene.getV().segment<2>(2*vidx);
+    VectorXs v2 = scene.getV().segment<2>(2*eidx1);
+    VectorXs v3 = scene.getV().segment<2>(2*eidx2);
+    
+    VectorXs nhat = n;
+    nhat.normalize();
+    
+    double alpha = (x1-x2).dot(x3-x2)/(x3-x2).dot(x3-x2);
+    alpha = std::min(1.0, std::max(0.0, alpha) );
+    VectorXs vedge = v2 + alpha*(v3-v2);
+    double cfactor = (1.0 + getCOR())/2.0;
+    
+    double m1 = scene.isFixed(vidx) ? std::numeric_limits<double>::infinity() : M[2*vidx];
+    double m2 = scene.isFixed(eidx1) ? std::numeric_limits<double>::infinity() : M[2*eidx1];
+    double m3 = scene.isFixed(eidx2) ? std::numeric_limits<double>::infinity() : M[2*eidx2];
+    
+    double numerator = 2*cfactor*(vedge-v1).dot(nhat);
+    double denom1 = 1.0 + (1-alpha)*(1-alpha)*m1/m2 + alpha*alpha*m1/m3;
+    double denom2 = m2/m1 + (1-alpha)*(1-alpha) + alpha*alpha*m2/m3;
+    double denom3 = m3/m1 + (1-alpha)*(1-alpha)*m3/m2 + alpha*alpha;
+    
+    if(!scene.isFixed(vidx))
+        scene.getV().segment<2>(2*vidx) += numerator/denom1 * nhat;
+    if(!scene.isFixed(eidx1))
+        scene.getV().segment<2>(2*eidx1) -= (1.0-alpha)*numerator/denom2 * nhat;
+    if(!scene.isFixed(eidx2))
+        scene.getV().segment<2>(2*eidx2) -= alpha * numerator/denom3 * nhat;
+	/*
+	TODO CHECK WHY MINE DIDN"T WORK
+	const VectorXs &M = scene.getM();
     const VectorXs &X = scene.getX();
     VectorXs &v_all = scene.getV();
     
@@ -226,6 +378,7 @@ void SimpleCollisionHandler::respondParticleEdge(TwoDScene &scene, int vidx, int
     if(!scene.isFixed(eidx1)) v2 -= frac_partial * oneAlph /(m2/m1 + oneAlph*oneAlph       + alpha*alpha*m2/m3);
     if(!scene.isFixed(eidx2)) v3 -= frac_partial * alpha /  (m3/m1 + oneAlph*oneAlph*m3/m2 + alpha*alpha);
     return;
+	*/
 }
 
 
@@ -240,6 +393,18 @@ void SimpleCollisionHandler::respondParticleEdge(TwoDScene &scene, int vidx, int
 //   None.
 void SimpleCollisionHandler::respondParticleHalfplane(TwoDScene &scene, int vidx, int pidx, const Vector2s &n)
 {
-    VectorXs n_hat = n/n.norm();
+//    VectorXs nhat = n;
+//    
+//    // your implementation here
+//    
+    VectorXs nhat = n;
+    nhat.normalize();
+    double cfactor = (1.0+getCOR())/2.0;
+    scene.getV().segment<2>(2*vidx) -= 2*cfactor*scene.getV().segment<2>(2*vidx).dot(nhat)*nhat;
+    /*
+	TODO CHECK WHY MINE DIDN"T WORK
+	   VectorXs n_hat = n/n.norm();
     scene.getV().segment<2>(2*vidx) -= (1.0+getCOR())/2.0 * 2.0 * scene.getV().segment<2>(2*vidx).dot(n_hat)*n_hat;
+}
+	*/
 }

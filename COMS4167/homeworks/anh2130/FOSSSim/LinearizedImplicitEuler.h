@@ -18,6 +18,10 @@ public:
   virtual bool stepScene( TwoDScene& scene, scalar dt );
   
   virtual std::string getName() const;
+
+private:
+  void zeroFixedDoFs( const TwoDScene& scene, VectorXs& vec );
+  void setFixedRowsAndColsToIdentity( const TwoDScene& scene, MatrixXs& mat );
 };
 
 #endif

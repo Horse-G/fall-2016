@@ -28,6 +28,7 @@ void GravitationalForce::addEnergyToTotal( const VectorXs& x, const VectorXs& v,
   E += -m_G*m1*m2/r;
 */
         E -= m_G*m(2*m_particles.first)*m(2*m_particles.second)/(x.segment<2>(2*m_particles.second) - x.segment<2>(2*m_particles.first)).norm();
+
 }
 
 void GravitationalForce::addGradEToTotal( const VectorXs& x, const VectorXs& v, const VectorXs& m, VectorXs& gradE )
