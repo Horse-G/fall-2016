@@ -8,7 +8,7 @@
 //************************************************************************
 // SUBROUTINE_OUTPUT_IMAGE
 //************************************************************************
-void output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, t_scalar width, t_scalar height)
+void io_output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, t_scalar width, t_scalar height)
 {
     Imf::RgbaOutputFile file(file_name, width, height, Imf::WRITE_RGBA);
     file.setFrameBuffer(&image[0][0], 1, width);
@@ -19,7 +19,7 @@ void output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, t_scala
 //************************************************************************
 // SUBROUTINE_OUTPUT_SCENE_VERBOSE
 //************************************************************************
-void output_scene_verbose(const s_scene& sc)
+void io_output_scene_verbose(const s_scene& sc)
 {
     t_uint i;
 
@@ -76,7 +76,7 @@ void output_scene_verbose(const s_scene& sc)
 //************************************************************************
 // SUBROUTINE_INPUT_SCENE
 //************************************************************************
-void input_scene(s_scene &sc, const char *file_name)
+void io_input_scene(s_scene &sc, const char *file_name)
 {
     // memory allocation
     t_uint line;

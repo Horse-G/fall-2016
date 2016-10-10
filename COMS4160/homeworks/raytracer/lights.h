@@ -100,7 +100,7 @@ class c_light_point: public c_light
     void print(const char* tab)
     {
         std::cout
-            <<tab <<"type "  <<"point" <<std::endl
+            <<tab <<"type  " <<"point" <<std::endl
             <<tab <<"point " <<_point  <<std::endl
             <<tab <<"color " <<_color  <<std::endl;
         return;
@@ -140,9 +140,9 @@ class c_light_direct: public c_light
     void print(const char* tab)
     {
         std::cout
-            <<tab <<"type "   <<"directional" <<std::endl
+            <<tab <<"type   " <<"directional" <<std::endl
             <<tab <<"vector " <<_direction    <<std::endl
-            <<tab <<"color "  <<_color        <<std::endl;
+            <<tab <<"color  " <<_color        <<std::endl;
         return;
     }
 };

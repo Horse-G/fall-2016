@@ -47,10 +47,10 @@ struct s_material
     void print(const char* tab)
     {
         std::cout
-            <<tab<<"diffuse "    << _diff <<std::endl
-            <<tab<<"specular "   << _spec <<std::endl
+            <<tab<<"diffuse    " << _diff <<std::endl
+            <<tab<<"specular   " << _spec <<std::endl
             <<tab<<"reflection " << _refl <<std::endl
-            <<tab<<"phong "      << _phng <<std::endl;
+            <<tab<<"phong      " << _phng <<std::endl;
         return;
     }
 };

@@ -22,24 +22,24 @@ int main(int argc, char **argv)
     // try necessary for OpenEXR API
     try{
     // memory allocation
-    Imf::Array2D<Imf::Rgba>     img_pixels;
-    s_scene                     scene;
-    t_uint                      x, y, z,
-                                v_ix, v_iy;
-    t_scalar                    d_x, d_y,
-                                o_x, o_y,
-                                v_fl,
-                                v_px, v_py;
-    s_geo_ray                   i_ray;
-    s_intersect                 i_sct, ii_sct;
-    s_clr_color                 i_clr;
-    Imf::Rgba*                  i_pxl;
-    s_material                  i_mat;
-    s_geo_point                 v_eye;
-    s_geo_vector                v_u, v_v, v_w;
+    Imf::Array2D<Imf::Rgba> img_pixels;
+    s_scene                 scene;
+    t_uint                  x, y, z,
+                            v_ix, v_iy;
+    t_scalar                d_x, d_y,
+                            o_x, o_y,
+                            v_fl,
+                            v_px, v_py;
+    s_geo_ray               i_ray;
+    s_intersect             i_sct, ii_sct;
+    s_clr_color             i_clr;
+    Imf::Rgba*              i_pxl;
+    s_material              i_mat;
+    s_geo_point             v_eye;
+    s_geo_vector            v_u, v_v, v_w;
     
     // parse the scene filei
-    input_scene(scene, argv[1]);
+    io_input_scene(scene, argv[1]);
     v_eye = scene.viewport.get_eye();
     v_u = scene.viewport.get_u();
     v_v = scene.viewport.get_v();
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     v_iy = scene.viewport.get_iy();
     v_px = scene.viewport.get_px();
     v_py = scene.viewport.get_py();
-    scene.print();
+    scene.print_verbose();
 
     // assigning to common constants
     d_x = v_ix/v_px;
@@ -84,10 +84,13 @@ int main(int argc, char **argv)
         // compute color
         i_mat = scene.materials[i_sct.get_material() - 1];
         
-        shading_blinn_phong(
+        /* APPLYING SHADING
+         *   - `simple`
+         *   - `blinn_phong`
+         */
+        shading_simple(
             i_clr,
-            i_mat.get_diff(),
-            i_mat.get_spec(),
+            i_mat,
             i_sct,
             i_ray.get_origin(),
             scene.light_ambient.get_color(),
@@ -102,7 +105,7 @@ int main(int argc, char **argv)
     }
     
     //write to file
-    output_image(argv[2], img_pixels, v_px, v_py);
+    io_output_image(argv[2], img_pixels, v_px, v_py);
     }
     catch(const std::exception &e)
     {
