@@ -10,7 +10,7 @@
 //************************************************************************
 struct s_scene
 {
-    s_viewport                   viewport;
+    std::vector<s_viewport*>     viewports;
     std::vector<c_surface*>      surfaces;
     std::vector<s_material>      materials;
     c_light_ambient              light_ambient;
@@ -29,6 +29,8 @@ struct s_scene
     ~s_scene(void)
     {
         t_uint i;
+        for(i =0; i < viewports.size(); i++)
+            delete viewports[i];
         for(i = 0; i < surfaces.size(); i++)
             delete surfaces[i];
         for(i = 0; i < lights_point.size(); i++)
@@ -41,7 +43,7 @@ struct s_scene
     void print(void)
     {
         std::cout
-            <<"Camera Count: "             <<1                         <<std::endl
+            <<"Camera Count: "             <<viewports.size()          <<std::endl
             <<"Surfaces Count: "           <<surfaces.size()           <<std::endl
             <<"Materials Count: "          <<materials.size()          <<std::endl
             <<"Point Lights Count: "       <<lights_point.size()       <<std::endl
@@ -52,9 +54,13 @@ struct s_scene
     void print_verbose(void)
     {
         t_uint i;
-        std::cout <<"camera {" <<std::endl;
-        viewport.print(OUT_TAB);
-        std::cout <<"}"        <<std::endl;
+        // print camera list
+        for(i = 0; i < viewports.size(); ++i)
+        {
+            std::cout <<"camera " <<i+1 <<" {" <<std::endl;
+            viewports[i]->print(OUT_TAB);
+            std::cout <<"}" <<std::endl;
+        }
         // print object list
         for(i = 0; i < surfaces.size(); ++i)
         {

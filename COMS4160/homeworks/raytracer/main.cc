@@ -41,15 +41,15 @@ int main(int argc, char **argv)
     // parse the scene filei
     io_input_scene(scene, argv[1]);
     // in order to reduce function calls, I do all of them once, here
-    v_eye = scene.viewport.get_eye();
-    v_u = scene.viewport.get_u();
-    v_v = scene.viewport.get_v();
-    v_w = scene.viewport.get_w();
-    v_fl = scene.viewport.get_fl();
-    v_ix = scene.viewport.get_ix();
-    v_iy = scene.viewport.get_iy();
-    v_px = scene.viewport.get_px();
-    v_py = scene.viewport.get_py();
+    v_eye = scene.viewports[0]->get_eye();
+    v_u = scene.viewports[0]->get_u();
+    v_v = scene.viewports[0]->get_v();
+    v_w = scene.viewports[0]->get_w();
+    v_fl = scene.viewports[0]->get_fl();
+    v_ix = scene.viewports[0]->get_ix();
+    v_iy = scene.viewports[0]->get_iy();
+    v_px = scene.viewports[0]->get_px();
+    v_py = scene.viewports[0]->get_py();
     //scene.print_verbose();
 
     // assigning to common constants

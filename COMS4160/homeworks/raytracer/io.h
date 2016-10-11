@@ -23,18 +23,20 @@ void io_output_scene_verbose(const s_scene& sc)
 {
     t_uint i;
 
-    // camera
-    std::cout
-        <<"camera {" <<std::endl
-        <<OUT_TAB <<"eye "   <<sc.viewport.get_eye() <<std::endl
-        <<OUT_TAB <<"u "     <<sc.viewport.get_u() <<std::endl
-        <<OUT_TAB <<"v "     <<sc.viewport.get_v() <<std::endl
-        <<OUT_TAB <<"w "     <<sc.viewport.get_w() <<std::endl
-        <<OUT_TAB <<"fl "    <<sc.viewport.get_fl() <<std::endl
-        <<OUT_TAB <<"ix,iy " <<sc.viewport.get_ix() <<"," <<sc.viewport.get_iy() <<std::endl
-        <<OUT_TAB <<"px,py " <<sc.viewport.get_px() <<"," <<sc.viewport.get_py() <<std::endl
-        <<"}"<< std::endl;
-    
+    // camera list
+    for (i = 0; i < sc.viewports.size(); ++i)
+    {
+        std::cout
+            <<"camera {" <<std::endl
+            <<OUT_TAB <<"eye "   <<sc.viewports[i]->get_eye() <<std::endl
+            <<OUT_TAB <<"u "     <<sc.viewports[i]->get_u() <<std::endl
+            <<OUT_TAB <<"v "     <<sc.viewports[i]->get_v() <<std::endl
+            <<OUT_TAB <<"w "     <<sc.viewports[i]->get_w() <<std::endl
+            <<OUT_TAB <<"fl "    <<sc.viewports[i]->get_fl() <<std::endl
+            <<OUT_TAB <<"ix,iy " <<sc.viewports[i]->get_ix() <<"," <<sc.viewports[i]->get_iy() <<std::endl
+            <<OUT_TAB <<"px,py " <<sc.viewports[i]->get_px() <<"," <<sc.viewports[i]->get_py() <<std::endl
+            <<"}"<< std::endl;
+    }
     // surface list
     for (i = 0; i < sc.surfaces.size(); ++i)
     {
@@ -87,7 +89,7 @@ void io_input_scene(s_scene &sc, const char *file_name)
     s_geo_point gp1, gp2, gp3;
     s_clr_color cc1, cc2;
    
-    // there will be two asserts - there must be at least one camera, and one light
+    // there will be two asserts - there must be at least one camera, and one non-ambient light
     ct_cameras = 0;
     ct_lights = 0;
     // the materials list is initially two items - blackness and the default material
@@ -138,7 +140,6 @@ void io_input_scene(s_scene &sc, const char *file_name)
             case 'l':
             {
                 iss >> cmd;
-                ct_lights++;
                 switch(cmd[0])
                 {
                     // point
@@ -146,6 +147,7 @@ void io_input_scene(s_scene &sc, const char *file_name)
                     {
                         iss >>gp1 >>cc1;
                         sc.lights_point.push_back(new c_light_point(gp1,cc1));
+                        ct_lights++;
                         break;
                     }
                     // directional
@@ -154,6 +156,7 @@ void io_input_scene(s_scene &sc, const char *file_name)
                         iss >>gv1 >>cc1;
                         gv1 = gv1*1e5;
                         sc.lights_directional.push_back(new c_light_direct(gv1,cc1));
+                        ct_lights++;
                         break;
                     }
                     // ambient
@@ -174,7 +177,7 @@ void io_input_scene(s_scene &sc, const char *file_name)
             case 'c':
             {
                 iss >>gp1 >>gv1 >>s1 >>s2 >>s3 >>u1 >>u2;
-                sc.viewport = s_viewport(gp1,gv1,s1,s2,s3,u1,u2);
+                sc.viewports.push_back(new s_viewport(gp1,gv1,s1,s2,s3,u1,u2));
                 ct_cameras++;
                 break;
             }
