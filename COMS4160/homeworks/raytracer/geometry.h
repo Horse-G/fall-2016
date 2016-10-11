@@ -2,7 +2,7 @@
  * Filename:    geometry.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definitions for vectors, points, and rays for a simple raytracer.
- * Edited:      2016-10-09
+ * Edited:      2016-10-11
  */
 
 //************************************************************************
@@ -87,6 +87,11 @@ struct s_geo_vector
         return s_geo_vector(_xyz[0]/s, _xyz[1]/s, _xyz[2]/s);
     }
 
+    // length
+    t_scalar len(void) const
+    {
+        return sqrt(_xyz[0]*_xyz[0] + _xyz[1]*_xyz[1] + _xyz[2]*_xyz[2]);
+    }
     // normalize
     s_geo_vector norm(void) const
     {

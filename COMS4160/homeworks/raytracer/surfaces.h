@@ -82,7 +82,7 @@ class c_surf_plane: public c_surface
 
         t = (_distance - gr.get_origin() % _normal)/dN;
         
-        return s_intersect(t, gr.pos(t), _normal, _material);
+        return s_intersect(t, gr.pos(t), _normal, _material, _type);
     }
     
     // print
@@ -172,7 +172,7 @@ class c_surf_triangle: public c_surface
 
         t = (e2 % Q) * inv_det;
         if(t > EPSILON)
-            return s_intersect(t, gr.pos(t), _normal, _material);
+            return s_intersect(t, gr.pos(t), _normal, _material, _type);
         return s_intersect();
     }
 
@@ -255,7 +255,7 @@ class c_surf_sphere: public c_surface
                 t += _t;
         }
         pt = gr.pos(t);
-        return s_intersect(t, pt, (_origin - pt).norm(), _material);
+        return s_intersect(t, pt, (_origin - pt).norm(), _material, _type);
     }
     // print
     virtual void print(const char* tab)

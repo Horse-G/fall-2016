@@ -2,7 +2,7 @@
  * Filename:    lights.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definitions for lights for a simple raytracer.
- * Edited:      2016-10-09
+ * Edited:      2016-10-11
  */
 
 //************************************************************************
@@ -27,8 +27,6 @@ class c_light
     {
         return _type;
     } 
-    // subclass print
-    virtual void print(const char* tab) =0;
 };
 
 //************************************************************************
@@ -96,15 +94,6 @@ class c_light_point: public c_light
     {
         return _point;
     }
-    // print
-    void print(const char* tab)
-    {
-        std::cout
-            <<tab <<"type  " <<"point" <<std::endl
-            <<tab <<"point " <<_point  <<std::endl
-            <<tab <<"color " <<_color  <<std::endl;
-        return;
-    }
 };
 
 //************************************************************************
@@ -135,15 +124,6 @@ class c_light_direct: public c_light
     s_geo_vector get_direction(void) const
     {
         return _direction;
-    }
-    // print
-    void print(const char* tab)
-    {
-        std::cout
-            <<tab <<"type   " <<"directional" <<std::endl
-            <<tab <<"vector " <<_direction    <<std::endl
-            <<tab <<"color  " <<_color        <<std::endl;
-        return;
     }
 };
 

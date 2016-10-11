@@ -2,7 +2,7 @@
  * Filename:    scene.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Definition of a scene for a simple raytracer.
- * Edited:      2016-10-09
+ * Edited:      2016-10-11
  */
 
 //************************************************************************
@@ -71,30 +71,12 @@ struct s_scene
                 << "}"                                         <<std::endl;
         }
         // print material list
-        for(i = 0; i < materials.size(); ++i)
-        {
-            std::cout <<"material " <<i+1 <<" {" <<std::endl;
-            materials[i].print(OUT_TAB);
-            std::cout <<"}"                      <<std::endl;
-        }
         // print ambient light
         std::cout <<"global_settings {"<<std::endl;
         light_ambient.print(OUT_TAB);
         std::cout <<"}"                <<std::endl;
         // print directional light list
-        for(i = 0; i < lights_point.size(); ++i)
-        {
-            std::cout <<"light_source " <<i+1 <<" {" <<std::endl;
-            lights_point[i]->print(OUT_TAB);
-            std::cout <<"}" <<std::endl;
-        }
         // print directional light list
-        for(i = 0; i < lights_directional.size(); ++i)
-        {
-            std::cout <<"light_source " <<i+1 <<" {" <<std::endl;
-            lights_directional[i]->print(OUT_TAB);
-            std::cout <<"}" <<std::endl;
-        }
         return;
     }
 };

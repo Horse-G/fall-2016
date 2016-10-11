@@ -2,7 +2,7 @@
  * Filename:    common.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     The main header for a simple raytracer.
- * Edited:      2016-10-09
+ * Edited:      2016-10-11
  */
 
 //************************************************************************
@@ -29,7 +29,7 @@
 // CONSTANTS_/_TYPES
 //************************************************************************
 #define EPSILON          1e-7
-#define BLACKNESS        s_intersect(std::numeric_limits<t_scalar>::infinity(),s_geo_point(0.0,0.0,0.0),s_geo_vector(0.0,0.0,0.0),1)
+#define BLACKNESS        s_intersect(std::numeric_limits<t_scalar>::infinity(),s_geo_point(0.0,0.0,0.0),s_geo_vector(0.0,0.0,0.0),0,PLANE)
 #define NO_MATERIAL      s_material(s_clr_color(0.0,0.0,0.0))
 #define DEFAULT_MATERIAL s_material(s_clr_color(0.0,0.0,1.0))
 #define DEFAULT_AMBIENT  c_light_ambient(s_clr_color(0.0,0.0,0.0))
@@ -51,6 +51,5 @@ enum t_light             {AMBIENT, POINT, DIRECTIONAL};
 #include "viewport.h"
 #include "scene.h"
 #include "io.h"
-#include "shading.h"
 
 //// EOF ////

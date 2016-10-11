@@ -50,7 +50,10 @@ void io_output_scene_verbose(const s_scene& sc)
     for(i = 0; i < sc.materials.size(); ++i)
         std::cout
             <<"material " <<i+1 << " {" <<std::endl
-            <<OUT_TAB << std::endl
+            <<OUT_TAB <<"diffuse    " <<sc.materials[i].get_diff() <<std::endl
+            <<OUT_TAB <<"specular   " <<sc.materials[i].get_spec() <<std::endl
+            <<OUT_TAB <<"reflection " <<sc.materials[i].get_refl() <<std::endl
+            <<OUT_TAB <<"phong      " <<sc.materials[i].get_phng() <<std::endl
             <<"}" <<std::endl;
     
     // ambient light
@@ -62,15 +65,17 @@ void io_output_scene_verbose(const s_scene& sc)
     // point light list
     for(i = 0; i < sc.lights_point.size(); ++i)
         std::cout
-            <<"point_light " <<i+1 <<" {" <<std::endl
-            <<OUT_TAB <<std::endl
+            <<"light " <<i+1 <<" point {" <<std::endl
+            <<OUT_TAB << "point " <<sc.lights_point[i]->get_point() <<std::endl
+            <<OUT_TAB << "color " <<sc.lights_point[i]->get_color() <<std::endl
             <<"}" <<std::endl;
     
     // directional light list
     for(i = 0; i < sc.lights_directional.size(); ++i)
         std::cout
-            <<"directional_light " <<i+1 << " {" <<std::endl
-            <<OUT_TAB <<std::endl
+            <<"light " <<i+1 << " directional {" <<std::endl
+            <<OUT_TAB << "vector " <<sc.lights_directional[i]->get_direction() <<std::endl
+            <<OUT_TAB << "color  " <<sc.lights_directional[i]->get_color() <<std::endl
             <<"}" <<std::endl;
     return;
 }
