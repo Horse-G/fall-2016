@@ -2,7 +2,7 @@
  * Filename:    shading.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     The shading functions for a simple raytracer.
- * Edited:      2016-10-09
+ * Edited:      2016-10-11
  */
 
 //************************************************************************
@@ -38,7 +38,7 @@ void shading_blinn_phong(
         if(scale_spec < 0.0)
             scale_spec = 0.0;
 
-        pixel += point_lights[i]->get_color() * (i_mat.get_diff()*scale_diff + i_mat.get_spec()*scale_spec);
+        pixel += point_lights[i]->get_color() * (i_mat.get_diff()*scale_diff + i_mat.get_spec()*pow(scale_spec, i_mat.get_phng()));
     }
     // DIRECTIONAL LIGHTS
     /*

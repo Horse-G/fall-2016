@@ -2,7 +2,7 @@
  * Filename:    main.cc
  * Author:      Adam Hadar, anh2130
  * Purpose:     The main function for a simple raytracer.
- * Edited:      2016-10-09
+ * Edited:      2016-10-11
  */
 
 #include "common.h"
@@ -40,6 +40,7 @@ int main(int argc, char **argv)
     
     // parse the scene filei
     io_input_scene(scene, argv[1]);
+    // in order to reduce function calls, I do all of them once, here
     v_eye = scene.viewport.get_eye();
     v_u = scene.viewport.get_u();
     v_v = scene.viewport.get_v();
@@ -49,7 +50,7 @@ int main(int argc, char **argv)
     v_iy = scene.viewport.get_iy();
     v_px = scene.viewport.get_px();
     v_py = scene.viewport.get_py();
-    scene.print_verbose();
+    //scene.print_verbose();
 
     // assigning to common constants
     d_x = v_ix/v_px;
@@ -82,13 +83,14 @@ int main(int argc, char **argv)
         }
 
         // compute color
-        i_mat = scene.materials[i_sct.get_material() - 1];
+        i_mat = scene.materials[i_sct.get_material()];
         
         /* APPLYING SHADING
          *   - `simple`
          *   - `blinn_phong`
          */
-        shading_simple(
+        //shading_simple(
+        shading_blinn_phong(
             i_clr,
             i_mat,
             i_sct,
@@ -97,7 +99,7 @@ int main(int argc, char **argv)
             scene.lights_point
         );
         
-        // store color
+        // STORE COLOR
         i_pxl->r = i_clr.get_r();
         i_pxl->g = i_clr.get_g();
         i_pxl->b = i_clr.get_b();

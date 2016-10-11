@@ -2,7 +2,7 @@
  * Filename:    io.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     The file input/output for a simple raytracer.
- * Edited:      2016-10-09
+ * Edited:      2016-10-11
  */
 
 //************************************************************************
@@ -80,13 +80,18 @@ void io_input_scene(s_scene &sc, const char *file_name)
 {
     // memory allocation
     t_uint line;
+    t_uint ct_cameras, ct_lights, ct_materials;
     t_uint u1, u2;
     t_scalar s1, s2, s3;
     s_geo_vector gv1;
     s_geo_point gp1, gp2, gp3;
     s_clr_color cc1, cc2;
-    
-    bool ct_camera = false;
+   
+    // there will be two asserts - there must be at least one camera, and one light
+    ct_cameras = 0;
+    ct_lights = 0;
+    // the materials list is initially two items - blackness and the default material
+    ct_materials = 1;
 
     // parse file
     std::ifstream in(file_name);
@@ -112,27 +117,28 @@ void io_input_scene(s_scene &sc, const char *file_name)
             case 'p':
             {
                 iss >>gv1 >>s1;
-                sc.surfaces.push_back(new c_surf_plane(gv1,s1,sc.materials.size()));
+                sc.surfaces.push_back(new c_surf_plane(gv1,s1,ct_materials));
                 break;
             }
             // triangle
             case 't':
             {
                 iss >>gp1 >>gp2 >>gp3;
-                sc.surfaces.push_back(new c_surf_triangle(gp1,gp2,gp3,sc.materials.size()));
+                sc.surfaces.push_back(new c_surf_triangle(gp1,gp2,gp3,ct_materials));
                 break;
             }
             // sphere
             case 's':
             {
                 iss >> gp1 >> s1;
-                sc.surfaces.push_back(new c_surf_sphere(gp1,s1,sc.materials.size()));
+                sc.surfaces.push_back(new c_surf_sphere(gp1,s1,ct_materials));
                 break;
             }
             // light
             case 'l':
             {
                 iss >> cmd;
+                ct_lights++;
                 switch(cmd[0])
                 {
                     // point
@@ -169,7 +175,7 @@ void io_input_scene(s_scene &sc, const char *file_name)
             {
                 iss >>gp1 >>gv1 >>s1 >>s2 >>s3 >>u1 >>u2;
                 sc.viewport = s_viewport(gp1,gv1,s1,s2,s3,u1,u2);
-                ct_camera = true;
+                ct_cameras++;
                 break;
             }
             // material
@@ -180,6 +186,7 @@ void io_input_scene(s_scene &sc, const char *file_name)
                 // weight:
                 // float dlen = sqrt(refl.x*refl.x+refl.y*refl.y+refl.z*refl.z);
                 sc.materials.push_back(s_material(cc1,cc2,s1,gv1));
+                ct_materials++;
                 break;
             }
             default:
@@ -189,7 +196,8 @@ void io_input_scene(s_scene &sc, const char *file_name)
         }
     }
     in.close();
-    assert(ct_camera == true);
+    assert(ct_cameras > 0);
+    assert(ct_lights > 0);
     return;
 }
 

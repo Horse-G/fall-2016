@@ -2,7 +2,7 @@
  * Filename:    surfaces.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Surface definitions for a simple raytracer.
- * Edited:      2016-10-09
+ * Edited:      2016-10-11
  */
 
 //************************************************************************
@@ -34,7 +34,6 @@ class c_surface
     // subclass print
     virtual void print(const char* tab) =0;
 };
-//c_surface::~c_surface(void){}
 
 //************************************************************************
 // SURF_PLANE
@@ -52,7 +51,7 @@ class c_surf_plane: public c_surface
         _type = PLANE;
     }
     c_surf_plane(const s_geo_vector& gv, const t_scalar& s, const t_uint& u):
-        _normal(gv.norm()),
+        _normal(-gv.norm()),
         _distance(s)
     {
         _material = u;
@@ -76,11 +75,13 @@ class c_surf_plane: public c_surface
     virtual s_intersect is_intersect(const s_geo_ray& gr)
     {
         t_scalar t;
-
         t_scalar dN = gr.get_direction() % _normal;
-        //if(dN <= 0.0)
-        //    return s_intersect();
-        t = -(gr.get_origin() % _normal - _distance)/dN;
+        
+        if(dN < 0.0)
+            return s_intersect();
+
+        t = (_distance - gr.get_origin() % _normal)/dN;
+        
         return s_intersect(t, gr.pos(t), _normal, _material);
     }
     
