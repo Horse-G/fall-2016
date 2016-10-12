@@ -30,9 +30,6 @@ class c_surface
     
     // subclass find intersection
     virtual s_intersect is_intersect(const s_geo_ray &gr) =0;
-    
-    // subclass print
-    virtual void print(const char* tab) =0;
 };
 
 //************************************************************************
@@ -83,16 +80,6 @@ class c_surf_plane: public c_surface
         t = (_distance - gr.get_origin() % _normal)/dN;
         
         return s_intersect(t, gr.pos(t), _normal, _material, _type);
-    }
-    
-    // print
-    virtual void print(const char* tab)
-    {
-        std::cout
-            <<tab <<"type     " <<"plane"   <<std::endl
-            <<tab <<"normal   " <<_normal   <<std::endl
-            <<tab <<"distance " <<_distance <<std::endl;
-        return;
     }
 };
 
@@ -175,18 +162,6 @@ class c_surf_triangle: public c_surface
             return s_intersect(t, gr.pos(t), _normal, _material, _type);
         return s_intersect();
     }
-
-    // print
-    virtual void print(const char* tab)
-    {
-        std::cout
-            <<tab <<"type   " <<"triangle" <<std::endl
-            <<tab <<"v1     " <<_v[0]      <<std::endl
-            <<tab <<"v2     " <<_v[1]      <<std::endl
-            <<tab <<"v3     " <<_v[2]      <<std::endl
-            <<tab <<"normal " <<_normal    << std::endl;
-        return;
-    }
 };
 
 //************************************************************************
@@ -256,15 +231,6 @@ class c_surf_sphere: public c_surface
         }
         pt = gr.pos(t);
         return s_intersect(t, pt, (_origin - pt).norm(), _material, _type);
-    }
-    // print
-    virtual void print(const char* tab)
-    {
-        std::cout
-            <<tab <<"type   " <<"sphere" <<std::endl
-            <<tab <<"origin " <<_origin  <<std::endl
-            <<tab <<"radius " <<_radius  <<std::endl;
-        return;
     }
 };
 

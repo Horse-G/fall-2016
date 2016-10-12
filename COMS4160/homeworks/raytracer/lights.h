@@ -48,14 +48,6 @@ class c_light_ambient: public c_light
 
     // destructor
     ~c_light_ambient(void){}
-
-    // print
-    void print(const char* tab)
-    {
-        std::cout
-            <<tab <<"ambient_light " <<_color <<std::endl;
-        return;
-    }
 };
 //************************************************************************
 // CLASS_LIGHT_POINT

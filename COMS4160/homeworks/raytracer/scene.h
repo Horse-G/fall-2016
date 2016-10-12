@@ -38,47 +38,6 @@ struct s_scene
         for(i = 0; i < lights_directional.size(); i++)
             delete lights_directional[i];
     }
-
-    // print
-    void print(void)
-    {
-        std::cout
-            <<"Camera Count: "             <<viewports.size()          <<std::endl
-            <<"Surfaces Count: "           <<surfaces.size()           <<std::endl
-            <<"Materials Count: "          <<materials.size()          <<std::endl
-            <<"Point Lights Count: "       <<lights_point.size()       <<std::endl
-            <<"Directional Lights Count: " <<lights_directional.size() <<std::endl;
-        return;
-    }
-    // print verbose
-    void print_verbose(void)
-    {
-        t_uint i;
-        // print camera list
-        for(i = 0; i < viewports.size(); ++i)
-        {
-            std::cout <<"camera " <<i+1 <<" {" <<std::endl;
-            viewports[i]->print(OUT_TAB);
-            std::cout <<"}" <<std::endl;
-        }
-        // print object list
-        for(i = 0; i < surfaces.size(); ++i)
-        {
-            std::cout <<"object " <<i+1 <<" {"                 <<std::endl;
-            surfaces[i]->print(OUT_TAB);
-            std::cout
-                <<OUT_TAB <<"material " <<surfaces[i]->get_material() <<std::endl
-                << "}"                                         <<std::endl;
-        }
-        // print material list
-        // print ambient light
-        std::cout <<"global_settings {"<<std::endl;
-        light_ambient.print(OUT_TAB);
-        std::cout <<"}"                <<std::endl;
-        // print directional light list
-        // print directional light list
-        return;
-    }
 };
 
 //// EOF ////

@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     v_px = scene.viewports[0]->get_px();
     v_py = scene.viewports[0]->get_py();
     #ifdef PRINT
-    scene.print_verbose();
+    io_print_scene_verbose();
     #endif
 
     // assigning to common constants

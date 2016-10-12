@@ -229,15 +229,6 @@ struct s_geo_ray
         out._abc[2] += _direction._xyz[2] * s;
         return out;
     }
-
-    // output
-    friend std::ostream& operator<<(std::ostream& os, const s_geo_ray& gr)
-    {
-        return os
-            <<"Ray"                     <<std::endl
-            <<"origin " <<gr._origin    <<std::endl
-            <<"direct " <<gr._direction <<std::endl;
-    }
 };
 
 //// EOF ////

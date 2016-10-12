@@ -17,6 +17,20 @@ void io_output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, t_sc
 }
 
 //************************************************************************
+// SUBROUTINE_OUTPUT_SCENE
+//************************************************************************
+void io_output_scene(const s_scene& sc)
+{
+    std::cout
+        <<"Camera Count:             " <<sc.viewports.size()          <<std::endl
+        <<"Surfaces Count:           " <<sc.surfaces.size()           <<std::endl
+        <<"Materials Count:          " <<sc.materials.size()          <<std::endl
+        <<"Point Lights Count:       " <<sc.lights_point.size()       <<std::endl
+        <<"Directional Lights Count: " <<sc.lights_directional.size() <<std::endl;
+    return;
+}
+
+//************************************************************************
 // SUBROUTINE_OUTPUT_SCENE_VERBOSE
 //************************************************************************
 void io_output_scene_verbose(const s_scene& sc)
@@ -41,10 +55,43 @@ void io_output_scene_verbose(const s_scene& sc)
     for (i = 0; i < sc.surfaces.size(); ++i)
     {
         std::cout
-            <<"surface " <<i+1 <<" {" <<std::endl
-            <<OUT_TAB <<"type " <<sc.surfaces[i]->get_type() <<std::endl
-            <<OUT_TAB <<"material " <<sc.surfaces[i]->get_material() <<std::endl
-            <<"}" <<std::endl;
+            <<"surface " <<i+1 <<" {" <<std::endl;
+        switch(sc.surfaces[i]->get_type())
+        {
+            case PLANE:
+            {
+                c_surf_plane* tmp = static_cast<c_surf_plane*>(sc.surfaces[i]);
+                std::cout
+                    <<OUT_TAB <<"type     " <<"plane"             <<std::endl
+                    <<OUT_TAB <<"normal   " <<tmp->get_normal()   <<std::endl
+                    <<OUT_TAB <<"distance " <<tmp->get_distance() <<std::endl;
+            }
+            case TRIANGLE:
+            {
+                c_surf_triangle* tmp = static_cast<c_surf_triangle*>(sc.surfaces[i]);
+                std::cout
+                    <<OUT_TAB <<"type     " <<"triangle"        <<std::endl
+                    <<OUT_TAB <<"v1       " <<tmp->get_v1()     <<std::endl
+                    <<OUT_TAB <<"v2       " <<tmp->get_v2()     <<std::endl
+                    <<OUT_TAB <<"v3       " <<tmp->get_v3()     <<std::endl
+                    <<OUT_TAB <<"normal   " <<tmp->get_normal() <<std::endl;
+            }
+            case SPHERE:
+            {
+                c_surf_sphere* tmp = static_cast<c_surf_sphere*>(sc.surfaces[i]);
+                std::cout
+                    <<OUT_TAB <<"type     " <<"sphere"          <<std::endl
+                    <<OUT_TAB <<"origin   " <<tmp->get_origin() <<std::endl
+                    <<OUT_TAB <<"radius   " <<tmp->get_radius() <<std::endl;
+            }
+            default:
+            {
+                std::cout
+                    <<OUT_TAB <<"illegal surface" <<std::endl;
+                break;
+            }
+        }
+        std::cout <<"}" <<std::endl;
     }
     // material list
     for(i = 0; i < sc.materials.size(); ++i)
@@ -55,17 +102,15 @@ void io_output_scene_verbose(const s_scene& sc)
             <<OUT_TAB <<"reflection " <<sc.materials[i].get_refl() <<std::endl
             <<OUT_TAB <<"phong      " <<sc.materials[i].get_phng() <<std::endl
             <<"}" <<std::endl;
-    
     // ambient light
     std::cout
-        << "ambient light {" <<std::endl
-        <<OUT_TAB << std::endl
+        <<"light 1 ambient {" <<std::endl
+        <<OUT_TAB <<"color " <<sc.light_ambient.get_color() <<std::endl
         <<"}" <<std::endl;
-    
     // point light list
     for(i = 0; i < sc.lights_point.size(); ++i)
         std::cout
-            <<"light " <<i+1 <<" point {" <<std::endl
+            <<"light " <<i+2 <<" point {" <<std::endl
             <<OUT_TAB << "point " <<sc.lights_point[i]->get_point() <<std::endl
             <<OUT_TAB << "color " <<sc.lights_point[i]->get_color() <<std::endl
             <<"}" <<std::endl;
@@ -73,7 +118,7 @@ void io_output_scene_verbose(const s_scene& sc)
     // directional light list
     for(i = 0; i < sc.lights_directional.size(); ++i)
         std::cout
-            <<"light " <<i+1 << " directional {" <<std::endl
+            <<"light " <<i+2+sc.lights_point.size() << " directional {" <<std::endl
             <<OUT_TAB << "vector " <<sc.lights_directional[i]->get_direction() <<std::endl
             <<OUT_TAB << "color  " <<sc.lights_directional[i]->get_color() <<std::endl
             <<"}" <<std::endl;

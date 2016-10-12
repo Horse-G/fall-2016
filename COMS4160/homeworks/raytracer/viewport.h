@@ -80,20 +80,6 @@ struct s_viewport
     {
         return _py;
     }
-
-    // print
-    void print(const char* tab)
-    {
-        std::cout
-            <<tab <<"eye "   <<_eye          <<std::endl
-            <<tab <<"u "     <<_uvw[0]       <<std::endl
-            <<tab <<"v "     <<_uvw[1]       <<std::endl
-            <<tab <<"w "     <<_uvw[2]       <<std::endl
-            <<tab <<"fl "    <<_fl           <<std::endl
-            <<tab <<"ix,iy " <<_ix<<","<<_iy <<std::endl
-            <<tab <<"px,py " <<_px<<","<<_iy <<std::endl;
-        return;
-    }
 };
 
 //// EOF ////
