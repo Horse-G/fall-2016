@@ -1,12 +1,12 @@
-/* Filename:    raytra.h
+/* Filename:    raytrace.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     The actual raytracing routine for a simple raytracer.
  * Edited:      2016-10-13
  */
 
-//************************************************************************
+//******************************************************************************
 // SUBROUTINE_RAYTRACE_DO
-//************************************************************************
+//******************************************************************************
 void raytrace_do(
         Imf::Array2D<Imf::Rgba>& img_pixels,
         // NOTE: I pass in v_px,v_py because I don't want to do those function calls again
@@ -43,22 +43,21 @@ void raytrace_do(
     for(y = 0; y < v_py; ++y)
     for(x = 0; x < v_px; ++x)
     {
-        // memory allocated for each pixel
+        // memory allocation
         Imf::Rgba*  i_pxl;
         s_intersect i_sct, ii_sct;
         s_geo_ray   i_ray;
         s_clr_color i_clr;
         s_material  i_mat;
 
-        // generate pixel reference
+        // generate data
         i_pxl = &img_pixels[y][x];
-        // generate the default blackness
         i_sct = BLACKNESS;
-        // generate ray
         i_ray = s_geo_ray(v_eye,
               v_u * d_x * (x - o_x)
             + v_v * d_y * (o_y - y)
             - v_w * v_fl);
+        
         // iterate through surfaces
         for(z = 0; z < scene._surfaces.size(); ++z)
         {
@@ -68,21 +67,19 @@ void raytrace_do(
                 i_sct = ii_sct;
         }
 
-        // compute color
+        // generate data II
         i_mat = *scene._materials[i_sct.get_material()];
         
         // APPLY SHADING
-        /* 
-         *   I originally had separate functions, but I feel like a function
-         *     call for each pixel might be too much, so I inlined shading.
-         *   The default is to run blinn-phong, but you can compile with
-         *     assn1's simple if you want, by using the additional compile
-         *     directive: `-D SHADING=1`.
-         *   I wrote up a cel-shading that works somewhat as defined in 10-3,
-         *      with compile directive: `-D SHADING=2`. I can't make lines
-         *      between surfaces b/c we haven't computed their intersections
-         *      yet.
-         */
+        // I originally had separate functions, but I feel like a function
+        //   call for each pixel might be too much, so I inlined shading.
+        // The default is to run blinn-phong, but you can compile with
+        //   assn1's simple if you want, by using the additional compile
+        //   directive: `-D SHADING=1`.
+        // I wrote up a cel-shading that works somewhat as defined in 10-3,
+        //   with compile directive: `-D SHADING=2`. I can't make lines
+        //   between surfaces b/c we haven't computed their intersections
+        //   yet.
         #ifndef SHADING
         {
             // memory allocation
