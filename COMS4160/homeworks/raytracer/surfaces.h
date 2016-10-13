@@ -1,8 +1,7 @@
-/*
- * Filename:    surfaces.h
+/* Filename:    surfaces.h
  * Author:      Adam Hadar, anh2130
  * Purpose:     Surface definitions for a simple raytracer.
- * Edited:      2016-10-11
+ * Edited:      2016-10-13
  */
 
 //************************************************************************
@@ -11,6 +10,7 @@
 class c_surface
 {
     protected:
+    // NOTE: I keep material as the index of the material std::vector
     t_uint    _material;
     t_surface _type;
     
@@ -49,7 +49,7 @@ class c_surf_plane: public c_surface
     }
     c_surf_plane(const s_geo_vector& gv, const t_scalar& s, const t_uint& u):
         _normal(-gv.norm()),
-        _distance(s)
+        _distance(-s)
     {
         _material = u;
         _type = PLANE;
