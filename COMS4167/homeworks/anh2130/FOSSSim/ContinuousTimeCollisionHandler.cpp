@@ -201,39 +201,41 @@ bool ContinuousTimeCollisionHandler::detectParticleParticle(const TwoDScene &sce
     std::vector<double> position_polynomial;
     std::vector<double> velocity_polynomial;
     
+    // Your implementation here should compute n, and examine time to decide the return value
+    std::vector<double> pospoly, velpoly;
+
+    Vector2s dx21 = dx2 - dx1;
+    Vector2s x21 = x2 - x1;
+    double r12 = r1 + r2;
+
+    // - (dx2 - dx1).dot(dx2 - dx1)
+    pospoly.push_back(-dx21.dot(dx21));
+    // -2*(x2 - x1).dot(dx2 - dx1)
+    pospoly.push_back(-2*x21.dot(dx21));
+    // (r1+r2)*(r1_r2) - (x2 - x1).dot(x2 - x1)
+    pospoly.push_back(r12*r12 - x21.dot(x21));
+
+    // (dx1 - dx2).dot(dx2 - dx1)
+    velpoly.push_back(-(-dx21).dot(-dx21));
+    // (dx1 - dx2).dot(x2 - x1)
+    velpoly.push_back((-dx21).dot(x21));
+
     // Your implementation here should fill the polynomials with right coefficients
-  
     // Do not change the order of the polynomials here, or your program will fail the oracle
     std::vector<Polynomial> polynomials;
-    polynomials.push_back(Polynomial(position_polynomial));
-    polynomials.push_back(Polynomial(velocity_polynomial));
+    polynomials.push_back(Polynomial(pospoly));
+    polynomials.push_back(Polynomial(velpoly));
     
     time = PolynomialIntervalSolver::findFirstIntersectionTime(polynomials);
-    
-    // Your implementation here should compute n, and examine time to decide the return value
-    
-//
-//    Example code:
-//
-//    std::vector<double> pospoly;
-//    pospoly.push_back(TSQUARED_COEF);   // position polynomial for particle-particle detection is quadratic
-//    pospoly.push_back(T_COEF);
-//    pospoly.push_back(CONSTANT_COEF);
-//    
-//    std::vector<double> velpoly;
-//    velpoly.push_back(T_COEF);      // velocity polynomial for particle-particle detection is linear
-//    velpoly.push_back(CONSTANT_COEF);
-//    
-//    std::vector<Polynomial> polys;
-//    polys.push_back(Polynomial(pospoly));
-//    polys.push_back(Polynomial(velpoly));
-//    
-//    time = PolynomialIntervalSolver::findFirstIntersectionTime(polys);    // this give the first contact time
-//
-//    Then you can use time and other info to decide if a collision has happened in this time step.
-//
-    
-    return false;
+    if(time <= 1.0)
+    {
+        // n(t) = x2 + t*dx2 - x1 - t*dx1
+        // = t*(dx2 - dx1) + (x2 - x1)
+        n = time*dx21 + x21;
+        return true;
+    }
+    else
+        return false;
 }
 
 
@@ -274,6 +276,7 @@ bool ContinuousTimeCollisionHandler::detectParticleEdge(const TwoDScene &scene, 
 
     double r1 = scene.getRadius(vidx);
     double r2 = scene.getEdgeRadii()[eidx];
+    double r12 = r1+r2;
 
     std::vector<double> position_polynomial;
     std::vector<double> alpha_greater_than_zero_polynomial;
@@ -301,7 +304,26 @@ bool ContinuousTimeCollisionHandler::detectParticleEdge(const TwoDScene &scene, 
         double o = c*h;
         double p = (dx3-dx2).dot(x3-x2);
         double q = (dx3-dx2).dot(dx3-dx2);
-        
+
+        double s = (x2 - x1).dot(x2 - x1);
+
+        double t = (dx1-dx3).dot(dx2-dx3);
+        double u = (x1-x3).dot(dx2-dx3) + (dx1-dx3).dot(x2-x3);
+        double v = (x1-x3).dot(x2-x3);
+
+        // I am aware this is wrong, but I must be inputting the function incorrectly in Mathematica, because this is what I get. I am sure I am supposed to be using a bunch of differences between points.
+        position_polynomial.push_back(r12*r12*(x2.dot(x2) - 2*x2.dot(x3) + x3.dot(x3)));
+        position_polynomial.push_back(r12*r12*(2*dx2.dot(x2) - 2*dx3.dot(x2) - 2*dx2.dot(x3) + 2*dx3.dot(x3)));
+        position_polynomial.push_back(r12*r12*(dx2.dot(dx2) - 2*dx2.dot(dx3) + dx3.dot(dx3)));
+
+        alpha_greater_than_zero_polynomial.push_back(h);
+        alpha_greater_than_zero_polynomial.push_back(g);
+        alpha_greater_than_zero_polynomial.push_back(f);
+
+        alpha_less_than_one_polynomial.push_back(t);
+        alpha_less_than_one_polynomial.push_back(u);
+        alpha_less_than_one_polynomial.push_back(v);
+
         velcity_polynomial.push_back( -h*h*q - c*c*d - 2*o*j );
         velcity_polynomial.push_back( -h*h*p - 2*g*h*q - 4*b*c*d - c*c*e - o*i - 2*n*j );
         velcity_polynomial.push_back( -2*g*h*p - 2*f*g*q - g*g*q - 2*a*c*d - 4*b*b*d - 4*b*c*e - n*i - 2*m*j );
@@ -317,10 +339,26 @@ bool ContinuousTimeCollisionHandler::detectParticleEdge(const TwoDScene &scene, 
     polynomials.push_back(Polynomial(alpha_less_than_one_polynomial));
     polynomials.push_back(Polynomial(velcity_polynomial));
     
-    time = PolynomialIntervalSolver::findFirstIntersectionTime(polynomials);
-    
     // Your implementation here should compute n, and examine time to decide the return value
-    return false;
+    time = PolynomialIntervalSolver::findFirstIntersectionTime(polynomials);
+
+    if(time <= 1.0)
+    {
+        // n = xa - x1
+        // = x2 + a(x3 - x2) - x1
+        VectorXs _x1 = x1 + time*dx1;
+        VectorXs _x2 = x2 + time*dx2;
+        VectorXs _x3 = x3 + time*dx3;
+        VectorXs _x12 = _x1 - _x2;
+        Vector2s _x32 = _x3 - _x2;
+        double alpha = _x12.dot(_x32) / _x32.dot(_x32);
+        n =  _x2
+            + (alpha)*_x32
+            - _x1;
+        return true;
+    }
+    else
+        return false;
 }
 
 // Given start positions (oldpos) and end positions (scene.getX) of a
@@ -363,7 +401,16 @@ bool ContinuousTimeCollisionHandler::detectParticleHalfplane(const TwoDScene &sc
     std::vector<double> velocity_polynomial;
     
     // Your implementation here should fill the polynomials with right coefficients
-  
+    double npnp = np.dot(np);
+    double xpx1np = (xp-x1).dot(np);
+    double dx1np = dx1.dot(np);
+
+    position_polynomial.push_back(dx1np * -dx1np);
+    position_polynomial.push_back(dx1np * 2*xpx1np);
+    position_polynomial.push_back(xpx1np * -xpx1np + r*r*npnp);
+    
+    velocity_polynomial.push_back(dx1np * -dx1np);
+    velocity_polynomial.push_back(dx1np * xpx1np);
     // Do not change the order of the polynomials here, or your program will fail the oracle
     std::vector<Polynomial> polynomials;
     polynomials.push_back(Polynomial(position_polynomial));
@@ -372,8 +419,13 @@ bool ContinuousTimeCollisionHandler::detectParticleHalfplane(const TwoDScene &sc
     time = PolynomialIntervalSolver::findFirstIntersectionTime(polynomials);
     
     // Your implementation here should compute n, and examine time to decide the return value
-    
-    return false;
+    if(time <= 1.0)
+    {
+        n = (xp - x1 - time*dx1).dot(np)/npnp * np;
+        return true;
+    }
+    else
+        return false;
 }
 
 

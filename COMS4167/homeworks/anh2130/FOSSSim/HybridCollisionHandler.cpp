@@ -288,8 +288,29 @@ bool zonesEqual(const ImpactZones &zones1, const ImpactZones &zones2)
 bool HybridCollisionHandler::applyIterativeImpulses(const TwoDScene &scene, const VectorXs &qs, const VectorXs &qe, const VectorXs &qdote, double dt, VectorXs &qefinal, VectorXs &qdotefinal)
 {	
     // Your implementation here
+    int i;
+    VectorXs i_qe;
+    VectorXs i_qdote;
+    std::vector<CollisionInfo> coll_detected;
 
-    return false;
+    coll_detected = detectCollisions(scene, qs, qe);
+    qefinal = qe;
+    qdotefinal = qdote;
+
+    for(int i = 0; i < m_maxiters && coll_detected.size() > 0; ++i)
+    {
+        i_qe = qefinal;
+        i_qdote = qdotefinal;
+        applyImpulses(scene, coll_detected, qs, qefinal, qdotefinal, dt, i_qe, i_qdote);
+        qefinal = i_qe;
+        qdotefinal - i_qdote;
+        coll_detected = detectCollisions(scene, qs, qefinal);
+    }
+
+    if(coll_detected.size() == 0)
+        return true;
+    else
+        return false;
 }
 
 
@@ -313,19 +334,68 @@ void HybridCollisionHandler::performFailsafe(const TwoDScene &scene, const Vecto
     //
     // What you need to implement here: (same as writeup section 4.5)
     //
+    Vector2s dx = qe - qs;
+    VectorXs _M = scene.getM();
+    Vector2s cx;
+    Vector2s cm;
+    Vector2s i_x, i_m;
+    int i;
+    double L;
+    double sum_mass = 0.0;
+    double w_cm = 0.0;
+    double I = 0.0;
+    int ct_fixed = 0;
+    cx.setZero();
+    cm.setZero();
+
     // 1. Treat the particles as if they were part of a rigid body; that is, treat them as if 
     //      we connected them with rigid beams at the start of the time step.
+    for(i = 0; i < (int)zone.m_verts.size(); ++i)
+    {
+        cm += _M[2*i]*qs.segment<2>(2*i);
+        cx += _M[2*i]*dx.segment<2>(2*i);
+        sum_mass += _M[2*i];
+        if(scene.isFixed(i))
+            ct_fixed++;
+    }
+    cm = cm/sum_mass;
+    cx = cx/sum_mass;
+    
     // 2. Step the rigid body forward in time to the end of the time step.
+    for(i = 0; i < (int)zone.m_verts.size(); ++i)
+    {
+        i_x = dx.segment<2>(2*i) - cx;
+        i_m = qs.segment<2>(2*i) - cm;
+        L += (i_m[0]*i_x[1] - i_m[1]*i_x[0]) * _M[2*i];
+        I += _M[2*i] * i_m.dot(i_m);
+    }
+    w_cm = L/I;
+    
+    // Don't forget to handle fixed objects properly as in writeup section 4.5.1    
+    if(ct_fixed > 0 || zone.m_halfplane)
+    {
+        for(i = 0; i < (int)zone.m_verts.size(); ++i)
+        {
+            qe.segment<2>(2*i) = qs.segment<2>(2*i);
+            qdote.segment<2>(2*i).setZero();
+        }
+    }
     // 3. Set each particle’s modified end-of-time-step position qm to the position dictated 
     //      by the motion of the rigid body.
     // 4. Also set the particle’s modified end-of-time-step velocity to (qm − qs) / h, where 
     //      h is the length of the time step.
     //
-    
-    // Don't forget to handle fixed objects properly as in writeup section 4.5.1    
-    
-    // Your implementation here
+    for(i = 0; i < (int)zone.m_verts.size(); ++i)
+    {
+        i_m = qs.segment<2>(2*i) - cm;
+        Vector2s i_mT;
+        i_mT[0] = -i_m[1];
+        i_mT[1] = i_m[0];
 
+        qe.segment<2>(2*i) = cm + cx + cos(w_cm)*i_m + sin(w_cm)*i_mT;
+        qdote.segment<2>(2*i) = (qe.segment<2>(2*i) - qs.segment<2>(2*i))/dt;
+    }
+    return;
 }
 
 
@@ -347,28 +417,45 @@ void HybridCollisionHandler::applyGeometricCollisionHandling(const TwoDScene &sc
     ImpactZones Z;
     ImpactZones Zprime;
     
-    //
-    // What you need to implement here: (same as writeup section 4.6)
-    //
-    // 1. Perform continuous-time collision detection using positions qs and qe.
-    // 2. Initialize qm = qe and qdotm = qdote.
-    // 3. Construct a list of disjoint impact zones Z from the detected collisions.
-    // 4. For each impact zone in Z, apply geometric collision response (by calling 
-    //      HybrdiCollisionHandler::performFailsafe, using positions qs and qm, and
-    //      modifying qm and qdotm for the vertices in those zones.
-    // 5. Perform continuous-time collision detection using positions qs and qm. 
-    // 6. Construct a new list of impact zones Z′ consisting of all impact zones in Z, 
-    //      plus one zone for each detected collision.
-    // 7. Merge the zones in Z' to get disjoint impact zones.
-    // 8. If Z and Z' are equal, the algorithm is done, and qm and qdotm are the new, 
-    //      collision-free end-of-time-step positions. Z and Z' are equal if they 
-    //      contain exactly the same impact zones; impact zones are the same if they 
-    //      contain the same particles and they both involve, or both don’t involve, 
-    //      a half-plane. If Z != Z', go to step 9.
-    // 9. Set Z=Z' and goto step4.
-    //
-    
     // Your implementation here
+    
+    // 1. Perform continuous-time collision detection using positions qs and qe.
+    std::vector<CollisionInfo> coll_detected = detectCollisions(scene, qs, qe);
+    // 2. Initialize qm = qe and qdotm = qdote.
+    qm = qe;
+    qdotm = qdote;
+    // 3. Construct a list of disjoint impact zones Z from the detected collisions.
+    growImpactZones(scene, Z, coll_detected);
 
+    while(true)
+    {
+        // 4. For each impact zone in Z, apply geometric collision response (by calling 
+        //      HybrdiCollisionHandler::performFailsafe, using positions qs and qm, and
+        //      modifying qm and qdotm for the vertices in those zones.
+        for(int i = 0; i < (int)Z.size(); ++i)
+        {
+            performFailsafe(scene, qs, Z[i], dt, qm, qdotm);
+        }
+        // 5. Perform continuous-time collision detection using positions qs and qm. 
+        coll_detected = detectCollisions(scene, qs, qm);
+        // 6. Construct a new list of impact zones Z′ consisting of all impact zones in Z, 
+        //      plus one zone for each detected collision.
+        // 7. Merge the zones in Z' to get disjoint impact zones.
+        Zprime = Z;
+        growImpactZones(scene, Zprime, coll_detected);
+        // 8. If Z and Z' are equal, the algorithm is done, and qm and qdotm are the new, 
+        //      collision-free end-of-time-step positions. Z and Z' are equal if they 
+        //      contain exactly the same impact zones; impact zones are the same if they 
+        //      contain the same particles and they both involve, or both don’t involve, 
+        //      a half-plane. If Z != Z', go to step 9.
+        if(zonesEqual(Z, Zprime))
+            break;
+        else
+        {
+            // 9. Set Z=Z' and goto step4.
+            Z = Zprime;
+        }
+    }
+    return;
 }
 
