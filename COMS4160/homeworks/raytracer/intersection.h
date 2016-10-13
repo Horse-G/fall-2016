@@ -1,8 +1,7 @@
-/* Filename:    intersection.h
- * Author:      Adam Hadar, anh2130
- * Purpose:     Definitions for intersections for a simple raytracer.
- * Edited:      2016-10-13
- */
+// Filename:    intersection.h
+// Author:      Adam Hadar, anh2130
+// Purpose:     Definitions for intersections for a simple raytracer.
+// Edited:      2016-10-13
 
 //******************************************************************************
 // STRUCT_INTERSECTION

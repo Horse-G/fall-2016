@@ -1,8 +1,7 @@
-/* Filename:    lights.h
- * Author:      Adam Hadar, anh2130
- * Purpose:     Definitions for lights for a simple raytracer.
- * Edited:      2016-10-13
- */
+// Filename:    lights.h
+// Author:      Adam Hadar, anh2130
+// Purpose:     Definitions for lights for a simple raytracer.
+// Edited:      2016-10-13
 
 //******************************************************************************
 // VIRTUAL_CLASS_LIGHT

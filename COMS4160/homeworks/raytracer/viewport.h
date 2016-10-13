@@ -1,8 +1,7 @@
-/* Filename:    viewport.h
- * Author:      Adam Hadar, anh2130
- * Purpose:     Definition of a viewport for a simple raytracer.
- * Edited:      2016-10-13
- */
+// Filename:    viewport.h
+// Author:      Adam Hadar, anh2130
+// Purpose:     Definition of a viewport for a simple raytracer.
+// Edited:      2016-10-13
 
 //******************************************************************************
 // VIEWPORT

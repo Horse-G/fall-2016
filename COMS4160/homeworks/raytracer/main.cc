@@ -1,8 +1,7 @@
-/* Filename:    main.cc
- * Author:      Adam Hadar, anh2130
- * Purpose:     The main function for a simple raytracer.
- * Edited:      2016-10-13
- */
+// Filename:    main.cc
+// Author:      Adam Hadar, anh2130
+// Purpose:     The main function for a simple raytracer.
+// Edited:      2016-10-13
 
 #include "common.h"
 
@@ -25,10 +24,10 @@ int main(int argc, char** argv)
         s_scene                 scene;
         t_scalar                v_px, v_py;
     
-        // parse the scene filei
+        // parse the scene file
         io_input_scene(scene, argv[1]);
         #ifdef PRINT
-            io_print_scene_verbose();
+        io_print_scene_verbose();
         #endif
     
         // size image to scene specs

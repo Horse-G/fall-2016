@@ -1,8 +1,7 @@
-/* Filename:    common.h
- * Author:      Adam Hadar, anh2130
- * Purpose:     The main header for a simple raytracer.
- * Edited:      2016-10-13
- */
+// Filename:    common.h
+// Author:      Adam Hadar, anh2130
+// Purpose:     The main header for a simple raytracer.
+// Edited:      2016-10-13
 
 //******************************************************************************
 // C_STD_LIBRARIES

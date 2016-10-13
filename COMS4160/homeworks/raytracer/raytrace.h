@@ -1,8 +1,7 @@
-/* Filename:    raytrace.h
- * Author:      Adam Hadar, anh2130
- * Purpose:     The actual raytracing routine for a simple raytracer.
- * Edited:      2016-10-13
- */
+// Filename:    raytrace.h
+// Author:      Adam Hadar, anh2130
+// Purpose:     The actual raytracing routine for a simple raytracer.
+// Edited:      2016-10-13
 
 //******************************************************************************
 // SUBROUTINE_RAYTRACE_DO
@@ -62,8 +61,10 @@ void raytrace_do(
         for(z = 0; z < scene._surfaces.size(); ++z)
         {
             ii_sct = scene._surfaces[z]->is_intersect(i_ray);
-            // weeds out only the closest intersection
-            if(ii_sct.get_is_true() && ii_sct.get_t() < i_sct.get_t())
+            // weeds out only the closest intersection, that is on the correct
+            //   of the camera
+            if(ii_sct.get_is_true()
+                    && ii_sct.get_t() < i_sct.get_t() && ii_sct.get_t() > v_fl)
                 i_sct = ii_sct;
         }
 

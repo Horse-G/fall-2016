@@ -1,8 +1,7 @@
-/* Filename:    surfaces.h
- * Author:      Adam Hadar, anh2130
- * Purpose:     Surface definitions for a simple raytracer.
- * Edited:      2016-10-13
- */
+// Filename:    surfaces.h
+// Author:      Adam Hadar, anh2130
+// Purpose:     Surface definitions for a simple raytracer.
+// Edited:      2016-10-13
 
 //*****************************************************************************
 // SURFACE
@@ -74,7 +73,7 @@ class c_surf_plane: public c_surface
         t_scalar t;
         t_scalar dN = gr.get_direction() % _normal;
         
-        if(dN < 0.0)
+        if(dN <= 0.0)
             return s_intersect();
 
         t = (_distance - gr.get_origin() % _normal)/dN;
@@ -130,7 +129,8 @@ class c_surf_triangle: public c_surface
     }
 
     // computer intersection
-    // Moller-Trumbore, ripped from en.wikipedia.org/wiki/Moller-Trumbore_intersection_algorithm
+    // Moller-Trumbore
+    //   ripped from en.wikipedia.org/wiki/Moller-Trumbore_intersection_algorithm
     virtual s_intersect is_intersect(const s_geo_ray& gr)
     {
         // memory allocation

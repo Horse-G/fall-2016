@@ -1,8 +1,7 @@
-/* Filename:    color.h
- * Author:      Adam Hadar, anh2130
- * Purpose:     Definitions for materials in a simple raytracer.
- * Edited:      2016-10-13
- */
+// Filename:    color.h
+// Author:      Adam Hadar, anh2130
+// Purpose:     Definitions for materials in a simple raytracer.
+// Edited:      2016-10-13
 
 //******************************************************************************
 // STRUCT_CLR_COLOR
@@ -43,11 +42,10 @@ struct s_clr_color
     }
 
     // color operations
-    /*  - addition
-     *  - subtraction
-     *  - multiplication
-     *  - increment assignemnt
-     */
+    //   - addition
+    //   - subtraction
+    //   - multiplication
+    //   - increment assignemnt
     s_clr_color operator +(const s_clr_color& cc) const
     {
         return s_clr_color(_rgb[0] + cc._rgb[0], _rgb[1] + cc._rgb[1], _rgb[2] + cc._rgb[2]);
@@ -68,9 +66,8 @@ struct s_clr_color
         return *this;
     }
     // scalar operations
-    /*  - multiplication
-     *  - division
-     */
+    //   - multiplication
+    //   - division
     s_clr_color operator *(const t_scalar& s) const
     {
         return s_clr_color(_rgb[0] * s, _rgb[1] * s, _rgb[2] * s);

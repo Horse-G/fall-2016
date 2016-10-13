@@ -1,8 +1,7 @@
-/* Filename:    geometry.h
- * Author:      Adam Hadar, anh2130
- * Purpose:     Definitions for vectors, points, and rays for a simple raytracer.
- * Edited:      2016-10-13
- */
+// Filename:    geometry.h
+// Author:      Adam Hadar, anh2130
+// Purpose:     Definitions for vectors, points, and rays for a simple raytracer.
+// Edited:      2016-10-13
 
 //******************************************************************************
 // GEO_VECTOR
@@ -46,11 +45,10 @@ struct s_geo_vector
     }
 
     // vector operations
-    /*  - cross product
-     *  - dot product
-     *  - addition
-     *  - subtraction
-     */
+    //   - cross product
+    //   - dot product
+    //   - addition
+    //   - subtraction
     s_geo_vector operator *(const s_geo_vector& gv) const
     {
         return s_geo_vector(_xyz[1]*gv._xyz[2] - _xyz[2]*gv._xyz[1], _xyz[2]*gv._xyz[0] - _xyz[0]*gv._xyz[2], _xyz[0]*gv._xyz[1] - _xyz[1]*gv._xyz[0]);
@@ -69,10 +67,9 @@ struct s_geo_vector
     }
 
     // scalar operations
-    /*  - multiplication
-     *  - negation
-     *  - division
-     */
+    //   - multiplication
+    //   - negation
+    //   - division
     s_geo_vector operator *(const t_scalar& s) const
     {
         return s_geo_vector(_xyz[0]*s, _xyz[1]*s, _xyz[2]*s);
@@ -143,16 +140,14 @@ struct s_geo_point
     ~s_geo_point(void){}
     
     // vector operations
-    /*  - dot product
-     */
+    //   - dot product
     t_scalar operator %(const s_geo_vector& gv) const
     {
         return _abc[0]*gv._xyz[0] + _abc[1]*gv._xyz[1] + _abc[2]*gv._xyz[2];
     }
     
     // point operations
-    /*  - subtraction
-     */
+    //   - subtraction
     s_geo_vector operator -(const s_geo_point& gp) const
     {
         return s_geo_vector(_abc[0] - gp._abc[0], _abc[1] - gp._abc[1], _abc[2] - gp._abc[2]);
@@ -203,10 +198,9 @@ struct s_geo_ray
     }
 
     // ray operations
-    /*  - addition
-     *  - subtraction
-     *  - cross product
-     */
+    //   - addition
+    //   - subtraction
+    //   - cross product
     s_geo_ray operator +(const s_geo_ray& gr) const
     {
         return s_geo_ray(_origin, _direction + gr._direction);
