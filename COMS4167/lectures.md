@@ -311,19 +311,61 @@ _(Force total) dot (grad g) >= 0_
 
 Those last two were complementary; either lambda or force dot grad can be a positive nonzero, but not both.
 
-## Lecture 07, 2016-10-04
+## Lecture 09, 2016-10-04
 I MISSED THIS CLASS
 
-## Lecture 08, 2016-10-06
+## Lecture 10, 2016-10-06
 
+## Lecture 11, 2016-10-11
+### T2M2 overview
+when approaching each other, checking for ||n dir|| < r1 + r2
 
+but if a particle is moving too quickly, the particle could tunnel through an obstacle
 
+So therefore we need to find those collisions that may have happened in between time steps
 
+X(t) = X0 + t*diff(x)
 
+And we need to find such a t that 
 
+||n(t)|| < r1 + r2
 
+and v(t) dot n(t) > 0
 
+||n|| < r1 + r2
 
+n^2 < (r1 + r2)^2
+
+(x2 - x1)^2 < (r1 + r2)^2
+
+(x2 + t dot diff(x2) - x1 - t dot diff(x1))^2 - (r1 + r2)^2 < 0
+
+### T2M3
+Collision takes 60% of the computation in a time step
+
+At the moment every particle has to check every other particle if it's colliding - O(n^2)
+
+You can break the scene up into bounding grids to split up the problem
+
+You do a spatial hash
+
+You can do a KD Tree
+
+You can do Binary Space Partitioning
+
+You can do Quadtrees
+
+You can do Sweep & Prune
+
+You can do a Bounding Volume Hierarchy
+
+- Space (Eulerian) vs Mass (Lagrangian)
+
+- Axis Aligned bounding box vs Oriented Aligned Bounding Box
+
+## Lecture 12, 2016-10-13
+### Computational Haptics
+haptesthai == touch in greek
 
 
 

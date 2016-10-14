@@ -395,7 +395,7 @@ L = l_ambient + l_diffuse + l_specular
  rgb triple
  float intensity
  ```
- ### homework 1.1
+### homework 1.1
  shading calcuatioin
  - surface normal at interesection point
  - normlized vector from interesection point to light
@@ -418,8 +418,52 @@ NORMALIZE HAS TO ASSERT THAT IT IS NOT ALL ZERO
 PUT VIRTUAL IN ALL THE SUBCLASS VIRTUAL FUNCTIONS
 
 
+## Lecture 06, 2016-10-13
+- raytracing triangles
+- raytracing "true" shadows
+- raytracing multiple light sources
+- code review on 1.1 additions
+- animation appreciation "knick knack"
 
+### Raytracing triangles
+- can be used to represent any shape, to a desired error
+- they fit well into ray tracing and pipeline paradigms
+- they are easy to subdivide into smaller triangles
+- most freeform geometry tyles have well-defined methods of tesselation by triangles
+- they are fast to compue intersections with
+- DISADVANTAGES: only approximates smooth surfaces, without extra work norals are not smooth, all the other problems associated w/ sampling
 
+#### ray-triangle intersection
+- (b-a)x(p-a) . n > 0
+- (c-b)x(p-b) . n > 0
+- (a-c)x(p-c) . n > 0
+- logical, not efficient
+
+instead:
+- use barycentric coordinates
+- P(B,G) = a + B(b - a) + G(c - a), in triangle if B+G <= 1
+- given ray equation: r(t) = P0 + td
+- P0 + td = a + B(b-a) + G(c-a)
+- td - B(b-a) - G(c-a) = a - P0
+- td + B(a-b) + G(a-c) = a - P0
+- [ d (a-b) (a-c)].[t B G]^T = a - P0
+- 3x3 * 3x1 = 3x1 => use Cramer's rule
+- have intersection routine throw away if already found an object in front
+
+### Other objects: triangle mesh
+- share vertices
+- share normals
+
+### Other other objects
+- parallelpipeds
+- cones, cylinders, disks, paraboloids
+- convex polygons
+- concave polygons
+
+### Shadows
+- compute ray to light, if object between light surface, black it out
+- push object up from the normal first, then compute the shadow ray (bc you might accidentally intersect object again bc of rounding) 1e-6 works for test scenes
+- instead you could check normal dot ray to light is positive
 
 
 
