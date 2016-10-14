@@ -28,8 +28,8 @@
 //******************************************************************************
 #define EPSILON          1e-7
 #define BLACKNESS        s_intersect(std::numeric_limits<t_scalar>::infinity(),s_geo_point(0.0,0.0,0.0),s_geo_vector(0.0,0.0,0.0),0,PLANE)
-#define NO_MATERIAL      new s_material(s_clr_color(0.0,0.0,0.0))
-#define DEFAULT_MATERIAL new s_material(s_clr_color(0.0,0.0,1.0))
+#define NO_MATERIAL      new c_mat_default(s_clr_color(0.0,0.0,0.0))
+#define DEFAULT_MATERIAL new c_mat_default(s_clr_color(0.0,0.0,1.0))
 #define DEFAULT_AMBIENT  c_light_ambient(s_clr_color(0.0,0.0,0.0))
 #define OUT_TAB          "    "
 typedef unsigned int     t_uint;
@@ -44,8 +44,8 @@ enum t_light             {AMBIENT, POINT, DIRECTIONAL};
 #include "intersection.h"
 #include "surfaces.h"
 #include "color.h"
-#include "materials.h"
 #include "lights.h"
+#include "materials.h"
 #include "viewport.h"
 #include "scene.h"
 #include "io.h"

@@ -11,7 +11,7 @@ struct s_scene
     private:
     std::vector<s_viewport*>     _viewports;
     std::vector<c_surface*>      _surfaces;
-    std::vector<s_material*>     _materials;
+    std::vector<c_material*>     _materials;
     c_light_ambient              _light_ambient;
     std::vector<c_light_point*>  _lights_point;
     std::vector<c_light_direct*> _lights_directional;

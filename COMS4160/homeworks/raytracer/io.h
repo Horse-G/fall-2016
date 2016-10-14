@@ -242,7 +242,7 @@ void io_input_scene(s_scene &sc, const char* file_name)
                 // povray doesn't take reflective color, so just approximate a blend
                 // weight:
                 // float dlen = sqrt(refl.x*refl.x+refl.y*refl.y+refl.z*refl.z);
-                sc._materials.push_back(new s_material(cc1,cc2,s1,gv1));
+                sc._materials.push_back(new c_mat_blinn_phong(cc1,cc2,s1,gv1));
                 ct_materials++;
                 break;
             }
