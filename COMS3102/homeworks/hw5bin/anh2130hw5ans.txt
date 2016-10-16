@@ -1,0 +1,155 @@
+1. Adam Hadar
+
+2. anh2130
+
+3.
+Went to .bashrc and edited PS1. I know I was supposed to edit PROMPT_COMMAND to get the current directory as requested, but I couldn't think of the algorithm to do it. I was doing something like
+```
+test="$(dirname "$(dirname "$(pwd)")")"
+```
+to get the opposite of what you wanted, but I couldn't get sed to weed out this text from a second running of `pwd`.
+
+4.
+[15:31:24 anh2130@coms3102server /~/hw5bin 820]$ type gethomework
+gethomework is a function
+gethomework ()
+{
+    wget http://columbia.edu/~dm2474/3102/hw${1}_coms3102_linux_fall_2016.pdf
+}
+[15:31:25 anh2130@coms3102server /~/hw5bin 821]$ gethomework 1
+--2016-10-15 15:31:28--  http://columbia.edu/~dm2474/3102/hw1_coms3102_linux_fall_2016.pdf
+Resolving columbia.edu... 128.59.105.24
+Connecting to columbia.edu|128.59.105.24|:80... connected.
+HTTP request sent, awaiting response... 301 Moved Permanently
+Location: http://www.columbia.edu/~dm2474/3102/hw1_coms3102_linux_fall_2016.pdf [following]
+--2016-10-15 15:31:28--  http://www.columbia.edu/~dm2474/3102/hw1_coms3102_linux_fall_2016.pdf
+Resolving www.columbia.edu... 128.59.105.24
+Reusing existing connection to columbia.edu:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 88707 (87K) [application/pdf]
+Saving to: “hw1_coms3102_linux_fall_2016.pdf.2”
+
+100%[=============================================================>] 88,707      --.-K/s   in 0.04s
+
+2016-10-15 15:31:29 (2.14 MB/s) - “hw1_coms3102_linux_fall_2016.pdf.2” saved [88707/88707]
+
+[15:31:29 anh2130@coms3102server /~/hw5bin 822]$
+
+5. whatmask outputs
+[16:04:50 anh2130@coms3102server /~/hw5bin 951]$ ../bin/whatmask 127.0.0.1/8
+
+------------------------------------------------
+           TCP/IP NETWORK INFORMATION
+------------------------------------------------
+IP Entered = ..................: 127.0.0.1
+CIDR = ........................: /8
+Netmask = .....................: 255.0.0.0
+Netmask (hex) = ...............: 0xff000000
+Wildcard Bits = ...............: 0.255.255.255
+------------------------------------------------
+Network Address = .............: 127.0.0.0
+Broadcast Address = ...........: 127.255.255.255
+Usable IP Addresses = .........: 16,777,214
+First Usable IP Address = .....: 127.0.0.1
+Last Usable IP Address = ......: 127.255.255.254
+
+[16:05:12 anh2130@coms3102server /~/hw5bin 952]$ ../bin/whatmask 128.59.0.0/16
+
+------------------------------------------------
+           TCP/IP NETWORK INFORMATION
+------------------------------------------------
+IP Entered = ..................: 128.59.0.0
+CIDR = ........................: /16
+Netmask = .....................: 255.255.0.0
+Netmask (hex) = ...............: 0xffff0000
+Wildcard Bits = ...............: 0.0.255.255
+------------------------------------------------
+Network Address = .............: 128.59.0.0
+Broadcast Address = ...........: 128.59.255.255
+Usable IP Addresses = .........: 65,534
+First Usable IP Address = .....: 128.59.0.1
+Last Usable IP Address = ......: 128.59.255.254
+
+[16:05:28 anh2130@coms3102server /~/hw5bin 953]$ ../bin/whatmask 128.59.92.136/24
+
+------------------------------------------------
+           TCP/IP NETWORK INFORMATION
+------------------------------------------------
+IP Entered = ..................: 128.59.92.136
+CIDR = ........................: /24
+Netmask = .....................: 255.255.255.0
+Netmask (hex) = ...............: 0xffffff00
+Wildcard Bits = ...............: 0.0.0.255
+------------------------------------------------
+Network Address = .............: 128.59.92.0
+Broadcast Address = ...........: 128.59.92.255
+Usable IP Addresses = .........: 254
+First Usable IP Address = .....: 128.59.92.1
+Last Usable IP Address = ......: 128.59.92.254
+
+[16:06:14 anh2130@coms3102server /~/hw5bin 955]$ ../bin/whatmask 10.142.0.2/255.255.255.255
+
+------------------------------------------------
+           TCP/IP NETWORK INFORMATION
+------------------------------------------------
+IP Entered = ..................: 10.142.0.2
+CIDR = ........................: /32
+Netmask = .....................: 255.255.255.255
+Netmask (hex) = ...............: 0xffffffff
+Wildcard Bits = ...............: 0.0.0.0
+------------------------------------------------
+Network Address = .............: 10.142.0.2
+Broadcast Address = ...........: 10.142.0.2
+Usable IP Addresses = .........: 0
+First Usable IP Address = .....: <none>
+Last Usable IP Address = ......: <none>
+
+[16:06:40 anh2130@coms3102server /~/hw5bin 956]$
+
+5.
+[16:55:29 anh2130@coms3102server /~/hw5bin 1006]$ ipstuff.sh
+UID, DATE, MYIP-FROM-FILE, MY-DNS, HOSTQUERY, RESP-FROM-DNS
+526,1476564932,10.142.0.2,169.254.169.254,cunix.cc.columbia.edu,128.59.92.136
+526,1476564937,10.142.0.2,169.254.169.254,cunix.cc.columbia.edu,128.59.92.136
+526,1476564942,10.142.0.2,169.254.169.254,cunix.cc.columbia.edu,128.59.92.136
+526,1476564947,10.142.0.2,169.254.169.254,cunix.cc.columbia.edu,128.59.92.136
+526,1476564952,10.142.0.2,169.254.169.254,cunix.cc.columbia.edu,128.59.92.136
+[16:55:57 anh2130@coms3102server /~/hw5bin 1007]$ ipstuff.sh www.columbia.edu
+UID, DATE, MYIP-FROM-FILE, MY-DNS, HOSTQUERY, RESP-FROM-DNS
+526,1476564964,10.142.0.2,169.254.169.254,www.columbia.edu,128.59.105.24
+526,1476564969,10.142.0.2,169.254.169.254,www.columbia.edu,128.59.105.24
+526,1476564974,10.142.0.2,169.254.169.254,www.columbia.edu,128.59.105.24
+526,1476564979,10.142.0.2,169.254.169.254,www.columbia.edu,128.59.105.24
+526,1476564984,10.142.0.2,169.254.169.254,www.columbia.edu,128.59.105.24
+[16:56:29 anh2130@coms3102server /~/hw5bin 1008]$ ipstuff.sh www.google.com 20
+UID, DATE, MYIP-FROM-FILE, MY-DNS, HOSTQUERY, RESP-FROM-DNS
+526,1476564997,10.142.0.2,169.254.169.254,www.google.com,74.125.141.103
+526,1476565002,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+526,1476565007,10.142.0.2,169.254.169.254,www.google.com,74.125.141.103
+526,1476565013,10.142.0.2,169.254.169.254,www.google.com,74.125.141.103
+526,1476565018,10.142.0.2,169.254.169.254,www.google.com,74.125.141.103
+526,1476565023,10.142.0.2,169.254.169.254,www.google.com,74.125.141.103
+526,1476565028,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+526,1476565033,10.142.0.2,169.254.169.254,www.google.com,74.125.141.103
+526,1476565038,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+526,1476565043,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+526,1476565048,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+526,1476565053,10.142.0.2,169.254.169.254,www.google.com,74.125.141.103
+526,1476565058,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+526,1476565063,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+526,1476565068,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+526,1476565073,10.142.0.2,169.254.169.254,www.google.com,74.125.141.103
+526,1476565078,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+526,1476565083,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+526,1476565088,10.142.0.2,169.254.169.254,www.google.com,74.125.141.103
+526,1476565093,10.142.0.2,169.254.169.254,www.google.com,74.125.141.147
+[16:58:18 anh2130@coms3102server /~/hw5bin 1009]$ ipstuff.sh www.google.com AAA
+USAGE: ipstuff.sh: [ HNAME | HNAME ITER ]
+[16:58:29 anh2130@coms3102server /~/hw5bin 1010]$ ipstuff.sh fakeurl.fake
+UID, DATE, MYIP-FROM-FILE, MY-DNS, HOSTQUERY, RESP-FROM-DNS
+526,1476565120,10.142.0.2,NA,fakeurl.fake,NA
+526,1476565125,10.142.0.2,NA,fakeurl.fake,NA
+526,1476565130,10.142.0.2,NA,fakeurl.fake,NA
+526,1476565135,10.142.0.2,NA,fakeurl.fake,NA
+526,1476565140,10.142.0.2,NA,fakeurl.fake,NA
+[16:59:05 anh2130@coms3102server /~/hw5bin 1011]$
