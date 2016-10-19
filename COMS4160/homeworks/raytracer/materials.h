@@ -13,7 +13,8 @@ class c_material
     virtual ~c_material(void){}
     
     // subclass compute shading
-    virtual s_clr_color compute_shading(const c_light_ambient&, const std::vector<c_light_point*>&, const s_intersect&, const s_geo_ray&) = 0;
+    virtual s_clr_color compute_shading(const s_intersect&, const s_geo_ray&, // const s_scene&) = 0;
+            const c_light_ambient&, const std::vector<c_light_point*>&) = 0;
 };
 
 //************************************************************************
@@ -39,7 +40,8 @@ class c_mat_default: public c_material
     }
 
     // inherited compute shading
-    virtual s_clr_color compute_shading(const c_light_ambient& ambient, const std::vector<c_light_point*>& lights_point, const s_intersect& i_sct, const s_geo_ray& i_ray)
+    virtual s_clr_color compute_shading(const s_intersect& i_sct, const s_geo_ray& i_ray, // const s_scene& sc)
+            const c_light_ambient& ambient, const std::vector<c_light_point*>& lights_point)
     {
         return ambient.get_color() + _diff;
     }
@@ -86,13 +88,20 @@ class c_mat_blinn_phong: public c_material
     }
 
     // inherited compute shading
-    virtual s_clr_color compute_shading(const c_light_ambient& ambient, const std::vector<c_light_point*>& lights_point, const s_intersect& i_sct, const s_geo_ray& i_ray)
+    virtual s_clr_color compute_shading(const s_intersect& i_sct, const s_geo_ray& i_ray, // const s_scene& sc)
+            const c_light_ambient& ambient, const std::vector<c_light_point*>& lights_point)
     {
         // memory allocation
-        t_scalar shading_dist, shading_scale_diff, shading_scale_spec;
-        s_geo_vector shading_vec, shading_l, shading_v, shading_h;
-        s_clr_color i_clr;
-        t_scalar i;
+        t_scalar     shading_dist,
+                     shading_scale_diff,
+                     shading_scale_spec,
+                     i;
+        s_geo_vector shading_vec,
+                     shading_l,
+                     shading_v,
+                     shading_h;
+        s_clr_color  intensity,
+                     i_clr;
 
         i_clr = ambient.get_color() * _diff;
 
@@ -103,6 +112,10 @@ class c_mat_blinn_phong: public c_material
             shading_l = shading_vec.norm();
             shading_v = (i_sct.get_point() - i_ray.get_origin()).norm();
             shading_h = (shading_l + shading_v).norm();
+
+            // find if it is being blocked
+            intensity = lights_point[i]->get_color();
+            
             // diffuse component
             shading_scale_diff = i_sct.get_normal() % shading_l;
             if(shading_scale_diff < 0.0)
@@ -112,7 +125,7 @@ class c_mat_blinn_phong: public c_material
             if(shading_scale_spec < 0.0)
                 shading_scale_spec = 0.0;
 
-            i_clr += lights_point[i]->get_color() * (
+            i_clr += intensity * (
                     // diffuse
                     _diff * shading_scale_diff
                     // specular

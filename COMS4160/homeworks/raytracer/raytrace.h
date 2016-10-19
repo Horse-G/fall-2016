@@ -69,7 +69,8 @@ void raytrace_do(
 
         // APPLY SHADING
         i_clr = scene._materials[i_sct.get_material()]->
-            compute_shading(scene._light_ambient, scene._lights_point, i_sct, i_ray);
+            compute_shading(i_sct, i_ray, // scene);
+                    scene._light_ambient, scene._lights_point);
         
         // STORE COLOR
         i_pxl->r = i_clr.get_r();
