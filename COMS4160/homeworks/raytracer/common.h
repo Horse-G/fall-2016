@@ -1,7 +1,7 @@
 // Filename:    common.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     The main header for a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-20
 
 //******************************************************************************
 // C_STD_LIBRARIES
@@ -27,6 +27,7 @@
 // CONSTANTS_/_TYPES
 //******************************************************************************
 #define EPSILON          1e-7
+#define EP_SHADOW        1e-6
 #define BLACKNESS        s_intersect(std::numeric_limits<t_scalar>::infinity(),s_geo_point(0.0,0.0,0.0),s_geo_vector(0.0,0.0,0.0),0,PLANE)
 #define NO_MATERIAL      new c_mat_default(s_clr_color(0.0,0.0,0.0))
 #define DEFAULT_MATERIAL new c_mat_default(s_clr_color(0.0,0.0,1.0))

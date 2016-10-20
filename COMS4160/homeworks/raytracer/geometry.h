@@ -1,7 +1,7 @@
 // Filename:    geometry.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definitions for vectors, points, and rays for a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-20
 
 //******************************************************************************
 // GEO_VECTOR
@@ -148,9 +148,24 @@ struct s_geo_point
     
     // point operations
     //   - subtraction
+    //   - less than
     s_geo_vector operator -(const s_geo_point& gp) const
     {
         return s_geo_vector(_abc[0] - gp._abc[0], _abc[1] - gp._abc[1], _abc[2] - gp._abc[2]);
+    }
+    bool operator <(const s_geo_point& gp) const
+    {
+        s_geo_vector tmp = *this - gp;
+        if(tmp._xyz[0] < 0 && tmp._xyz[1] < 0 && tmp._xyz[2] < 0)
+            return true;
+        return false;
+    }
+
+    // scalar operations
+    //   - multiplication
+    s_geo_point operator *(const t_scalar& s) const
+    {
+        return s_geo_point(_abc[0]*s, _abc[1]*s, _abc[2]*s);
     }
 
     // input/output
@@ -214,7 +229,7 @@ struct s_geo_ray
     {
         return s_geo_ray(_origin, _direction * gr._direction);
     }
-    s_geo_point pos(t_scalar s) const
+    s_geo_point pos(const t_scalar& s) const
     {
         s_geo_point out = _origin;
         out._abc[0] += _direction._xyz[0] * s;

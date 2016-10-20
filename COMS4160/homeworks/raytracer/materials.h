@@ -1,7 +1,7 @@
 // Filename:    materials.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definitions for materials in a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-20
 
 //************************************************************************
 // MATERIAL
@@ -14,7 +14,7 @@ class c_material
     
     // subclass compute shading
     virtual s_clr_color compute_shading(const s_intersect&, const s_geo_ray&, // const s_scene&) = 0;
-            const c_light_ambient&, const std::vector<c_light_point*>&) = 0;
+            const c_light_ambient&, const std::vector<c_light_point*>&, const std::vector<c_surface*>&) = 0;
 };
 
 //************************************************************************
@@ -41,9 +41,9 @@ class c_mat_default: public c_material
 
     // inherited compute shading
     virtual s_clr_color compute_shading(const s_intersect& i_sct, const s_geo_ray& i_ray, // const s_scene& sc)
-            const c_light_ambient& ambient, const std::vector<c_light_point*>& lights_point)
+            const c_light_ambient& ambient, const std::vector<c_light_point*>& lights_point, const std::vector<c_surface*>& surfaces)
     {
-        return ambient.get_color() + _diff;
+        return _diff;
     }
 };
 
@@ -89,48 +89,65 @@ class c_mat_blinn_phong: public c_material
 
     // inherited compute shading
     virtual s_clr_color compute_shading(const s_intersect& i_sct, const s_geo_ray& i_ray, // const s_scene& sc)
-            const c_light_ambient& ambient, const std::vector<c_light_point*>& lights_point)
+            const c_light_ambient& ambient, const std::vector<c_light_point*>& lights_point, const std::vector<c_surface*>& surfaces)
     {
         // memory allocation
         t_scalar     shading_dist,
                      shading_scale_diff,
                      shading_scale_spec,
-                     i;
+                     i, j;
         s_geo_vector shading_vec,
                      shading_l,
                      shading_v,
                      shading_h;
         s_clr_color  intensity,
                      i_clr;
-
+        s_geo_ray    shadow_ray;
+        s_intersect  shadow_sct;
         i_clr = ambient.get_color() * _diff;
 
         for(i = 0; i < lights_point.size(); ++i)
         {
-            shading_vec = i_sct.get_point() - lights_point[i]->get_point();
-            shading_dist = 1. / pow(shading_vec.len(), 2.0);
-            shading_l = shading_vec.norm();
-            shading_v = (i_sct.get_point() - i_ray.get_origin()).norm();
-            shading_h = (shading_l + shading_v).norm();
-
             // find if it is being blocked
-            intensity = lights_point[i]->get_color();
-            
-            // diffuse component
-            shading_scale_diff = i_sct.get_normal() % shading_l;
-            if(shading_scale_diff < 0.0)
-                shading_scale_diff = 0.0;
-            // specular component
-            shading_scale_spec = i_sct.get_normal() % shading_h;
-            if(shading_scale_spec < 0.0)
-                shading_scale_spec = 0.0;
+            s_geo_vector vec_to_light = lights_point[i]->get_point() - i_sct.get_point();
+            shadow_ray = s_geo_ray(i_sct.get_point(), 
+                    vec_to_light);
+            shadow_sct = s_intersect();
+            for(j = 0; j < surfaces.size(); ++j)
+            {
+                shadow_sct = surfaces[j]->is_intersect(shadow_ray);
+                if(shadow_sct.get_is_true()
+                && shadow_sct.get_t() > EP_SHADOW
+                // this math should work but it doesn't
+                && (shadow_sct.get_point() - i_sct.get_point()).len() < vec_to_light.len()
+                )
+                    break;
+            }
+            // do computation if it isn't blocked
+            if(shadow_sct.get_is_true() == false)
+            {
+                shading_vec = i_sct.get_point() - lights_point[i]->get_point();
+                shading_dist = 1. / pow(shading_vec.len(), 2.0);
+                shading_l = shading_vec.norm();
+                shading_v = (i_sct.get_point() - i_ray.get_origin()).norm();
+                shading_h = (shading_l + shading_v).norm();
+                
+                // diffuse component
+                shading_scale_diff = i_sct.get_normal() % shading_l;
+                if(shading_scale_diff < 0.0)
+                    shading_scale_diff = 0.0;
+                // specular component
+                shading_scale_spec = i_sct.get_normal() % shading_h;
+                if(shading_scale_spec < 0.0)
+                    shading_scale_spec = 0.0;
 
-            i_clr += intensity * (
+                i_clr += lights_point[i]->get_color() * (
                     // diffuse
                     _diff * shading_scale_diff
                     // specular
                     + _spec * pow(shading_scale_spec, _phng)
                     ) * shading_dist;
+            }
         }
         return i_clr;
     }
@@ -159,7 +176,8 @@ class c_mat_cell_shaded: public c_material
     }
 
     // inherited compute_shading
-    virtual s_clr_color compute_shading(const c_light_ambient& ambient, const std::vector<c_light_point*>& lights_point, const s_intersect& i_sct, const s_geo_ray& i_ray)
+    virtual s_clr_color compute_shading(const s_intersect& i_sct, const s_geo_ray& i_ray, // const s_scene& sc)
+            const c_light_ambient& ambient, const std::vector<c_light_point*>& lights_point, const std::vector<c_surface*>& surfaces)
     {
         // memory allocation
         t_scalar     shading_scale_k, shading_dist;
