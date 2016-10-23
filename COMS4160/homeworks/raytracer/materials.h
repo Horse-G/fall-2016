@@ -104,26 +104,28 @@ class c_mat_blinn_phong: public c_material
                      i_clr;
         s_geo_ray    shadow_ray;
         s_intersect  shadow_sct;
+        
+        // ambient component
         i_clr = ambient.get_color() * _diff;
 
         for(i = 0; i < lights_point.size(); ++i)
         {
             // find if it is being blocked
             s_geo_vector vec_to_light = lights_point[i]->get_point() - i_sct.get_point();
+            
             shadow_ray = s_geo_ray(i_sct.get_point(), 
                     vec_to_light);
             shadow_sct = s_intersect();
+            
             for(j = 0; j < surfaces.size(); ++j)
             {
                 shadow_sct = surfaces[j]->is_intersect(shadow_ray);
                 if(shadow_sct.get_is_true()
                 && shadow_sct.get_t() > EP_SHADOW
-                // this math should work but it doesn't
-                && (shadow_sct.get_point() - i_sct.get_point()).len() < vec_to_light.len()
+                //&& shadow_sct.get_t() < vec_to_light.len()
                 )
                     break;
             }
-            // do computation if it isn't blocked
             if(shadow_sct.get_is_true() == false)
             {
                 shading_vec = i_sct.get_point() - lights_point[i]->get_point();
@@ -140,7 +142,7 @@ class c_mat_blinn_phong: public c_material
                 shading_scale_spec = i_sct.get_normal() % shading_h;
                 if(shading_scale_spec < 0.0)
                     shading_scale_spec = 0.0;
-
+                
                 i_clr += lights_point[i]->get_color() * (
                     // diffuse
                     _diff * shading_scale_diff
