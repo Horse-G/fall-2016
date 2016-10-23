@@ -1,7 +1,7 @@
 // Filename:    viewport.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definition of a viewport for a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-23
 
 //******************************************************************************
 // VIEWPORT
@@ -18,7 +18,15 @@ struct s_viewport
     public:
     // constructors
     s_viewport(void){}
-    s_viewport(s_geo_point gp, s_geo_vector gv, t_scalar s1, t_uint u1, t_uint u2, t_scalar s2, t_scalar s3):
+    s_viewport(
+        const s_geo_point& gp,
+        const s_geo_vector& gv,
+        const t_scalar& s1,
+        const t_uint& u1,
+        const t_uint& u2,
+        const t_scalar& s2,
+        const t_scalar& s3
+        ):
         _eye(gp),
         _fl(s1),
         _ix(u1),

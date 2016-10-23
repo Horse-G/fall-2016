@@ -1,7 +1,7 @@
 // Filename:    raytrace.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     The actual raytracing routine for a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-23
 
 //******************************************************************************
 // SUBROUTINE_RAYTRACE_DO
@@ -46,7 +46,7 @@ void raytrace_do(
         Imf::Rgba*  i_pxl;
         s_intersect i_sct, ii_sct;
         s_geo_ray   i_ray;
-        s_clr_color i_clr;
+        s_spd_radiance i_clr;
 
         // generate data
         i_pxl = &img_pixels[y][x];

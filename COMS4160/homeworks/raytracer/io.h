@@ -1,12 +1,12 @@
 // Filename:    io.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     The file input/output for a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-23
 
 //******************************************************************************
 // SUBROUTINE_OUTPUT_IMAGE
 //******************************************************************************
-void io_output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, t_scalar width, t_scalar height)
+void io_output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, const t_scalar& width, const t_scalar& height)
 {
     Imf::RgbaOutputFile file(file_name, width, height, Imf::WRITE_RGBA);
     file.setFrameBuffer(&image[0][0], 1, width);
@@ -134,13 +134,13 @@ void io_input_scene(s_scene &sc, const char* file_name)
     // memory allocation
     // I didn't want to allocate unique blocks of memory for each case, so I reuse the
     //   same memory.
-    t_uint       line;
-    t_uint       ct_cameras, ct_lights, ct_materials;
-    t_uint       u1, u2;
-    t_scalar s1, s2, s3;
-    s_geo_vector gv1;
-    s_geo_point  gp1, gp2, gp3;
-    s_clr_color  cc1, cc2;
+    t_uint         line;
+    t_uint         ct_cameras, ct_lights, ct_materials;
+    t_uint         u1, u2;
+    t_scalar       s1, s2, s3;
+    s_geo_vector   gv1;
+    s_geo_point    gp1, gp2, gp3;
+    s_spd_radiance spdr1, spdr2;
    
     // there will be two asserts - there must be at least one camera, and one non-ambient light
     //   and there will be a warning if the material count doesn't increase
@@ -198,25 +198,25 @@ void io_input_scene(s_scene &sc, const char* file_name)
                     // point
                     case 'p':
                     {
-                        iss >>gp1 >>cc1;
-                        sc._lights_point.push_back(new c_light_point(gp1,cc1));
+                        iss >>gp1 >>spdr1;
+                        sc._lights_point.push_back(new c_light_point(gp1,spdr1));
                         ct_lights++;
                         break;
                     }
                     // directional
                     case 'd':
                     {
-                        iss >>gv1 >>cc1;
+                        iss >>gv1 >>spdr1;
                         gv1 = gv1*1e5;
-                        sc._lights_directional.push_back(new c_light_direct(gv1,cc1));
+                        sc._lights_directional.push_back(new c_light_direct(gv1,spdr1));
                         ct_lights++;
                         break;
                     }
                     // ambient
                     case 'a':
                     {
-                        iss >>cc1;
-                        sc._light_ambient = c_light_ambient(cc1);
+                        iss >>spdr1;
+                        sc._light_ambient = c_light_ambient(spdr1);
                         break;
                     }
                     default:
@@ -238,11 +238,11 @@ void io_input_scene(s_scene &sc, const char* file_name)
             // material
             case 'm':
             {
-                iss >>cc1 >>cc2 >>s1 >>gv1;
+                iss >>spdr1 >>spdr2 >>s1 >>gv1;
                 // povray doesn't take reflective color, so just approximate a blend
                 // weight:
                 // float dlen = sqrt(refl.x*refl.x+refl.y*refl.y+refl.z*refl.z);
-                sc._materials.push_back(new c_mat_blinn_phong(cc1,cc2,s1,gv1));
+                sc._materials.push_back(new c_mat_blinn_phong(spdr1,spdr2,s1,gv1));
                 ct_materials++;
                 break;
             }

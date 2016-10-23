@@ -1,7 +1,7 @@
 // Filename:    surfaces.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Surface definitions for a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-23
 
 //*****************************************************************************
 // SURFACE
@@ -28,7 +28,7 @@ class c_surface
     }
     
     // subclass find intersection
-    virtual s_intersect is_intersect(const s_geo_ray &gr) =0;
+    virtual s_intersect is_intersect(const s_geo_ray& gr) =0;
 };
 
 //*****************************************************************************
@@ -97,7 +97,7 @@ class c_surf_triangle: public c_surface
     {
         _type = TRIANGLE;
     }
-    c_surf_triangle(const s_geo_point& gp1, const s_geo_point& gp2, const s_geo_point& gp3, const t_uint u)
+    c_surf_triangle(const s_geo_point& gp1, const s_geo_point& gp2, const s_geo_point& gp3, const t_uint& u)
     {
         _v[0] = gp1;
         _v[1] = gp2;
@@ -179,7 +179,7 @@ class c_surf_sphere: public c_surface
     {
         _type = SPHERE;
     }
-    c_surf_sphere(const s_geo_point& gp, const t_scalar& s, const t_uint u):
+    c_surf_sphere(const s_geo_point& gp, const t_scalar& s, const t_uint& u):
         _origin(gp),
         _radius(s)
     {

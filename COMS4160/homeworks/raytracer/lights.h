@@ -1,7 +1,7 @@
 // Filename:    lights.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definitions for lights for a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-23
 
 //******************************************************************************
 // VIRTUAL_CLASS_LIGHT
@@ -9,7 +9,7 @@
 class c_light
 {
     protected:
-    s_clr_color _color;
+    s_spd_radiance _radiance;
     t_light _type;
 
     public:
@@ -17,9 +17,9 @@ class c_light
     virtual ~c_light(void) {};
     
     // get contents
-    s_clr_color get_color(void) const
+    s_spd_radiance get_radiance(void) const
     {
-        return _color;
+        return _radiance;
     }
     t_light get_type(void) const
     {
@@ -38,9 +38,9 @@ class c_light_ambient: public c_light
     {
         _type = AMBIENT;
     }
-    c_light_ambient(const s_clr_color& cc)
+    c_light_ambient(const s_spd_radiance& spdr)
     {
-        _color = cc;
+        _radiance = spdr;
         _type = AMBIENT;
     }
 
@@ -62,17 +62,17 @@ class c_light_point: public c_light
     {
         _type = POINT;
     }
-    c_light_point(const s_geo_point& gp, const s_clr_color& cc):
+    c_light_point(const s_geo_point& gp, const s_spd_radiance& spdr):
         _point(gp)
     {
-        _color = cc;
+        _radiance = spdr;
         _type = POINT;
     }
-    c_light_point(const s_geo_point& gp, const s_clr_color& cc, const t_scalar& s):
+    c_light_point(const s_geo_point& gp, const s_spd_radiance& spdr, const t_scalar& s):
         _point(gp),
         _intensity(s)
     {
-        _color = cc;
+        _radiance = spdr;
         _type = POINT;
     }
 
@@ -100,10 +100,10 @@ class c_light_direct: public c_light
     {
         _type = DIRECTIONAL;
     }
-    c_light_direct(const s_geo_vector& gv, const s_clr_color& cc):
+    c_light_direct(const s_geo_vector& gv, const s_spd_radiance& spdr):
         _direction(gv)
     {
-        _color = cc;
+        _radiance = spdr;
         _type = DIRECTIONAL;
     }
     

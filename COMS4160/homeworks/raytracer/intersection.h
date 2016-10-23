@@ -1,7 +1,7 @@
 // Filename:    intersection.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definitions for intersections for a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-23
 
 //******************************************************************************
 // STRUCT_INTERSECTION
@@ -19,7 +19,7 @@ struct s_intersect
     //public:
     // constructors
     s_intersect(void): _is_true(false) {}
-    s_intersect(t_scalar s, s_geo_point gp, s_geo_vector gv, t_uint u, t_surface ts):
+    s_intersect(const t_scalar& s, const s_geo_point& gp, const s_geo_vector& gv, const t_uint& u, const t_surface& ts):
         _is_true(true),
         _t(s),
         _point(gp),
