@@ -367,6 +367,72 @@ You can do a Bounding Volume Hierarchy
 ### Computational Haptics
 haptesthai == touch in greek
 
+## Lecture 13, 2016-10-18
+SKIPPED THIS CLASS
+
+## Lecture 14, 2016-10-20
+### Recap
+From last time, a rigid body can be represented by x,y, and theta.
+
+You can modify each particle in the body in terms of .x,.y, .theta (where .theta = omega).
+
+KE = .5 * (M = sum of mass) * .X(centerofmass)^2 + .5 * (I = sum of mass*dist^2) * omega^2 + .theta * .X * (Rtheta+pi/2 = rotation by theta+pi/2) * (sum of mass*dist)
+
+that last term equals 0:
+ - .theta * .X * (Rtheta+pi/2 = rotation by theta+pi/2) * (sum of mass*dist)
+ - but sum of mass*dist = 0, so the entire thing is 0
+ 
+KE = .5 * (M = sum of mass) * .X(centerofmass)^2 + .5 * (I = sum of mass*dist^2) * omega^2
+
+### Trying to simplify KE using knowledge of forces
+
+- Ftot = Fa + Fb
+- Fdif = Fa - Fb
+- Ftot = (0,0)
+- Fdif = (0,1)
+- Fa = .5 * (Ftot - Fdif)
+- Fb = .5 * (Ftot + Fdif)
+
+- Ftot = integral of forces on the rigid body
+- Fdif = distribution of external for each elements in the body
+
+### Let's apply this to our KE equation
+- Xi  = Xcm  + R(theta) * ri
+- .Xi = .Xcm + R(theta+pi/2) * ri * omega
+
+- work done = F*delt(x2) - F*delt(x1)
+- delt(Xi) = R(pi/2) * R(theta) * r1 * delt(theta)
+- coordinates: delt(u) = -(sintheta)*delt(theta), delt(v) = costheta*delt(theta)
+
+- work done = F dot R(theta+pi/2) * r2 * delt(theta) - F dot R(theta+pi/2)*r1*delt(theta)
+- but F dot a 90 degree turned vector can just be a cross product
+- work done = -F x Rtheta * r2 * delt(theta) - F x Rtheta * r1 * delt(theta)
+- work done = Rtheta*r2 x F *delt(theta) - Rtheta*r1 x F * delt(theta)
+
+- Rtheta*r x F = torque
+- work done = torque2 * delt(theta) - torque1 * delt(theta)
+
+### Let's find an equation for torque
+- we write F = m*a = .p, where p = momentum = m*v
+- torque = d/dt (Gamma), where we hypothesize that Gamme = I*omega
+- torque = I * .omega
+- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

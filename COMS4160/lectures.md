@@ -465,9 +465,87 @@ instead:
 - push object up from the normal first, then compute the shadow ray (bc you might accidentally intersect object again bc of rounding) 1e-6 works for test scenes
 - instead you could check normal dot ray to light is positive
 
+## Lecture 07, 2016-10-20
+### profiling code
+Graphics is a very "optimization-centric" culture
+
+the faster algorithm, and the faster implementation, make better
+- images
+- products
+- papers
+
+in rendering, so many operations are repeated, sloppiness will become evident
+
+because of this, profiling is very common - use it to identify where time is being taken up
+
+via:
+- external tools
+- or permanently intrument your code
+
+simplest is
+- UNIX `time`
+- gprof statistical profiler (-pg option on g++)
+- getrusage (instrument your code yourself)
+
+#### gprof
+- compile with -pg
+- run executable
+- process output
+
+### Mirror reflection
+- perfectly shiny surface doesn't have a highlight
+- instead there's the reflection of other objects
+- can render using recursive ray tracing
+	- to find out mirror reflection radiance, ask what color is seen from surface point in reflection direction
+	- shiny material has mirror reflection and diffuse
 
 
+- must generate a new ray that return an spd ("color") from its scene intersection & lighting
+	- call it radiance
+- must limit recursion because otherwise you could get trapped
 
+#### let's compute
+r = v + 2*((n.v)n - v) = 2*(n.v)n - v
+
+#### recursive ray tracing
+l = [diffuse + specular + ambient] + k_reflective*ray_code(reflected ray)
+if k_reflective = 0, then don't recurse!
+
+#### to compute ray r
+
+### Refractions
+- every material has an index of refraction
+- refracted ray `t`, along angle phi
+- n sin theta = nt * sin phi
+- b = orthogonal vector to n
+
+- t = sin phi * b - cos phi * n
+- d = sin theta * b - cos theta * n
+
+#### light's color
+color changes through refraction according to de beer's law
+
+I = I0 * e^(ln(a)*s)
+
+### recursive ray tracing architecture
+- the loop is now checking each pixel, each object, each light, and then each object again for shadow-ray
+- it's getting complicated
+
+```
+rgb L ( ray, min_t, max_t, recursion_limit, ray_type, light, ... )
+```
+
+### Acceleration structures
+- divide up space to not need to check every object
+
+#### bounding volumes
+- spatially bound geometric objects with something much simpler than object it bounds
+- reduce number of ray-intersection or containment tests with the complex geometry
+- based on a quick rejection - "hit" on bounds may still miss object, but a "miss" definitely misses the object
+- bounds are not rendered (but you could for debugging)
+
+#### axis aligned bounding boxes
+- surround each object with a bounding box
 
 
 
