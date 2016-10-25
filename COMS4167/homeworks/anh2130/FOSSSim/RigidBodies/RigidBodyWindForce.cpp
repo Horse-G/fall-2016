@@ -29,26 +29,40 @@ scalar RigidBodyWindForce::computePotentialEnergy( const std::vector<RigidBody>&
 
 void RigidBodyWindForce::computeForceAndTorque( std::vector<RigidBody>& rbs )
 {
+    int P = m_num_quadrature_points;
+    scalar div_by_quad = 1.0/P;
+    scalar beta_by_quad = m_beta * div_by_quad;
+
     for(std::vector<RigidBody>::size_type idx = 0; idx < rbs.size(); ++idx)
     {
         int N = rbs[idx].getNumEdges();
+        Vector2s center_of_mass = rbs[idx].getX();
+
         for(int i = 0; i < N; ++i)
         {
-            Vector2s v0 = rbs[i].getWorldSpaceVertex(i);
+            Vector2s v0 = rbs[idx].getWorldSpaceVertex(i);
             Vector2s e  = rbs[idx].computeWorldSpaceEdge(i);
             Vector2s n_hat(-e.y(),e.x());
             scalar length = n_hat.norm();
             assert(length != 0.0);
             n_hat /= length;
 
-            for(int j = 0; j < m_num_quadrature_points; ++j)
+            for(int j = 0; j < P; ++j)
             {
-                Vector2s j_x = v0 + e * (j+0.5)/m_num_quadrature_points;
-                Vector2s j_v = rbs[i].computeWorldSpaceVelocity(j_x);
-                Vector2s rel_vel = n_hat * (m_wind - j_v).dot(n_hat);
-                Vector2s wind_force = (m_beta * length) / m_num_quadrature_points * rel_vel;
+                // position of center of section of edge
+                Vector2s j_x = v0 + e * ((j+0.5) * div_by_quad);
+                // velocity at that position
+                Vector2s j_v = rbs[idx].computeWorldSpaceVelocity(j_x);
+                
+                // position relative to center of mass
+                Vector2s rel_x = j_x - center_of_mass;
+                // velocity relative to wind
+                Vector2s rel_v = n_hat * (m_wind - j_v).dot(n_hat);
 
-                rbs[i].getForce() += wind_force;
+                Vector2s wind_force = (length * beta_by_quad) * rel_v;
+
+                rbs[idx].getForce() += wind_force;
+                rbs[idx].getTorque() += rel_x.x() * wind_force.y() - rel_x.y() * wind_force.x();
             }
         }
     }

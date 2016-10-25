@@ -152,7 +152,6 @@ Vector2s RigidBody::computeTotalMomentum() const
 scalar RigidBody::computeCenterOfMassAngularMomentum() const
 {
     Vector2s total_momentum = m_M*m_V;
-
     return m_X.x()*total_momentum.y() - m_X.y()*total_momentum.x();
 }
 
@@ -259,5 +258,6 @@ scalar RigidBody::computeMomentOfInertia( const VectorXs& vertices, const Vector
       Vector2s temp = vertices.segment<2>(2*i) - center_of_mass;
       moment_of_inertia += masses(i)* temp.dot(temp);
   }
+
   return moment_of_inertia;
 }
