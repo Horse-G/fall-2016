@@ -29,21 +29,10 @@ bool RigidBodyExplicitEuler::stepScene( RigidBodyScene& scene, scalar dt )
   // For each rigid body
   for( std::vector<RigidBody>::size_type i = 0; i < rbs.size(); ++i )
   {
-      Vector2s& i_ref_pos    = rbs[i].getX();
-      Vector2s& i_ref_vel    = rbs[i].getV();
-      scalar&   i_ref_theta  = rbs[i].getTheta();
-      scalar&   i_ref_omega  = rbs[i].getOmega();
-      Vector2s i_const_force  = rbs[i].getForce();
-      scalar   i_const_torque = rbs[i].getTorque();
-      scalar   i_const_mass   = rbs[i].getM();
-      scalar   i_const_ang    = rbs[i].getI();
-
-      i_ref_pos   += dt * i_ref_vel;
-      i_ref_theta += dt * i_ref_omega;
-      i_ref_vel   += dt * i_const_force / i_const_mass;
-      i_ref_omega += dt * i_const_torque / i_const_ang;
-      
-
+      rbs[i].getX()     += dt * rbs[i].getV();
+      rbs[i].getTheta() += dt * rbs[i].getOmega();
+      rbs[i].getV()     += (dt / rbs[i].getM()) * rbs[i].getForce();
+      rbs[i].getOmega() += (dt / rbs[i].getI()) * rbs[i].getTorque();
       // why was this in another loop?
       rbs[i].updateDerivedQuantities();
   }

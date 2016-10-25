@@ -29,9 +29,30 @@ scalar RigidBodyWindForce::computePotentialEnergy( const std::vector<RigidBody>&
 
 void RigidBodyWindForce::computeForceAndTorque( std::vector<RigidBody>& rbs )
 {
-  // COMPLETE THIS CODE
-  // for all rigid bodies i rbs[i].getForce()  += ... some force you compute ...
-  //                        rbs[i].getTorque() += ... some torque you compute ...
+    for(std::vector<RigidBody>::size_type idx = 0; idx < rbs.size(); ++idx)
+    {
+        int N = rbs[idx].getNumEdges();
+        for(int i = 0; i < N; ++i)
+        {
+            Vector2s v0 = rbs[i].getWorldSpaceVertex(i);
+            Vector2s e  = rbs[idx].computeWorldSpaceEdge(i);
+            Vector2s n_hat(-e.y(),e.x());
+            scalar length = n_hat.norm();
+            assert(length != 0.0);
+            n_hat /= length;
+
+            for(int j = 0; j < m_num_quadrature_points; ++j)
+            {
+                Vector2s j_x = v0 + e * (j+0.5)/m_num_quadrature_points;
+                Vector2s j_v = rbs[i].computeWorldSpaceVelocity(j_x);
+                Vector2s rel_vel = n_hat * (m_wind - j_v).dot(n_hat);
+                Vector2s wind_force = (m_beta * length) / m_num_quadrature_points * rel_vel;
+
+                rbs[i].getForce() += wind_force;
+            }
+        }
+    }
+    return;
 }
 
 RigidBodyForce* RigidBodyWindForce::createNewCopy()

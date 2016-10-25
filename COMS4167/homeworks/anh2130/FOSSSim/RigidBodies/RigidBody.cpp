@@ -252,10 +252,12 @@ scalar RigidBody::computeMomentOfInertia( const VectorXs& vertices, const Vector
   assert( 2*masses.size() == vertices.size() );
   
   scalar moment_of_inertia = 0.0;
+  Vector2s center_of_mass = computeCenterOfMass(vertices,masses);
 
   for(int i = 0; i < masses.size(); ++i)
   {
-      moment_of_inertia += masses(i)*vertices.segment<2>(2*i).dot(vertices.segment<2>(2*i));
+      Vector2s temp = vertices.segment<2>(2*i) - center_of_mass;
+      moment_of_inertia += masses(i)* temp.dot(temp);
   }
   return moment_of_inertia;
 }

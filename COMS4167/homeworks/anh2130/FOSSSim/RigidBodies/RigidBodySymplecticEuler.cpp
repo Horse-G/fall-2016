@@ -29,16 +29,10 @@ bool RigidBodySymplecticEuler::stepScene( RigidBodyScene& scene, scalar dt )
   // For each rigid body
   for( std::vector<RigidBody>::size_type i = 0; i < rbs.size(); ++i )
   {
-      Vector2s i_ref_pos   = rbs[i].getX();
-      Vector2s i_ref_vel   = rbs[i].getV();
-      scalar   i_ref_theta = rbs[i].getTheta();
-      scalar   i_ref_omega = rbs[i].getOmega();
-
-      i_ref_vel   += (dt / rbs[i].getM()) * rbs[i].getForce();
-      i_ref_omega += (dt / rbs[i].getI()) * rbs[i].getTorque();
-      i_ref_pos   += dt * i_ref_vel;
-      i_ref_theta += dt * i_ref_omega;
-
+      rbs[i].getV()     += (dt / rbs[i].getM()) * rbs[i].getForce();
+      rbs[i].getOmega() += (dt / rbs[i].getI()) * rbs[i].getTorque();
+      rbs[i].getX()     += dt * rbs[i].getV();
+      rbs[i].getTheta() += dt * rbs[i].getOmega();
       // why was this in another loop?
       rbs[i].updateDerivedQuantities();
   }
