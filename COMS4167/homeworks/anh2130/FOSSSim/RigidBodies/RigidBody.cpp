@@ -146,20 +146,19 @@ scalar& RigidBody::getTorque()
 
 Vector2s RigidBody::computeTotalMomentum() const
 {
-  // COMPLETE THIS CODE
-  return Vector2s(-999,-999);
+    return m_M * m_V;
 }
 
 scalar RigidBody::computeCenterOfMassAngularMomentum() const
 {
-  // COMPLETE THIS CODE
-  return -999;
+    Vector2s total_momentum = m_M*m_V;
+
+    return m_X.x()*total_momentum.y() - m_X.y()*total_momentum.x();
 }
 
 scalar RigidBody::computeSpinAngularMomentum() const
 {
-  // COMPLETE THIS CODE
-  return -999;
+    return m_I * m_omega;
 }
 
 scalar RigidBody::computeTotalAngularMomentum() const
@@ -170,14 +169,12 @@ scalar RigidBody::computeTotalAngularMomentum() const
 
 scalar RigidBody::computeCenterOfMassKineticEnergy() const
 {
-  // COMPLETE THIS CODE
-  return -999;
+    return 0.5 * m_M * m_V.dot(m_V);
 }
 
 scalar RigidBody::computeSpinKineticEnergy() const
 {
-  // COMPLETE THIS CODE
-  return -999;
+    return 0.5 * m_I * m_omega * m_omega;
 }
 
 scalar RigidBody::computeKineticEnergy() const
@@ -224,14 +221,29 @@ void RigidBody::deserialize( std::ifstream& inputstream )
 
 scalar RigidBody::computeTotalMass( const VectorXs& masses ) const
 {
-  // COMPLETE THIS CODE
-  return 9999999999.0;
+    scalar total_mass = 0.0;
+    
+    for(int i = 0; i < masses.size(); ++i)
+        total_mass += masses(i);
+    
+    return total_mass;
 }
 
 Vector2s RigidBody::computeCenterOfMass( const VectorXs& vertices, const VectorXs& masses ) const
 {
-  // COMPLETE THIS CODE
-  return Vector2s::Zero();
+    assert(vertices.size()%2 == 0);
+    assert(2*masses.size() == vertices.size());
+    
+    scalar total_mass = 0.0;
+    Vector2s center_of_mass = Vector2s::Zero();
+    
+    for(int i = 0; i < masses.size(); ++i)
+    {
+        center_of_mass += vertices.segment<2>(2*i)*masses(i);
+        total_mass += masses(i);
+    }
+    
+    return center_of_mass*(1.0/total_mass);
 }
 
 scalar RigidBody::computeMomentOfInertia( const VectorXs& vertices, const VectorXs& masses ) const
@@ -239,6 +251,11 @@ scalar RigidBody::computeMomentOfInertia( const VectorXs& vertices, const Vector
   assert( vertices.size()%2 == 0 );
   assert( 2*masses.size() == vertices.size() );
   
-  // COMPLETE THIS CODE
-  return 9999999999.0;
+  scalar moment_of_inertia = 0.0;
+
+  for(int i = 0; i < masses.size(); ++i)
+  {
+      moment_of_inertia += masses(i)*vertices.segment<2>(2*i).dot(vertices.segment<2>(2*i));
+  }
+  return moment_of_inertia;
 }

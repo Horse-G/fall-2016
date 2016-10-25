@@ -72,20 +72,61 @@ scalar RigidBodySpringForce::computePotentialEnergy( const std::vector<RigidBody
 {
   assert( m_rb0 >= -1 ); assert( m_rb0 < (int) rbs.size() );
   assert( m_rb1 >= -1 ); assert( m_rb1 < (int) rbs.size() );
-  
-  // COMPLETE THIS CODE
-  
-  return -1.0;
+
+  Vector2s spring_vec = (m_rb1 == -1? m_vc1 : rbs[m_rb1].computeWorldSpacePosition(m_vc1)) - (m_rb0 == -1? m_vc0: rbs[m_rb0].computeWorldSpacePosition(m_vc0));
+
+  return 0.5 * m_k * pow(spring_vec.norm() - m_l0, 2.0); 
 }
 
 void RigidBodySpringForce::computeForceAndTorque( std::vector<RigidBody>& rbs )
 {
   assert( m_rb0 >= -1 ); assert( m_rb0 < (int) rbs.size() );
   assert( m_rb1 >= -1 ); assert( m_rb1 < (int) rbs.size() );
+
+  Vector2s rb_0 = Vector2s::Zero();
+  Vector2s rb_1 = Vector2s::Zero();
+  Vector2s spring_vec = Vector2s::Zero();
+  scalar length = 0.0;
+  Vector2s n_hat = Vector2s::Zero();
+  Vector2s spring_force = Vector2s::Zero();
   
-  // COMPLETE THIS CODE
-  // for all rigid bodies i rbs[i].getForce()  += ... some force you compute ...
-  //                        rbs[i].getTorque() += ... some torque you compute ...
+  if(m_rb0 == -1) // firstEndPointIsFixed
+      rb_0 = m_vc0;
+  else
+      rb_0 = rbs[m_rb0].rotateIntoWorldSpace(m_vc0);
+  if(m_rb1 == -1) // secondEndpointIsFixed
+      rb_1 = m_vc1;
+  else
+      rb_1 = rbs[m_rb1].rotateIntoWorldSpace(m_vc1);
+
+  spring_vec = rb_1 - rb_0;
+  if(m_rb0 != -1) // !firstEndpointIsFixed
+      spring_vec -= rbs[m_rb0].getX();
+  if(m_rb1 != -1) // !secondEndpointIsFixed
+      spring_vec += rbs[m_rb1].getX();
+  length = spring_vec.norm();
+  
+  // need to check for zeros before assert so it returns correctly
+  if(m_l0 == 0.0 && length == 0.0)
+      return;
+  assert(length != 0.0);
+
+  n_hat = spring_vec/length;
+
+  spring_force = m_k * (length - m_l0) * n_hat;
+
+  if(m_rb0 != -1) // !firstEndpointIsFixed
+  {
+      rbs[m_rb0].getForce() += spring_force;
+      rbs[m_rb0].getTorque() += rb_0.x() * spring_force.y() - rb_0.y() * spring_force.x();
+  }
+  if(m_rb1 != -1) // !firstEndpointIsFixed
+  {
+      rbs[m_rb1].getForce() += spring_force;
+      rbs[m_rb1].getTorque() += rb_1.x() * spring_force.y() - rb_1.y() * spring_force.x();
+
+  }
+  return;
 }
 
 RigidBodyForce* RigidBodySpringForce::createNewCopy()
