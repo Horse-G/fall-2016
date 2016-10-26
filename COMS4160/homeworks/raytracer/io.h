@@ -1,7 +1,7 @@
 // Filename:    io.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     The file input/output for a simple raytracer.
-// Edited:      2016-10-23
+// Edited:      2016-10-26
 
 //******************************************************************************
 // SUBROUTINE_OUTPUT_IMAGE
@@ -146,7 +146,7 @@ void io_input_scene(s_scene &sc, const char* file_name)
     //   and there will be a warning if the material count doesn't increase
     ct_cameras = 0;
     ct_lights = 0;
-    ct_materials = 1;
+    ct_materials = 0;
 
     // parse file
     std::ifstream in(file_name);
@@ -255,7 +255,7 @@ void io_input_scene(s_scene &sc, const char* file_name)
     in.close();
     assert(ct_cameras > 0);
     assert(ct_lights > 0);
-    if(ct_materials == 1)
+    if(ct_materials <= 0)
     {
         std::cerr <<"Warning: no materials declared" <<std::endl;
     }

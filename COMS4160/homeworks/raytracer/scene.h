@@ -1,7 +1,7 @@
 // Filename:    scene.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definition of a scene for a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-26
 
 //******************************************************************************
 // SCENE
@@ -9,19 +9,19 @@
 struct s_scene
 {
     private:
-    std::vector<s_viewport*>     _viewports;
-    std::vector<c_surface*>      _surfaces;
-    std::vector<c_material*>     _materials;
-    c_light_ambient              _light_ambient;
-    std::vector<c_light_point*>  _lights_point;
-    std::vector<c_light_direct*> _lights_directional;
+    std::vector<s_viewport*>        _viewports;
+    std::vector<c_surface*>         _surfaces;
+    std::vector<c_mat_blinn_phong*> _materials;
+    c_light_ambient                 _light_ambient;
+    std::vector<c_light_point*>     _lights_point;
+    std::vector<c_light_direct*>    _lights_directional;
 
     public:
     // constructor
     s_scene(void)
     {
         // pushing back the void, and then the default material
-        _materials.push_back(NO_MATERIAL);
+        //_materials.push_back(NO_MATERIAL);
         _materials.push_back(DEFAULT_MATERIAL);
         _light_ambient = DEFAULT_AMBIENT;
     }
@@ -62,6 +62,7 @@ struct s_scene
     //   not modify any elements.
     friend void io_output_scene_verbose(const s_scene&);
     friend void io_output_scene(const s_scene&);
+    friend s_spd_radiance compute_L(const s_geo_ray&, const s_scene&, const t_scalar&);
     friend void raytrace_do(Imf::Array2D<Imf::Rgba>&, const t_scalar&, const t_scalar&, const s_scene&);
 };
 
