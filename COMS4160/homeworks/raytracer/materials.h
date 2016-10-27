@@ -1,7 +1,10 @@
 // Filename:    materials.h
 // Author:      Adam Hadar, anh2130
-// Purpose:     Definitions for materials in a simple raytracer.
+// Purpose:     Declarations for materials in a simple raytracer.
 // Edited:      2016-10-27
+
+#ifndef MATERIALS_H
+#define MATERIALS_H
 
 //************************************************************************
 // MATERIAL
@@ -10,7 +13,7 @@ class c_material
 {
     public:
     // subclass destructor
-    virtual ~c_material(void){}
+    virtual ~c_material(void);
 };
 
 //************************************************************************
@@ -23,17 +26,14 @@ class c_mat_default: public c_material
     
     public:
     // constructors
-    c_mat_default(void){}
-    c_mat_default(const s_spd_radiance& spdr): _diff(spdr) {}
+    c_mat_default(void);
+    c_mat_default(const s_spd_radiance&);
     
     // inherited destructor
-    virtual ~c_mat_default(void){}
+    virtual ~c_mat_default(void);
 
     // get contents
-    s_spd_radiance get_diff(void) const
-    {
-        return _diff;
-    }
+    s_spd_radiance get_diff(void) const;
 };
 
 //************************************************************************
@@ -47,33 +47,17 @@ class c_mat_blinn_phong: public c_material
     
     public:
     // constructors
-    c_mat_blinn_phong(void){}
-    c_mat_blinn_phong(const s_spd_radiance& spdr1, const s_spd_radiance& spdr2, const t_scalar& s, const s_spd_radiance& spdr3):
-        _diff(spdr1),
-        _spec(spdr2),
-        _refl(spdr3),
-        _phng(s){}
+    c_mat_blinn_phong(void);
+    c_mat_blinn_phong(const s_spd_radiance&, const s_spd_radiance&, const t_scalar&, const s_spd_radiance&);
 
     // inherited destructor
-    virtual ~c_mat_blinn_phong(void){}
+    virtual ~c_mat_blinn_phong(void);
 
     // get contents
-    s_spd_radiance get_diff(void) const
-    {
-        return _diff;
-    }
-    s_spd_radiance get_spec(void) const
-    {
-        return _spec;
-    }
-    t_scalar get_phng(void) const
-    {
-        return _phng;
-    }
-    s_spd_radiance get_refl(void) const
-    {
-        return _refl;
-    }
+    s_spd_radiance get_diff(void) const;
+    s_spd_radiance get_spec(void) const;
+    t_scalar get_phng(void) const;
+    s_spd_radiance get_refl(void) const;
 };
 
 //************************************************************************
@@ -86,17 +70,15 @@ class c_mat_cell_shaded: public c_material
     
     public:
     // constructors
-    c_mat_cell_shaded(void){}
-    c_mat_cell_shaded(const s_spd_radiance& spdr): _diff(spdr){}
+    c_mat_cell_shaded(void);
+    c_mat_cell_shaded(const s_spd_radiance&);
     
     // inherited destructor
-    ~c_mat_cell_shaded(void){}
+    ~c_mat_cell_shaded(void);
 
     // get contents
-    s_spd_radiance get_diff(void) const
-    {
-        return _diff;
-    }
+    s_spd_radiance get_diff(void) const;
 };
 
+#endif
 //// EOF ////

@@ -43,6 +43,7 @@ enum t_ray               {PRIMARY, SHADOW, REFLECTION, REFRACTION};
 //******************************************************************************
 // CUSTOM_LIBRARIES
 //******************************************************************************
+/*
 #include "geometry.h"
 #include "intersection.h"
 #include "surfaces.h"
@@ -53,5 +54,5 @@ enum t_ray               {PRIMARY, SHADOW, REFLECTION, REFRACTION};
 #include "scene.h"
 #include "io.h"
 #include "raytrace.h"
-
+*/
 //// EOF ////

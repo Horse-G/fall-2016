@@ -1,9 +1,19 @@
 // Filename:    main.cc
 // Author:      Adam Hadar, anh2130
 // Purpose:     The main function for a simple raytracer.
-// Edited:      2016-10-13
+// Edited:      2016-10-27
 
 #include "common.h"
+#include "geometry.h"
+#include "intersection.h"
+#include "surfaces.h"
+#include "color.h"
+#include "lights.h"
+#include "materials.h"
+#include "viewport.h"
+#include "scene.h"
+#include "io.h"
+#include "raytrace.h"
 
 //******************************************************************************
 // ROUTINE_MAIN
