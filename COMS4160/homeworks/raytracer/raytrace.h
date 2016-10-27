@@ -46,14 +46,20 @@ for(i = 0; i < lights_point.size(); ++i)
 }
 return i_clr;
  */
-s_spd_radiance compute_L(const s_geo_ray& i_ray, const s_scene& sc, const t_uint& recurse_limit, const t_scalar& t_min, const t_scalar& t_max, const t_ray& ray_type, const c_light_point& thisLight)
+s_spd_radiance compute_L(
+    const s_geo_ray& i_ray,
+    const s_scene& sc,
+    const t_uint& recurse_limit,
+    const t_scalar& t_min, const t_scalar& t_max,
+    const t_ray& ray_type,
+    const c_light_point& thisLight)
 {
     s_spd_radiance i_clr = s_spd_radiance(0.0,0.0,0.0);
     // if recurse_limit == 0, return [ 0 0 0 ]
     if (recurse_limit == 0)
         return i_clr;
     
-    // memory allocation
+    // memory allocation I
     t_scalar    i;
     s_intersect i_sct, ii_sct;
     
@@ -83,39 +89,32 @@ s_spd_radiance compute_L(const s_geo_ray& i_ray, const s_scene& sc, const t_uint
     }
     // if there is no intersection
     if(i_sct.get_is_true() == false)
-        return s_spd_radiance(0.0,0.0,0.0);
+        return i_clr;
 
-    // otherwise, allocate some memory
-    s_geo_vector   shading_vec;
-    s_spd_radiance intensity,
-                   ii_clr;
+    // memory allocation II
     c_mat_blinn_phong* i_mat;
 
+    // get material
     i_mat = sc._materials[i_sct.get_material()];
+    
     for(i = 0; i < sc._lights_point.size(); ++i)
     {
-        // memory allocation
-        s_geo_ray      shadow_ray;
-        s_intersect    shadow_sct;
-
+        // memory allocation III
         // find if it is being blocked
-        s_geo_vector vec_to_light = sc._lights_point[i]->get_point() - i_sct.get_point();
-        shadow_ray = s_geo_ray(i_sct.get_point(),
-                vec_to_light);
-        shadow_sct = s_intersect();
-
-        ii_clr = compute_L(shadow_ray, sc, 1, EP_SHADOW, vec_to_light.len(), SHADOW, *sc._lights_point[i]);
+        s_geo_vector   shadow_vec = sc._lights_point[i]->get_point() - i_sct.get_point();
+        s_geo_ray      shadow_ray = s_geo_ray(i_sct.get_point(), shadow_vec);
+        s_intersect    shadow_sct = s_intersect();
+        s_spd_radiance ii_clr = compute_L(shadow_ray, sc, 1, EP_SHADOW, shadow_vec.len(), SHADOW, *sc._lights_point[i]);
+        
         if (ii_clr > 0.0)
         {
-            // memory allocation
-            t_scalar shading_dist, shading_scale_diff, shading_scale_spec;
-            s_geo_vector shading_l, shading_v, shading_h;
-            
-            shading_vec = i_sct.get_point() - sc._lights_point[i]->get_point();
-            shading_dist = 1. / pow(shading_vec.len(),2.0);
-            shading_l = shading_vec.norm();
-            shading_v = (i_sct.get_point() - i_ray.get_origin()).norm();
-            shading_h = (shading_l + shading_v).norm();
+            // memory allocation IV
+            t_scalar     shading_dist = 1. / pow(shadow_vec.len(),2.0);
+            s_geo_vector shading_l = -shadow_vec.norm();
+            s_geo_vector shading_v = (i_sct.get_point() - i_ray.get_origin()).norm();
+            s_geo_vector shading_h = (shading_l + shading_v).norm();
+            t_scalar     shading_scale_diff,
+                         shading_scale_spec;
 
             // diffuse component
             shading_scale_diff = i_sct.get_normal() % shading_l;
@@ -135,12 +134,21 @@ s_spd_radiance compute_L(const s_geo_ray& i_ray, const s_scene& sc, const t_uint
     // ambient component
     i_clr += sc._light_ambient.get_radiance() * i_mat->get_diff();
     
+    // reflection recursion
     if(i_mat->get_refl() > 0.0)
-    {
-        s_geo_ray ref_ray = s_geo_ray(i_sct.get_point(),
-            i_ray.get_direction() - i_sct.get_normal() * 2.0 * (i_ray.get_direction() % i_sct.get_normal()));
-        i_clr += i_mat->get_refl() * compute_L(ref_ray, sc, recurse_limit - 1, EP_REFL, std::numeric_limits<t_scalar>::infinity(), REFLECTION, c_light_point());
-    }
+        i_clr += i_mat->get_refl()
+            * compute_L(
+                s_geo_ray(
+                    i_sct.get_point(),
+                    i_ray.get_direction() - i_sct.get_normal() * (2.0 * (i_ray.get_direction() % i_sct.get_normal()))
+                ),
+                sc,
+                recurse_limit - 1,
+                EP_REFL, std::numeric_limits<t_scalar>::infinity(),
+                REFLECTION,
+                c_light_point()
+            )
+        ;
     return i_clr;
 }
 
@@ -152,8 +160,7 @@ void raytrace_do(
         // NOTE: I pass in v_px,v_py because I don't want to do those function calls again
         const t_scalar& v_px,
         const t_scalar& v_py,
-        const s_scene& scene
-)
+        const s_scene& scene)
 {
     // memory allocation
     t_uint                  x, y, z,
@@ -216,7 +223,6 @@ void raytrace_do(
         i_pxl->b = i_clr.get_b();
         i_pxl->a = 1.0;
     }
-    
     return;
 }
 

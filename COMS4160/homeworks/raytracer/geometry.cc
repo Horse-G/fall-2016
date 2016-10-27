@@ -32,6 +32,10 @@ t_scalar s_geo_vector::get_x(void) const
 {
     return _xyz[0];
 }
+t_scalar s_geo_vector::get_y(void) const
+{
+    return _xyz[1];
+}
 t_scalar s_geo_vector::get_z(void) const
 {
     return _xyz[2];

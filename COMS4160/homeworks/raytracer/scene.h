@@ -34,12 +34,12 @@ struct s_scene
 
     // This is the only friend function that modifies elements in the scene,
     //   and that is because it fills it up from the scene file.
-    friend void io_input_scene(s_scene&, const char*);
+    friend void input_scene(s_scene&, const char*);
 
     // The rest of the friend functions get passed a const scene, so they will
     //   not modify any elements.
-    friend void io_output_scene_verbose(const s_scene&);
-    friend void io_output_scene(const s_scene&);
+    friend void output_scene_verbose(const s_scene&);
+    friend void output_scene(const s_scene&);
     friend s_spd_radiance compute_L(const s_geo_ray&, const s_scene&, const t_uint&, const t_scalar&, const t_scalar&, const t_ray&, const c_light_point&);
     friend void raytrace_do(Imf::Array2D<Imf::Rgba>&, const t_scalar&, const t_scalar&, const s_scene&);
 };

@@ -12,7 +12,8 @@
 #include "materials.h"
 #include "viewport.h"
 #include "scene.h"
-#include "io.h"
+#include "data_input.h"
+#include "data_output.h"
 #include "raytrace.h"
 
 //******************************************************************************
@@ -35,9 +36,9 @@ int main(int argc, char** argv)
         t_scalar                v_px, v_py;
     
         // parse the scene file
-        io_input_scene(scene, argv[1]);
+        input_scene(scene, argv[1]);
         #ifdef PRINT
-        io_print_scene_verbose();
+        print_scene_verbose();
         #endif
     
         // size image to scene specs
@@ -48,7 +49,7 @@ int main(int argc, char** argv)
         // do the raytrace
         raytrace_do(img_pixels, v_px, v_py, scene);
         //write to file
-        io_output_image(argv[2], img_pixels, v_px, v_py);
+        output_image(argv[2], img_pixels, v_px, v_py);
     }
     catch(const std::exception& e)
     {

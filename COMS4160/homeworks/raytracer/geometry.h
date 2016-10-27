@@ -29,6 +29,7 @@ struct s_geo_vector
 
     // get contents
     t_scalar get_x(void) const;
+    t_scalar get_y(void) const;
     t_scalar get_z(void) const;
 
     // vector operations

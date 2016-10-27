@@ -1,12 +1,12 @@
-// Filename:    io.h
+// Filename:    data_output.h
 // Author:      Adam Hadar, anh2130
-// Purpose:     The file input/output for a simple raytracer.
+// Purpose:     The data output for a simple raytracer.
 // Edited:      2016-10-27
 
 //******************************************************************************
 // SUBROUTINE_OUTPUT_IMAGE
 //******************************************************************************
-void io_output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, const t_scalar& width, const t_scalar& height)
+void output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, const t_scalar& width, const t_scalar& height)
 {
     Imf::RgbaOutputFile file(file_name, width, height, Imf::WRITE_RGBA);
     file.setFrameBuffer(&image[0][0], 1, width);
@@ -18,7 +18,7 @@ void io_output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, cons
 //******************************************************************************
 // SUBROUTINE_OUTPUT_SCENE
 //******************************************************************************
-void io_output_scene(const s_scene& sc)
+void output_scene(const s_scene& sc)
 {
     std::cout
         <<"Camera Count:             " <<sc._viewports.size()          <<std::endl
@@ -32,7 +32,7 @@ void io_output_scene(const s_scene& sc)
 //******************************************************************************
 // SUBROUTINE_OUTPUT_SCENE_VERBOSE
 //******************************************************************************
-void io_output_scene_verbose(const s_scene& sc)
+void output_scene_verbose(const s_scene& sc)
 {
     // memory allocation
     t_uint i;
@@ -125,141 +125,5 @@ void io_output_scene_verbose(const s_scene& sc)
     return;
 }
 #endif
-
-//******************************************************************************
-// SUBROUTINE_INPUT_SCENE
-//******************************************************************************
-void io_input_scene(s_scene &sc, const char* file_name)
-{
-    // memory allocation
-    // I didn't want to allocate unique blocks of memory for each case, so I reuse the
-    //   same memory.
-    t_uint         line;
-    t_uint         ct_cameras, ct_lights, ct_materials;
-    t_uint         u1, u2;
-    t_scalar       s1, s2, s3;
-    s_geo_vector   gv1;
-    s_geo_point    gp1, gp2, gp3;
-    s_spd_radiance spdr1, spdr2, spdr3;
-   
-    // there will be two asserts - there must be at least one camera, and one non-ambient light
-    //   and there will be a warning if the material count doesn't increase
-    ct_cameras = 0;
-    ct_lights = 0;
-    ct_materials = 0;
-
-    // parse file
-    std::ifstream in(file_name);
-    char buffer[1025];
-    std::string cmd;
-    for(line = 1; in.good(); ++line)
-    {
-        in.getline(buffer,1024);
-        buffer[in.gcount()] = 0;
-        cmd = "";
-        std::istringstream iss(buffer);
-        iss >>cmd;
-        if(cmd.empty())
-            continue;
-        switch (cmd[0])
-        {
-            // comment
-            case '/':
-            {
-                continue;
-            }
-            // plane
-            case 'p':
-            {
-                iss >>gv1 >>s1;
-                sc._surfaces.push_back(new c_surf_plane(gv1,s1,ct_materials));
-                break;
-            }
-            // triangle
-            case 't':
-            {
-                iss >>gp1 >>gp2 >>gp3;
-                sc._surfaces.push_back(new c_surf_triangle(gp1,gp2,gp3,ct_materials));
-                break;
-            }
-            // sphere
-            case 's':
-            {
-                iss >> gp1 >> s1;
-                sc._surfaces.push_back(new c_surf_sphere(gp1,s1,ct_materials));
-                break;
-            }
-            // light
-            case 'l':
-            {
-                iss >> cmd;
-                switch(cmd[0])
-                {
-                    // point
-                    case 'p':
-                    {
-                        iss >>gp1 >>spdr1;
-                        sc._lights_point.push_back(new c_light_point(gp1,spdr1));
-                        ct_lights++;
-                        break;
-                    }
-                    // directional
-                    case 'd':
-                    {
-                        iss >>gv1 >>spdr1;
-                        gv1 = gv1*1e5;
-                        sc._lights_directional.push_back(new c_light_direct(gv1,spdr1));
-                        ct_lights++;
-                        break;
-                    }
-                    // ambient
-                    case 'a':
-                    {
-                        iss >>spdr1;
-                        sc._light_ambient = c_light_ambient(spdr1);
-                        break;
-                    }
-                    default:
-                    {
-                        std::cerr <<"Parser error: invalid light command at line " <<line <<std::endl;
-                    }
-                }
-                break;
-            }
-            // camera
-            case 'c':
-            {
-                // TODO only the first camera is used
-                iss >>gp1 >>gv1 >>s1 >>s2 >>s3 >>u1 >>u2;
-                sc._viewports.push_back(new s_viewport(gp1,gv1,s1,s2,s3,u1,u2));
-                ct_cameras++;
-                break;
-            }
-            // material
-            case 'm':
-            {
-                iss >>spdr1 >>spdr2 >>s1 >>spdr3;
-                // povray doesn't take reflective color, so just approximate a blend
-                // weight:
-                // float dlen = sqrt(refl.x*refl.x+refl.y*refl.y+refl.z*refl.z);
-                sc._materials.push_back(new c_mat_blinn_phong(spdr1,spdr2,s1,spdr3));
-                ct_materials++;
-                break;
-            }
-            default:
-            {
-                std::cerr <<"Parser error: invalid command at line " <<line <<std::endl;
-            }
-        }
-    }
-    in.close();
-    assert(ct_cameras > 0);
-    assert(ct_lights > 0);
-    if(ct_materials <= 0)
-    {
-        std::cerr <<"Warning: no materials declared" <<std::endl;
-    }
-    return;
-}
 
 //// EOF ////
