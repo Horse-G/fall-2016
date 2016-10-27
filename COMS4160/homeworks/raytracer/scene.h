@@ -1,7 +1,7 @@
 // Filename:    scene.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definition of a scene for a simple raytracer.
-// Edited:      2016-10-26
+// Edited:      2016-10-27
 
 //******************************************************************************
 // SCENE
@@ -62,7 +62,7 @@ struct s_scene
     //   not modify any elements.
     friend void io_output_scene_verbose(const s_scene&);
     friend void io_output_scene(const s_scene&);
-    friend s_spd_radiance compute_L(const s_geo_ray&, const s_scene&, const t_scalar&);
+    friend s_spd_radiance compute_L(const s_geo_ray&, const s_scene&, const t_uint&, const t_scalar&, const t_scalar&, const t_ray&, const c_light_point&);
     friend void raytrace_do(Imf::Array2D<Imf::Rgba>&, const t_scalar&, const t_scalar&, const s_scene&);
 };
 

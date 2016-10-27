@@ -1,7 +1,7 @@
 // Filename:    materials.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definitions for materials in a simple raytracer.
-// Edited:      2016-10-26
+// Edited:      2016-10-27
 
 //************************************************************************
 // MATERIAL
@@ -42,18 +42,17 @@ class c_mat_default: public c_material
 class c_mat_blinn_phong: public c_material
 {
     private:
-    s_spd_radiance _diff, _spec;
+    s_spd_radiance _diff, _spec, _refl;
     t_scalar       _phng;
-    s_geo_vector   _refl;
     
     public:
     // constructors
     c_mat_blinn_phong(void){}
-    c_mat_blinn_phong(const s_spd_radiance& spdr1, const s_spd_radiance& spdr2, const t_scalar& s, const s_geo_vector& gv):
+    c_mat_blinn_phong(const s_spd_radiance& spdr1, const s_spd_radiance& spdr2, const t_scalar& s, const s_spd_radiance& spdr3):
         _diff(spdr1),
         _spec(spdr2),
-        _phng(s),
-        _refl(gv){}
+        _refl(spdr3),
+        _phng(s){}
 
     // inherited destructor
     virtual ~c_mat_blinn_phong(void){}
@@ -71,7 +70,7 @@ class c_mat_blinn_phong: public c_material
     {
         return _phng;
     }
-    s_geo_vector get_refl(void) const
+    s_spd_radiance get_refl(void) const
     {
         return _refl;
     }

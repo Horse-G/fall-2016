@@ -1,7 +1,7 @@
 // Filename:    io.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     The file input/output for a simple raytracer.
-// Edited:      2016-10-26
+// Edited:      2016-10-27
 
 //******************************************************************************
 // SUBROUTINE_OUTPUT_IMAGE
@@ -140,7 +140,7 @@ void io_input_scene(s_scene &sc, const char* file_name)
     t_scalar       s1, s2, s3;
     s_geo_vector   gv1;
     s_geo_point    gp1, gp2, gp3;
-    s_spd_radiance spdr1, spdr2;
+    s_spd_radiance spdr1, spdr2, spdr3;
    
     // there will be two asserts - there must be at least one camera, and one non-ambient light
     //   and there will be a warning if the material count doesn't increase
@@ -238,11 +238,11 @@ void io_input_scene(s_scene &sc, const char* file_name)
             // material
             case 'm':
             {
-                iss >>spdr1 >>spdr2 >>s1 >>gv1;
+                iss >>spdr1 >>spdr2 >>s1 >>spdr3;
                 // povray doesn't take reflective color, so just approximate a blend
                 // weight:
                 // float dlen = sqrt(refl.x*refl.x+refl.y*refl.y+refl.z*refl.z);
-                sc._materials.push_back(new c_mat_blinn_phong(spdr1,spdr2,s1,gv1));
+                sc._materials.push_back(new c_mat_blinn_phong(spdr1,spdr2,s1,spdr3));
                 ct_materials++;
                 break;
             }

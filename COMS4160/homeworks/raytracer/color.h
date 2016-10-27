@@ -1,7 +1,7 @@
 // Filename:    color.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definitions for materials in a simple raytracer.
-// Edited:      2016-10-23
+// Edited:      2016-10-27
 
 //******************************************************************************
 // STRUCT_SPD_RADIANCE
@@ -68,6 +68,7 @@ struct s_spd_radiance
     // scalar operations
     //   - multiplication
     //   - division
+    //   - greater than
     s_spd_radiance operator *(const t_scalar& s) const
     {
         return s_spd_radiance(_rgb[0] * s, _rgb[1] * s, _rgb[2] * s);
@@ -75,6 +76,10 @@ struct s_spd_radiance
     s_spd_radiance operator /(const t_scalar& s) const
     {
         return s_spd_radiance(_rgb[0] / s, _rgb[1] / s, _rgb[2] / s);
+    }
+    bool operator >(const t_scalar& s) const
+    {
+        return _rgb[0] > s && _rgb[1] > s && _rgb[2] > s;
     }
 
     // input/output

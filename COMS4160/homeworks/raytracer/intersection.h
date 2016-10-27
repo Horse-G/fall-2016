@@ -1,7 +1,7 @@
 // Filename:    intersection.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definitions for intersections for a simple raytracer.
-// Edited:      2016-10-23
+// Edited:      2016-10-27
 
 //******************************************************************************
 // STRUCT_INTERSECTION
@@ -26,7 +26,8 @@ struct s_intersect
         _normal(gv),
         _material(u),
         _surf_type(ts) {}
-    
+    s_intersect(const t_scalar& s): _is_true(false), _t(s) {}
+
     // destructor
     ~s_intersect(void){}
 

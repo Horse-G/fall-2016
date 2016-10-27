@@ -1,7 +1,7 @@
 // Filename:    raytrace.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     The actual raytracing routine for a simple raytracer.
-// Edited:      2016-10-26
+// Edited:      2016-10-27
 
 //******************************************************************************
 // SUBROUTINE_COMPUTE_L (recursive)
@@ -46,56 +46,71 @@ for(i = 0; i < lights_point.size(); ++i)
 }
 return i_clr;
  */
-s_spd_radiance compute_L(const s_geo_ray& i_ray, const s_scene& sc, const t_scalar& t_min)
+s_spd_radiance compute_L(const s_geo_ray& i_ray, const s_scene& sc, const t_uint& recurse_limit, const t_scalar& t_min, const t_scalar& t_max, const t_ray& ray_type, const c_light_point& thisLight)
 {
+    s_spd_radiance i_clr = s_spd_radiance(0.0,0.0,0.0);
+    // if recurse_limit == 0, return [ 0 0 0 ]
+    if (recurse_limit == 0)
+        return i_clr;
+    
     // memory allocation
-    t_scalar       shading_dist,
-                   shading_scale_diff,
-                   shading_scale_spec,
-                   i, j;
-    s_geo_vector   shading_vec,
-                   shading_l,
-                   shading_v,
-                   shading_h;
-    s_spd_radiance intensity,
-                   i_clr;
-    s_geo_ray      shadow_ray;
-    s_intersect    shadow_sct, i_sct, ii_sct;
-    c_mat_blinn_phong* i_mat;
+    t_scalar    i;
+    s_intersect i_sct, ii_sct;
+    
+    // if ray_type == SHADOW_RAY
+    if(ray_type == SHADOW)
+    {
+        for(i = 0; i < sc._surfaces.size(); ++i)
+        {
+           i_sct = sc._surfaces[i]->is_intersect(i_ray);
+           if(i_sct.get_is_true()
+           && i_sct.get_t() > t_min
+           && i_sct.get_t() < t_max)
+               return i_clr;
+        }
+        return thisLight.get_radiance();
+    }
 
-    i_sct = BLACKNESS;
+    // get closest intersection
+    i_sct = s_intersect(t_max);
     for(i = 0; i < sc._surfaces.size(); ++i)
     {
         ii_sct = sc._surfaces[i]->is_intersect(i_ray);
         if(ii_sct.get_is_true()
-        && ii_sct.get_t() < i_sct.get_t() && ii_sct.get_t() > t_min)
+        && ii_sct.get_t() > t_min
+        && ii_sct.get_t() < i_sct.get_t())
            i_sct = ii_sct;
     }
+    // if there is no intersection
+    if(i_sct.get_is_true() == false)
+        return s_spd_radiance(0.0,0.0,0.0);
+
+    // otherwise, allocate some memory
+    s_geo_vector   shading_vec;
+    s_spd_radiance intensity,
+                   ii_clr;
+    c_mat_blinn_phong* i_mat;
 
     i_mat = sc._materials[i_sct.get_material()];
-
-    // ambient component
-    i_clr = sc._light_ambient.get_radiance() * i_mat->get_diff();
-
     for(i = 0; i < sc._lights_point.size(); ++i)
     {
+        // memory allocation
+        s_geo_ray      shadow_ray;
+        s_intersect    shadow_sct;
+
         // find if it is being blocked
         s_geo_vector vec_to_light = sc._lights_point[i]->get_point() - i_sct.get_point();
         shadow_ray = s_geo_ray(i_sct.get_point(),
                 vec_to_light);
         shadow_sct = s_intersect();
 
-        for(j = 0; j < sc._surfaces.size(); ++j)
+        ii_clr = compute_L(shadow_ray, sc, 1, EP_SHADOW, vec_to_light.len(), SHADOW, *sc._lights_point[i]);
+        if (ii_clr > 0.0)
         {
-            shadow_sct = sc._surfaces[j]->is_intersect(shadow_ray);
-            if(shadow_sct.get_is_true()
-            && shadow_sct.get_t() > EP_SHADOW
-            //&& shadow_sct.get_t() < vec_to_light.len()
-            )
-                break;
-        }
-        if(shadow_sct.get_is_true() == false)
-        {
+            // memory allocation
+            t_scalar shading_dist, shading_scale_diff, shading_scale_spec;
+            s_geo_vector shading_l, shading_v, shading_h;
+            
             shading_vec = i_sct.get_point() - sc._lights_point[i]->get_point();
             shading_dist = 1. / pow(shading_vec.len(),2.0);
             shading_l = shading_vec.norm();
@@ -111,11 +126,20 @@ s_spd_radiance compute_L(const s_geo_ray& i_ray, const s_scene& sc, const t_scal
             if(shading_scale_spec < 0.0)
                 shading_scale_spec = 0.0;
 
-            i_clr += sc._lights_point[i]->get_radiance() * (
+            i_clr += ii_clr * (
                 i_mat->get_diff() * shading_scale_diff
                 + i_mat->get_spec() * pow(shading_scale_spec, i_mat->get_phng())
                 ) * shading_dist;
         }
+    }
+    // ambient component
+    i_clr += sc._light_ambient.get_radiance() * i_mat->get_diff();
+    
+    if(i_mat->get_refl() > 0.0)
+    {
+        s_geo_ray ref_ray = s_geo_ray(i_sct.get_point(),
+            i_ray.get_direction() - i_sct.get_normal() * 2.0 * (i_ray.get_direction() % i_sct.get_normal()));
+        i_clr += i_mat->get_refl() * compute_L(ref_ray, sc, recurse_limit - 1, EP_REFL, std::numeric_limits<t_scalar>::infinity(), REFLECTION, c_light_point());
     }
     return i_clr;
 }
@@ -184,13 +208,8 @@ void raytrace_do(
                 i_sct = ii_sct;
         }
 
-        i_clr = compute_L(i_ray, scene, v_fl);
+        i_clr = compute_L(i_ray, scene, 2, v_fl, std::numeric_limits<t_scalar>::infinity(), PRIMARY, c_light_point());
 
-        // APPLY SHADING
-        //i_clr = scene._materials[i_sct.get_material()]->
-        //    compute_shading(i_sct, i_ray, // scene);
-        //            scene._light_ambient, scene._lights_point, scene._surfaces);
-        
         // STORE COLOR
         i_pxl->r = i_clr.get_r();
         i_pxl->g = i_clr.get_g();
