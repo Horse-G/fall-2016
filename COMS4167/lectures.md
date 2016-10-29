@@ -416,18 +416,63 @@ KE = .5 * (M = sum of mass) * .X(centerofmass)^2 + .5 * (I = sum of mass*dist^2)
 - we write F = m*a = .p, where p = momentum = m*v
 - torque = d/dt (Gamma), where we hypothesize that Gamme = I*omega
 - torque = I * .omega
-- 
+
+## Lecture 15, 2016-10-25
+###Collisions + Rigid Bodies
+
+Thinking back to the Q/g state diagram
+
+for a preblocked velocity v-, and n_hat the unit vector of gradG
+
+n_hatT dot v+ >= 0
+
+v+ = v- + dv
+
+M cross v+ = M cross v- + M cross dv
+
+n_hatT dot dv >= n_hatT dot v-
+
+t_hat is the perpendicular to n_hat
+
+t_hatT cross MassMatrix cross dv = 0
+
+M cross dv = dP
+
+t_hat is perpendicular to dP
+
+dP is parallel to n_hat
+
+dP = lambda * n_hat
+
+When below halfplane:
+	n_hatT dot dv > 0; n_hatT dot v+ = 0; lambda > 0
+	
+When above halfplane:
+	n_hatT dot dv = 0; n_hat dot v+ > 0; lambda = 0
+	
+When on halfplane:
+	n_hatT dot dv = 0; n_hat dot v+ = 0; lambda = 0
+
+### Summary
+n_hatT dot v+ >= 0 is complementary to lambda >= 0
+
+either one or the other is 0 and 1
+
+## Lecture 16, 2016-10-27
+M dot v+ = M dot v- + lambda1 dot n_hat1 + lambda2 dot n_hat2
+
+g(a,b,c) >= 0
+
+d/dt g(a(q),b(q),c(q)) >= 0
+
+grad g times Jacobian q times .q >= 0
+
+grad g times Jacobian q = n_hat
 
 
+-
 
-
-
-
-
-
-
-
-
+g = (a - b)T times R(pi/2)(c - b) >= 0
 
 
 

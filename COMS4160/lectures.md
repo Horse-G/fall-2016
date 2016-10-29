@@ -547,6 +547,91 @@ rgb L ( ray, min_t, max_t, recursion_limit, ray_type, light, ... )
 #### axis aligned bounding boxes
 - surround each object with a bounding box
 
+## Lecture 08, 2016-10-27
+### Refraction recap
+### Ambient light recap
+### Double sided material recap
+
+### Acceleration structures
+- axis aligned bounding boxes (spheres, ellipses)
+- oritenation aligned bounding boxes
+- combinations
+
+#### Scene wide structures
+- grid breakdown, tiling, "mailboxing"
+- grids are nice because each point in exactly one cell
+- grids are a poor choice if surfaces are unevenly distributed
+- they can work well within other methods
+
+#### Heirarchical spatial data structures
+- Bounding Volume Hierarchy Trees
+- Binary Space Partitioning Trees (axis-aligned kd trees)
+
+#### Constructing BVH trees
+- sort objects on axis
+- put one half in one subtree, other in the other
+- recurse until only 1 or two objects
+- not a spacial subdivision method
+
+#### Constructing Binary Space Partitioning Trees
+- front-to-back traversal with respect to a point P
+
+#### Implementation notes
+- leaf nodes should be bounding boxes
+- trees get to log(n), kd trees may make it a bit longer
+- use interators instead of indeces
+
+### Hw 1.4
+- implement per-primitive bounding boxes and per-scene BVH trees
+- one more argument in command line to use or not use BVH
+- due next Thursday
+- no plane primitives! - ignore cases 
+
+### Geometric transformations
+- bounding box class
+	- floats xmin, xmax, ymin, ymax, zmin, zmax
+	- int surface associated with it (base is -1)
+	- point center
+- bounding box node class
+	- bbox
+	- pointer leftbbox, rightbbox (both start as null)
+
+- function that makes parent bound over multiple bounds
+- sort contents in [0,1,2]%3 using std::nth_element (does a partial sort)
+- make two children - first child gets first half, second gets second half
+- recurse until two member array
+
+```
+bbxnode* root = makeboundtree(first, last, x);
+bbxnode* mbt(iterator first, iterator last, int sortdir):
+	// might need standard distance b/n iterators instead of math
+	if last - first == 0
+		return nullptr
+	elif last - first == 1
+		bboxnode* b = new bboxnode()
+		b->thisbound = *first
+		return b
+		// return new bboxnode(*first)
+	else
+		mid = first+(last-first)/2
+		if sortdir == X
+			std::nth_element(first, mid, last, sortdir_x())
+		if sortdir == Y
+		    nth(1, half, last, sortdir_y())
+		if sortdir == Z
+			"
+		bboxnode* b = new bboxnode
+		b->thisbound = boundall(first,last)
+		b->left = mbt(first, mid, sortdir+1%3)
+		b->right = mbt(mid, last, sortdir+1%3)
+		return b
+		// return new bboxnode(boundall(f,l), mbt(f,m,sortdir+1), mbt(m,l,sortdir+1))
+```
+
+
+
+
+
 
 
 
