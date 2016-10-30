@@ -58,7 +58,7 @@ void input_obj(const std::string file_name, std::vector<t_uint>& tris, std::vect
 //******************************************************************************
 // SUBROUTINE_INPUT_SCENE
 //******************************************************************************
-void input_scene(s_scene &sc, std::vector<s_viewport*>& vp, const char* file_name)
+void input_scene(s_scene &sc, s_rig_vps& rig, const char* file_name)
 {
     // memory allocation
     // I didn't want to allocate unique blocks of memory for each case, so I reuse the
@@ -176,9 +176,8 @@ void input_scene(s_scene &sc, std::vector<s_viewport*>& vp, const char* file_nam
             // camera
             case 'c':
             {
-                // TODO only the first camera is used
                 iss >>gp1 >>gv1 >>s1 >>s2 >>s3 >>u1 >>u2;
-                vp.push_back(new s_viewport(gp1,gv1,s1,s2,s3,u1,u2));
+                rig._list.push_back(new c_vp_default(gp1,gv1,s1,s2,s3,u1,u2));
                 ct_cameras++;
                 break;
             }
@@ -201,6 +200,7 @@ void input_scene(s_scene &sc, std::vector<s_viewport*>& vp, const char* file_nam
     }
     in.close();
     assert(ct_cameras > 0);
+    rig._count = ct_cameras;
     assert(ct_lights > 0);
     if(ct_materials <= 1)
     {

@@ -10,7 +10,7 @@
 #include "color.h"
 #include "lights.h"
 #include "materials.h"
-#include "viewport.h"
+#include "viewports.h"
 #include "scene.h"
 
 //******************************************************************************

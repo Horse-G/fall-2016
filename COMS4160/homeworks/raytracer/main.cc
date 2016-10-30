@@ -10,8 +10,9 @@
 #include "color.h"
 #include "lights.h"
 #include "materials.h"
-#include "viewport.h"
+#include "viewports.h"
 #include "scene.h"
+#include "rigging.h"
 #include "data_input.h"
 #include "data_output.h"
 #include "raytrace.h"
@@ -33,7 +34,7 @@ int main(int argc, char** argv)
         // memory allocation
         Imf::Array2D<Imf::Rgba>  img_pixels;
         s_scene                  scene;
-        std::vector<s_viewport*> viewports;
+        s_rig_vps                rig;
         t_scalar                 v_px, v_py;
 
         t_uint i;
@@ -41,41 +42,28 @@ int main(int argc, char** argv)
         v_py = 0.0;
 
         // parse the scene file
-        input_scene(scene, viewports, argv[1]);
+        input_scene(scene, rig, argv[1]);
         //print_scene_verbose();
     
         // generate image dimensions
-        //    makes a very wide image
-        for(i = 0; i < viewports.size(); ++i)
-        {
-            t_scalar i_px = viewports[i]->get_px();
-            t_scalar i_py = viewports[i]->get_py();
-            
-            v_px += i_px;
-            if(i_py > v_py)
-                v_py = i_py;
-        }
+        rig.set_dimensions(v_px, v_py);
         img_pixels.resizeErase(v_py, v_px);
 
         // do the raytrace for each viewport
         t_scalar px_start = 0.0;
         t_scalar py_start = 0.0;
-        for(i = 0; i < viewports.size(); ++i)
+        for(i = 0; i < rig.get_count(); ++i)
         {
-            t_scalar px_end = viewports[i]->get_px();
-            t_scalar py_end = viewports[i]->get_py();
-            raytrace_do(img_pixels, px_start, px_start + px_end, py_start, py_start + py_end, scene, *viewports[i]);
+            c_viewport* i_vp = rig.get_vp(i);
+            t_scalar px_end = i_vp->get_px();
+            t_scalar py_end = i_vp->get_py();
+            raytrace_do(img_pixels, px_start, px_start + px_end, py_start, py_start + py_end, scene, *i_vp);
             px_start += px_end;
             // py_start += 
         }
         
         //write to file
         output_image(argv[2], img_pixels, v_px, v_py);
-
-        for(i = 0; i < viewports.size(); ++i)
-        {
-            delete viewports[i];
-        }
     }
     catch(const std::exception& e)
     {

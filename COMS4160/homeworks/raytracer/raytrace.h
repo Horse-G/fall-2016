@@ -163,7 +163,7 @@ void raytrace_do(
         const t_scalar& px_start, const t_scalar& px_end,
         const t_scalar& py_start, const t_scalar& py_end,
         const s_scene&    scene,
-        const s_viewport& viewport)
+        const c_viewport& viewport)
 {
     // in order to reduce function calls, I do all of them once, here
     s_geo_point  v_eye = viewport.get_eye();

@@ -17,10 +17,10 @@ void output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, const t
 //******************************************************************************
 // SUBROUTINE_OUTPUT_SCENE
 //******************************************************************************
-void output_scene(const s_scene& sc, const std::vector<s_viewport*>& vps)
+void output_scene(const s_scene& sc, const s_rig_vps& rig)
 {
     std::cout
-        <<"Camera Count:             " <<vps.size()          <<std::endl
+        <<"Camera Count:             " <<rig._count                    <<std::endl
         <<"Surfaces Count:           " <<sc._surfaces.size()           <<std::endl
         <<"Materials Count:          " <<sc._materials.size()          <<std::endl
         <<"Point Lights Count:       " <<sc._lights_point.size()       <<std::endl
@@ -31,23 +31,23 @@ void output_scene(const s_scene& sc, const std::vector<s_viewport*>& vps)
 //******************************************************************************
 // SUBROUTINE_OUTPUT_SCENE_VERBOSE
 //******************************************************************************
-void output_scene_verbose(const s_scene& sc, const std::vector<s_viewport*>& vps)
+void output_scene_verbose(const s_scene& sc, const s_rig_vps& rig)
 {
     // memory allocation
     t_uint i;
 
     // camera list
-    for (i = 0; i < vps.size(); ++i)
+    for (i = 0; i < rig._count; ++i)
     {
         std::cout
             <<"camera {" <<std::endl
-            <<"    " <<"eye "   <<vps[i]->get_eye() <<std::endl
-            <<"    " <<"u "     <<vps[i]->get_u()   <<std::endl
-            <<"    " <<"v "     <<vps[i]->get_v()   <<std::endl
-            <<"    " <<"w "     <<vps[i]->get_w()   <<std::endl
-            <<"    " <<"fl "    <<vps[i]->get_fl()  <<std::endl
-            <<"    " <<"ix,iy " <<vps[i]->get_ix() <<"," <<vps[i]->get_iy() <<std::endl
-            <<"    " <<"px,py " <<vps[i]->get_px() <<"," <<vps[i]->get_py() <<std::endl
+            <<"    " <<"eye "   <<rig._list[i]->get_eye() <<std::endl
+            <<"    " <<"u "     <<rig._list[i]->get_u()   <<std::endl
+            <<"    " <<"v "     <<rig._list[i]->get_v()   <<std::endl
+            <<"    " <<"w "     <<rig._list[i]->get_w()   <<std::endl
+            <<"    " <<"fl "    <<rig._list[i]->get_fl()  <<std::endl
+            <<"    " <<"ix,iy " <<rig._list[i]->get_ix() <<"," <<rig._list[i]->get_iy() <<std::endl
+            <<"    " <<"px,py " <<rig._list[i]->get_px() <<"," <<rig._list[i]->get_py() <<std::endl
             <<"}"<< std::endl;
     }
     // surface list
