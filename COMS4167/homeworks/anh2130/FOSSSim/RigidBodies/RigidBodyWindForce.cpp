@@ -26,50 +26,60 @@ scalar RigidBodyWindForce::computePotentialEnergy( const std::vector<RigidBody>&
   
   return 0.0;
 }
-
+  
 void RigidBodyWindForce::computeForceAndTorque( std::vector<RigidBody>& rbs )
 {
-    int P = m_num_quadrature_points;
-    scalar div_by_quad = 1.0/P;
-    scalar beta_by_quad = m_beta * div_by_quad;
-
-    for(std::vector<RigidBody>::size_type idx = 0; idx < rbs.size(); ++idx)
+  for( std::vector<RigidBody>::size_type i = 0; i < rbs.size(); ++i )
+  {
+    const Vector2s& cm = rbs[i].getX();
+    
+    // For each 'edge' of the rigid body
+    for( int j = 0; j < rbs[i].getNumEdges(); ++j )
     {
-        int N = rbs[idx].getNumEdges();
-        Vector2s center_of_mass = rbs[idx].getX();
+      // Starting point of the edge
+      Vector2s p0 = rbs[i].getWorldSpaceVertex(j);
+      // Edge itself
+      Vector2s edge = rbs[i].computeWorldSpaceEdge(j);
 
-        for(int i = 0; i < N; ++i)
-        {
-            Vector2s v0 = rbs[idx].getWorldSpaceVertex(i);
-            Vector2s e  = rbs[idx].computeWorldSpaceEdge(i);
-            Vector2s n_hat(-e.y(),e.x());
-            scalar length = n_hat.norm();
-            assert(length != 0.0);
-            n_hat /= length;
+      // Compute the outward facing edge normal
+      Vector2s nhat = mathutils::rotateCounterClockwise90degrees( edge );
+      
+      // If the edge is not facing the wind force, exert no force
+      //if( nhat.dot(m_wind) >= 0.0 ) continue;
+      
+      // Normalize the outward facing edge normal
+      scalar l = nhat.norm();
+      assert( l != 0.0 );
+      nhat /= l;
 
-            for(int j = 0; j < P; ++j)
-            {
-                // position of center of section of edge
-                Vector2s j_x = v0 + e * ((j+0.5) * div_by_quad);
-                // velocity at that position
-                Vector2s j_v = rbs[idx].computeWorldSpaceVelocity(j_x);
-                
-                // position relative to center of mass
-                Vector2s rel_x = j_x - center_of_mass;
-                // velocity relative to wind
-                Vector2s rel_v = n_hat * (m_wind - j_v).dot(n_hat);
-
-                Vector2s wind_force = (length * beta_by_quad) * rel_v;
-
-                rbs[idx].getForce() += wind_force;
-                rbs[idx].getTorque() += rel_x.x() * wind_force.y() - rel_x.y() * wind_force.x();
-            }
-        }
+      // Compute the points at which to evaluate velocities, forces, torques
+      int num_quad_points = m_num_quadrature_points;
+      scalar length_frac = 1.0/((scalar)num_quad_points);
+      for( int k = 0; k < num_quad_points; ++k )
+      {
+        // Compute the world-space location of the point to exert the wind force on
+        scalar bccoord = (0.5+((scalar)k))*length_frac;
+        Vector2s x_i = p0 + bccoord*edge;
+        // Compute the world-space velocity of the point to exert the wind force on
+        Vector2s v_i = rbs[i].computeWorldSpaceVelocity( x_i );
+        // Compute the velocity relative to the wind in the direction normal to the edge
+        scalar vnorm = nhat.dot(m_wind-v_i);
+        // If the normal relative velocity is not 'pushing', do not exert a force
+        //if( vnorm >= 0.0 ) continue;
+        // Compute the force on the point
+        Vector2s f = m_beta*length_frac*l*vnorm*nhat;
+        
+        // Add the force's effect on center of mass acceleration
+        rbs[i].getForce() += f;
+        // Add the force's effect on angular acceleration
+        rbs[i].getTorque() += mathutils::crossTwoD(x_i-cm,f);
+      }
     }
-    return;
+  }
 }
 
 RigidBodyForce* RigidBodyWindForce::createNewCopy()
 {
   return new RigidBodyWindForce(m_num_quadrature_points,m_beta,m_wind);
 }
+

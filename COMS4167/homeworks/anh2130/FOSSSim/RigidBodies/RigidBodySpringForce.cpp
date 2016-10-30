@@ -72,12 +72,14 @@ scalar RigidBodySpringForce::computePotentialEnergy( const std::vector<RigidBody
 {
   assert( m_rb0 >= -1 ); assert( m_rb0 < (int) rbs.size() );
   assert( m_rb1 >= -1 ); assert( m_rb1 < (int) rbs.size() );
+  
+  // The endpoint positions depend on whether the endpoint is fixed in space or attached to a rigid body
+  Vector2s x0 = firstEndpointIsFixed()  ? m_vc0 : rbs[m_rb0].computeWorldSpacePosition(m_vc0);
+  Vector2s x1 = secondEndpointIsFixed() ? m_vc1 : rbs[m_rb1].computeWorldSpacePosition(m_vc1);
 
-  Vector2s rb_0 = (m_rb0 == -1)? m_vc0: rbs[m_rb0].computeWorldSpacePosition(m_vc0);
-  Vector2s rb_1 = (m_rb1 == -1)? m_vc1: rbs[m_rb1].computeWorldSpacePosition(m_vc1);
-  Vector2s spring_vec = rb_1 - rb_0;
+  scalar l = (x1-x0).norm();
 
-  return 0.5 * m_k * pow(spring_vec.norm() - m_l0, 2.0); 
+  return 0.5*m_k*(l-m_l0)*(l-m_l0);
 }
 
 void RigidBodySpringForce::computeForceAndTorque( std::vector<RigidBody>& rbs )
@@ -85,41 +87,38 @@ void RigidBodySpringForce::computeForceAndTorque( std::vector<RigidBody>& rbs )
   assert( m_rb0 >= -1 ); assert( m_rb0 < (int) rbs.size() );
   assert( m_rb1 >= -1 ); assert( m_rb1 < (int) rbs.size() );
 
-  Vector2s rb_0 = (m_rb0 == -1)? m_vc0: rbs[m_rb0].rotateIntoWorldSpace(m_vc0);
-  Vector2s rb_1 = (m_rb1 == -1)? m_vc1: rbs[m_rb1].rotateIntoWorldSpace(m_vc1);  
-  Vector2s spring_vec = rb_1 - rb_0;
-
-  // modify vector if either body is fixed
-  if(m_rb0 != -1)
-      spring_vec -= rbs[m_rb0].getX();
-  if(m_rb1 != -1)
-      spring_vec += rbs[m_rb1].getX();
-  scalar length = spring_vec.norm();
+  // Compute the direction the spring acts in
+  Vector2s r0 = firstEndpointIsFixed()  ? m_vc0 : rbs[m_rb0].rotateIntoWorldSpace(m_vc0);
+  Vector2s r1 = secondEndpointIsFixed() ? m_vc1 : rbs[m_rb1].rotateIntoWorldSpace(m_vc1);
+  Vector2s nhat = r1-r0;
+  if( !firstEndpointIsFixed() )  nhat -= rbs[m_rb0].getX();
+  if( !secondEndpointIsFixed() ) nhat += rbs[m_rb1].getX();
   
-  // need to check for zeros before assert so it returns correctly
-  if(m_l0 == 0.0 && length == 0.0)
-      return;
-  assert(length != 0.0);
-  Vector2s n_hat = spring_vec/length;
+  // Compute the length of the spring
+  scalar l = nhat.norm();
+  
+  // If this is a 0 rest length spring and the length is 0, there is no force
+  if( m_l0 == 0.0 && l == 0.0 ) return;
+  
+  // TODO: Some sort of workaround (assume direction is in rel-vel's direction, for example)
+  // There is still the ambiguity when a non-zero reset length spring is compressed to zero rest length.
+  assert( l != 0.0 );
+  
+  // Normalize the direction of the spring's action
+  nhat /= l;
 
-  Vector2s spring_force = m_k * (length - m_l0) * n_hat;
+  // Compute the magnitude of the force
+  nhat *= m_k*(l-m_l0);
 
-  if(m_rb0 != -1) // !firstEndpointIsFixed
-  {
-      rbs[m_rb0].getForce() += spring_force;
-      rbs[m_rb0].getTorque() += rb_0.x() * spring_force.y() - rb_0.y() * spring_force.x();
-  }
-  if(m_rb1 != -1) // !firstEndpointIsFixed
-  {
-      rbs[m_rb1].getForce() -= spring_force;
-      rbs[m_rb1].getTorque() += rb_1.y() * spring_force.x() - rb_1.x() * spring_force.y();
-  }
-  return;
+  if( !firstEndpointIsFixed() )  rbs[m_rb0].getForce() += nhat;
+  if( !secondEndpointIsFixed() ) rbs[m_rb1].getForce() -= nhat;
+
+  if( !firstEndpointIsFixed() )  rbs[m_rb0].getTorque() += mathutils::crossTwoD(r0,nhat);
+  if( !secondEndpointIsFixed() ) rbs[m_rb1].getTorque() += mathutils::crossTwoD(r1,-nhat);
 }
 
 RigidBodyForce* RigidBodySpringForce::createNewCopy()
 {
   return new RigidBodySpringForce( m_k, m_l0, m_rb0, m_vc0, m_rb1, m_vc1 );
 }
-
 

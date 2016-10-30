@@ -1,5 +1,5 @@
-#ifndef __RIGID_BODY_SYMPLECTIC_EULER_H__
-#define __RIGID_BODY_SYMPLECTIC_EULER_H__
+#ifndef __RIGID_BODY_FORWARD_BACKWARD_EULER_H__
+#define __RIGID_BODY_FORWARD_BACKWARD_EULER_H__
 
 #include "RigidBodyStepper.h"
 

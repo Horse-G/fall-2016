@@ -166,8 +166,6 @@ void YImage::mirror()
 // been compiled using a different compiler & libc.  That could make
 // the FILE*'s incompatible.
 
-typedef void* voidp;
-
 static void user_write_data(png_structp png_ptr, png_bytep data, png_size_t length);
 
 static void user_write_data(png_structp png_ptr, png_bytep data, png_size_t length)

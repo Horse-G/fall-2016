@@ -1,6 +1,6 @@
 #include "RigidBodySimulation.h"
 
-RigidBodySimulation::RigidBodySimulation( RigidBodyScene* scene, RigidBodyScene* comparison_scene, RigidBodyStepper* stepper, TwoDSceneRenderer* scene_renderer, std::vector<OpenGLRenderer*> oglrenderers, TwoDSceneSVGRenderer* svg_renderer )
+RigidBodySimulation::RigidBodySimulation( RigidBodyScene* scene, RigidBodyScene* comparison_scene, RigidBodyStepper* stepper, TwoDSceneRenderer* scene_renderer, std::vector<OpenGLRenderer*> oglrenderers, TwoDSceneSVGRenderer* svg_renderer, RigidBodyCollisionDetector* collision_detector, RigidBodyCollisionResolver* collision_resolver )
 : m_scene(scene)
 , m_comparison_scene(comparison_scene)
 , m_integrator(stepper)
@@ -8,6 +8,8 @@ RigidBodySimulation::RigidBodySimulation( RigidBodyScene* scene, RigidBodyScene*
 , m_svg_renderer(svg_renderer)
 , m_opengl_renderers(oglrenderers)
 , m_grader(NULL)
+, m_collision_detector(collision_detector)
+, m_collision_resolver(collision_resolver)
 {
   assert( m_scene != NULL );
   assert( m_integrator != NULL );
@@ -56,6 +58,16 @@ RigidBodySimulation::~RigidBodySimulation()
     delete m_grader;
     m_grader = NULL;
   }
+  if( m_collision_detector != NULL )
+  {
+    delete m_collision_detector;
+    m_collision_detector = NULL;
+  }
+  if( m_collision_resolver != NULL )
+  {
+    delete m_collision_resolver;
+    m_collision_resolver = NULL;
+  }
 }
   
 /////////////////////////////////////////////////////////////////////////////
@@ -67,9 +79,25 @@ void RigidBodySimulation::stepSystem( const scalar& dt )
   assert( m_scene != NULL );
   assert( m_integrator != NULL );
 
+  // Extract the start-of-step positions for continuous time detection
+  //if( m_collision_detector != NULL ) m_collision_detector->copyPreStepState(m_scene->getRigidBodies());
+
   // Step the simulated scene forward
   m_integrator->stepScene( *m_scene, dt );
-  
+
+  // Extract the end-of-step positions for continuous time detection
+  //if( m_collision_detector != NULL ) m_collision_detector->copyPostStepState(m_scene->getRigidBodies());
+
+  // Run detection
+  if( m_collision_detector != NULL )
+  {
+    std::set<RigidBodyCollision> collisions;
+    m_collision_detector->detectCollisions(m_scene->getRigidBodies(),collisions);
+
+    assert( m_collision_resolver != NULL );
+    m_collision_resolver->resolveCollisions( m_scene->getRigidBodies(), collisions );
+  }
+
   // Check for obvious problems in the simulated scene
   //#ifdef DEBUG
   //  m_scene->checkConsistency();
@@ -421,9 +449,14 @@ std::string RigidBodySimulation::getSolverName()
 
 std::string RigidBodySimulation::getCollisionHandlerName()
 {
-  //if( m_comparison_scene == NULL ) return "Collisions disabled";
-  //return m_collision_handler->getName();
-  return "Collisions disabled";
+  if( m_collision_detector != NULL )
+  {
+    assert( m_collision_resolver != NULL );
+
+    return m_collision_detector->getName() + ", " + m_collision_resolver->getName();
+  }
+
+  return "disabled";
 }
 
 void RigidBodySimulation::outputCallback( std::ostream& strm )

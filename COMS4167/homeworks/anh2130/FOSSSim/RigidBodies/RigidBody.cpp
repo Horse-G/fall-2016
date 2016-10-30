@@ -1,12 +1,13 @@
 #include "RigidBody.h"
 
-RigidBody::RigidBody( const Vector2s& v, const scalar& omega, const VectorXs& vertices, const VectorXs& masses, const scalar& radius )
-: m_M(-1.0)
+RigidBody::RigidBody( const Vector2s& v, const scalar& omega, const VectorXs& vertices, const VectorXs& masses, const scalar& radius, const bool& fixed )
+: m_fixed(fixed)
+, m_M(computeTotalMass(masses))
 //, m_masses(masses)
-, m_I(-1.0)
+, m_I(computeMomentOfInertia(vertices,masses))
 , m_vertices(vertices)
 , m_r(radius)
-, m_X(-1.0,-1.0)
+, m_X(computeCenterOfMass(vertices,masses))
 , m_theta(0.0)
 , m_V(v)
 , m_omega(omega)
@@ -15,10 +16,6 @@ RigidBody::RigidBody( const Vector2s& v, const scalar& omega, const VectorXs& ve
 , m_F(0.0,0.0)
 , m_tau(0.0)
 {
-  m_M = computeTotalMass(masses);
-  m_X = computeCenterOfMass(vertices,masses);
-  m_I = computeMomentOfInertia(vertices,masses);
-  
   assert( (masses.array()>0.0).all() );
   assert( m_M > 0.0 );
   assert( m_I > 0.0 );
@@ -34,6 +31,13 @@ void RigidBody::updateDerivedQuantities()
   // Update the rotation matrix representation of orientation
   m_R << cos(m_theta), -sin(m_theta), sin(m_theta), cos(m_theta);
 }
+
+// TODO: Add some sanity checks in here about applying forces and stuff
+bool RigidBody::isFixed() const
+{
+  return m_fixed;
+}
+
 
 Vector2s& RigidBody::getX()
 {
@@ -123,6 +127,11 @@ Vector2s RigidBody::computeWorldSpaceVelocity( const Vector2s& worldposition ) c
   return m_V + m_omega*mathutils::rotateCounterClockwise90degrees(worldposition-m_X);
 }
 
+Vector2s RigidBody::computeWorldSpaceVelocityGivenPositionRelativeToCM( const Vector2s& posnreltocm ) const
+{
+  return m_V + m_omega*mathutils::rotateCounterClockwise90degrees(posnreltocm);
+}
+
 Vector2s RigidBody::computeWorldSpaceEdge( int i ) const
 {
   assert( i >= 0 );
@@ -146,18 +155,17 @@ scalar& RigidBody::getTorque()
 
 Vector2s RigidBody::computeTotalMomentum() const
 {
-    return m_M * m_V;
+  return m_M*m_V;
 }
 
 scalar RigidBody::computeCenterOfMassAngularMomentum() const
 {
-    Vector2s total_momentum = m_M*m_V;
-    return m_X.x()*total_momentum.y() - m_X.y()*total_momentum.x();
+  return m_M*mathutils::crossTwoD(m_X,m_V);
 }
 
 scalar RigidBody::computeSpinAngularMomentum() const
 {
-    return m_I * m_omega;
+  return m_I*m_omega;
 }
 
 scalar RigidBody::computeTotalAngularMomentum() const
@@ -168,12 +176,12 @@ scalar RigidBody::computeTotalAngularMomentum() const
 
 scalar RigidBody::computeCenterOfMassKineticEnergy() const
 {
-    return 0.5 * m_M * m_V.dot(m_V);
+  return 0.5*m_M*m_V.dot(m_V);
 }
 
 scalar RigidBody::computeSpinKineticEnergy() const
 {
-    return 0.5 * m_I * m_omega * m_omega;
+  return 0.5*m_I*m_omega*m_omega;
 }
 
 scalar RigidBody::computeKineticEnergy() const
@@ -220,44 +228,35 @@ void RigidBody::deserialize( std::ifstream& inputstream )
 
 scalar RigidBody::computeTotalMass( const VectorXs& masses ) const
 {
-    scalar total_mass = 0.0;
-    
-    for(int i = 0; i < masses.size(); ++i)
-        total_mass += masses(i);
-    
-    return total_mass;
+  return masses.sum();
 }
 
 Vector2s RigidBody::computeCenterOfMass( const VectorXs& vertices, const VectorXs& masses ) const
 {
-    assert(vertices.size()%2 == 0);
-    assert(2*masses.size() == vertices.size());
-    
-    scalar total_mass = 0.0;
-    Vector2s center_of_mass = Vector2s::Zero();
-    
-    for(int i = 0; i < masses.size(); ++i)
-    {
-        center_of_mass += vertices.segment<2>(2*i)*masses(i);
-        total_mass += masses(i);
-    }
-    
-    return center_of_mass*(1.0/total_mass);
+  assert( vertices.size()%2 == 0 );
+  assert( 2*masses.size() == vertices.size() );
+
+  // TODO: By using a partial reduction from Eigen, we could make this a single line of vectorized code :). 
+  
+  Vector2s cm(0.0,0.0);
+  for( int i = 0; i < vertices.size()/2; ++i ) cm += masses(i)*vertices.segment<2>(2*i);
+  
+  scalar M = masses.sum();  
+  assert( M > 0.0 );
+  cm /= M;
+
+  return cm;
 }
 
 scalar RigidBody::computeMomentOfInertia( const VectorXs& vertices, const VectorXs& masses ) const
 {
   assert( vertices.size()%2 == 0 );
   assert( 2*masses.size() == vertices.size() );
+
+  // TODO: By using a partial reduction from Eigen, we could make this a single line of vectorized code :). 
   
-  scalar moment_of_inertia = 0.0;
-  Vector2s center_of_mass = computeCenterOfMass(vertices,masses);
-
-  for(int i = 0; i < masses.size(); ++i)
-  {
-      Vector2s temp = vertices.segment<2>(2*i) - center_of_mass;
-      moment_of_inertia += masses(i)* temp.dot(temp);
-  }
-
-  return moment_of_inertia;
+  Vector2s cm = computeCenterOfMass(vertices,masses);
+  scalar I = 0.0;
+  for( int i = 0; i < masses.size(); ++i ) I += masses(i)*(vertices.segment<2>(2*i)-cm).squaredNorm();
+  return I;
 }

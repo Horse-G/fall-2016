@@ -21,11 +21,14 @@ public:
   //   masses:    Flat vector containing all masses associated with vertices. masses.size() == N
   //   radius:    Inflated radius of the rigid body for rendering and collision detection. These
   //              rigid bodies are minkowski sums of the poly-line hulls and circles. 
-  RigidBody( const Vector2s& v, const scalar& omega, const VectorXs& vertices, const VectorXs& masses, const scalar& radius );
+  RigidBody( const Vector2s& v, const scalar& omega, const VectorXs& vertices, const VectorXs& masses, const scalar& radius, const bool& fixed = false );
 
   // Update quantities computed from 'core' state (e.g. rotation matrix derived from theta)
   void updateDerivedQuantities();
 
+  // Returns true if this rigid body is fixed (immobile)
+  bool isFixed() const;
+  
   // Returns the center of mass
   Vector2s& getX();
   const Vector2s& getX() const;
@@ -86,6 +89,8 @@ public:
   // Outputs:
   //   The velocity of the input point assuming it was attached to the rigid body 
   Vector2s computeWorldSpaceVelocity( const Vector2s& worldposition ) const;
+
+  Vector2s computeWorldSpaceVelocityGivenPositionRelativeToCM( const Vector2s& posnreltocm ) const;
   
   // Computes the i'th edge of the rigid body in 'world space'
   // Inputs:
@@ -169,6 +174,8 @@ private:
   /////////////////////////////////////////////////////////////////////////////
   // Constant variables
 
+  bool m_fixed;
+  
   // Total mass of the rigid body
   scalar m_M;
   // Masses of each point composing the rigid body (not required, but useful for debugging)

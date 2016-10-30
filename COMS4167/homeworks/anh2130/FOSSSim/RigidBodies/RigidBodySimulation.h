@@ -10,12 +10,15 @@
 #include "FOSSSim/TwoDSceneSVGRenderer.h"
 #include "RigidBodySceneGrader.h"
 
+#include "RigidBodyCollisionDetector.h"
+#include "RigidBodyCollisionResolver.h"
+
 class RigidBodySimulation : public ExecutableSimulation
 {
 public:
 
-  RigidBodySimulation( RigidBodyScene* scene, RigidBodyScene* comparison_scene, RigidBodyStepper* stepper, TwoDSceneRenderer* scene_renderer, std::vector<OpenGLRenderer*> oglrenderers, TwoDSceneSVGRenderer* svg_renderer );
-  
+  RigidBodySimulation( RigidBodyScene* scene, RigidBodyScene* comparison_scene, RigidBodyStepper* stepper, TwoDSceneRenderer* scene_renderer, std::vector<OpenGLRenderer*> oglrenderers, TwoDSceneSVGRenderer* svg_renderer, RigidBodyCollisionDetector* collision_detector, RigidBodyCollisionResolver* collision_resolver );
+
   virtual ~RigidBodySimulation();
   
   /////////////////////////////////////////////////////////////////////////////
@@ -98,6 +101,8 @@ private:
   std::vector<OpenGLRenderer*> m_opengl_renderers;
   RigidBodySceneGrader* m_grader;
 
+  RigidBodyCollisionDetector* m_collision_detector;
+  RigidBodyCollisionResolver* m_collision_resolver;
 };
 
 #endif

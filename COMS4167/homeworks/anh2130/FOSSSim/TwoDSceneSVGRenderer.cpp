@@ -1,7 +1,9 @@
 #include "TwoDSceneSVGRenderer.h"
 
+const TwoDScene dummyscene;
+
 TwoDSceneSVGRenderer::TwoDSceneSVGRenderer( const TwoDimensionalDisplayController &dc, int imagewidth, int imageheight, const renderingutils::Color& bgcolor, const std::vector<renderingutils::Color>& rbcolors, const std::vector<SVGRenderer*>& svg_renderers )
-: m_scene(TwoDScene())
+: m_scene(dummyscene)
 , m_dc(dc)
 , m_w(imagewidth)
 , m_h(imageheight)

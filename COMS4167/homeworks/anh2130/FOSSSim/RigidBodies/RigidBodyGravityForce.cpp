@@ -14,20 +14,14 @@ bool RigidBodyGravityForce::isConservative() const
 
 scalar RigidBodyGravityForce::computePotentialEnergy( const std::vector<RigidBody>& rbs )
 {
-    scalar Ubody = 0.0;
-    for( std::vector<RigidBody>::size_type i = 0; i < rbs.size(); ++i)
-        Ubody -= rbs[i].getM() * m_g.dot(rbs[i].getX());
-    return Ubody;
+  scalar U = 0.0;
+  for( std::vector<RigidBody>::size_type i = 0; i < rbs.size(); ++i ) U += -rbs[i].getM()*m_g.dot(rbs[i].getX());
+  return U;
 }
 
 void RigidBodyGravityForce::computeForceAndTorque( std::vector<RigidBody>& rbs )
 {
-    for( std::vector<RigidBody>::size_type i = 0; i < rbs.size(); ++i)
-    {
-        rbs[i].getForce() += rbs[i].getM() * m_g;
-        // gradient of angular vel with respect to regular vel is 0, so no torque
-    }
-    return;
+  for( std::vector<RigidBody>::size_type i = 0; i < rbs.size(); ++i ) rbs[i].getForce() += rbs[i].getM()*m_g;
 }
 
 RigidBodyForce* RigidBodyGravityForce::createNewCopy()

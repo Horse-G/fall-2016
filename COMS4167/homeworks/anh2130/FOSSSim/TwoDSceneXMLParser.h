@@ -48,6 +48,11 @@
 #include "RigidBodies/OpenGLRigidBodySpringForceRenderer.h"
 #include "RigidBodies/SVGRenderer.h"
 #include "RigidBodies/SVGRigidBodySpringForceRenderer.h"
+#include "RigidBodies/RigidBodyAllPairsCollisionDetector.h"
+#include "RigidBodies/RigidBodyLCPCollisionResolver.h"
+#include "RigidBodies/RigidBodyVelocityProjectionCollisionResolver.h"
+#include "RigidBodies/RigidBodyGRLCPCollisionResolver.h"
+#include "RigidBodies/RigidBodyGRVelocityProjectionCollisionResolver.h"
 
 // REALLY USEFULL TODOs
 //   TODO: Improve error messages to display all valid options, etc. Could define an option class that knows its valid options and bounds on values.
@@ -91,6 +96,8 @@ private:
 
   void loadRigidBodyIntegrator( rapidxml::xml_node<>* node, RigidBodyStepper** stepper, scalar& dt );
 
+  void loadRigidBodyCollisionHandling( rapidxml::xml_node<>* node, RigidBodyCollisionDetector** collision_detector, RigidBodyCollisionResolver** collision_resolver );
+  
   void loadRigidBodySpringForces( rapidxml::xml_node<>* node, std::vector<RigidBodySpringForce*>& rbforces );
 
   void loadRigidBodyGravityForces( rapidxml::xml_node<>* node, std::vector<RigidBodyGravityForce*>& rbforces );

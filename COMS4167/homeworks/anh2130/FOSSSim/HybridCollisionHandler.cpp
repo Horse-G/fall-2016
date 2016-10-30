@@ -205,9 +205,9 @@ std::vector<CollisionInfo> HybridCollisionHandler::detectCollisions(const TwoDSc
       VectorXs n(2);
       double time;
       if(hch.detectParticleParticle(scene, qs, qe, idx1, idx2, n, time))
-	{
-	  result.push_back(CollisionInfo(CollisionInfo::PP, idx1, idx2, n, time));
-	}
+      {
+        result.push_back(CollisionInfo(CollisionInfo::PP, idx1, idx2, n, time));
+      }
     }
 
     virtual void ParticleEdgeCallback(int vidx, int eidx)
@@ -215,9 +215,9 @@ std::vector<CollisionInfo> HybridCollisionHandler::detectCollisions(const TwoDSc
       VectorXs n(2);
       double time;
       if(hch.detectParticleEdge(scene, qs, qe, vidx, eidx, n, time))
-	{
-	  result.push_back(CollisionInfo(CollisionInfo::PE, vidx, eidx, n, time));
-	}
+      {
+        result.push_back(CollisionInfo(CollisionInfo::PE, vidx, eidx, n, time));
+      }
     }
 
     virtual void ParticleHalfplaneCallback(int vidx, int hidx)
@@ -225,9 +225,9 @@ std::vector<CollisionInfo> HybridCollisionHandler::detectCollisions(const TwoDSc
       VectorXs n(2);
       double time;
       if(hch.detectParticleHalfplane(scene, qs, qe, vidx, hidx, n, time))
-	{
-	  result.push_back(CollisionInfo(CollisionInfo::PH, vidx, hidx, n, time));
-	}
+      {
+        result.push_back(CollisionInfo(CollisionInfo::PH, vidx, hidx, n, time));
+      }
     }
     const TwoDScene &scene;
     const VectorXs &qs;
@@ -425,11 +425,10 @@ bool HybridCollisionHandler::detectParticleParticle(const TwoDScene &scene, cons
 
   time = PolynomialIntervalSolver::findFirstIntersectionTime(polys);
   if(time <= 1.0)
-    {
-      n = (x2+ time*dx2) - (x1+time*dx1);
-
-      return true;
-    }
+  {
+    n = (x2+ time*dx2) - (x1+time*dx1);
+    return true;
+  }
   return false;
 }
 
@@ -440,7 +439,7 @@ bool HybridCollisionHandler::detectParticleParticle(const TwoDScene &scene, cons
 bool HybridCollisionHandler::detectParticleEdge(const TwoDScene &scene, const VectorXs &qs, const VectorXs &qe, int vidx, int eidx, VectorXs &n, double &time)
 {
   VectorXs dx = qe - qs;
-  
+
   VectorXs x1 = qs.segment<2>(2*vidx);
   VectorXs x2 = qs.segment<2>(2*scene.getEdge(eidx).first);
   VectorXs x3 = qs.segment<2>(2*scene.getEdge(eidx).second);
@@ -448,6 +447,9 @@ bool HybridCollisionHandler::detectParticleEdge(const TwoDScene &scene, const Ve
   VectorXs dx1 = dx.segment<2>(2*vidx);
   VectorXs dx2 = dx.segment<2>(2*scene.getEdge(eidx).first);
   VectorXs dx3 = dx.segment<2>(2*scene.getEdge(eidx).second);
+
+  double r1 = scene.getRadius(vidx);
+  double r2 = scene.getEdgeRadii()[eidx];
 
   // poly = (a+bt + ct^2) - (d+2et+ft^2)(g+2ht+it^2) + rs(g+2ht+it^2)
 
@@ -462,9 +464,6 @@ bool HybridCollisionHandler::detectParticleEdge(const TwoDScene &scene, const Ve
   double g = (x3-x2).dot(x3-x2);
   double h = (dx3-dx2).dot(x3-x2);
   double i = (dx3-dx2).dot(dx3-dx2);
-
-  double r1 = scene.getRadius(vidx);
-  double r2 = scene.getEdgeRadii()[eidx];
 
   double rs = (r1+r2)*(r1+r2);
 
@@ -525,19 +524,17 @@ bool HybridCollisionHandler::detectParticleEdge(const TwoDScene &scene, const Ve
   time = PolynomialIntervalSolver::findFirstIntersectionTime(polys);
 
   if(time <= 1.0)
-    {
-      double alpha = (x1 + time*dx1 - x2 - time*dx2).dot(x3+time*dx3-x2-time*dx2)/(x3+time*dx3-x2-time*dx2).dot(x3+time*dx3-x2-time*dx2);
-      
-      n = (x2+time*dx2) + alpha*(x3+time*dx3 -x2 - time*dx2) - x1 -time*dx1;
+  {
+    double alpha = (x1 + time*dx1 - x2 - time*dx2).dot(x3+time*dx3-x2-time*dx2)/(x3+time*dx3-x2-time*dx2).dot(x3+time*dx3-x2-time*dx2);
 
-      if(n.norm()==0)
-	return false;
+    n = (x2+time*dx2) + alpha*(x3+time*dx3 -x2 - time*dx2) - x1 -time*dx1;
 
-      return true;
-    }
+    if(n.norm()==0)
+      return false;
+
+    return true;
+  }
   return false;
-  
-
 }
 
 // Given start positions (oldpos) and end positions (scene.getX) of a

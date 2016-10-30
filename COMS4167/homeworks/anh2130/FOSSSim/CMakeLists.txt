@@ -1,11 +1,9 @@
 # FOSSSim Executable
 
-append_files (Headers "h" . RigidBodies)
-append_files (Sources "cpp" . RigidBodies)
-
-#find_package (TCLAP REQUIRED)
-#include_directories (${TCLAP_INCLUDE_DIR})
-
+append_files (Headers "h"   . RigidBodies RigidBodies/LCPSolver quadprog )
+append_files (Headers "hh"  quadprog )
+append_files (Sources "cpp" . RigidBodies RigidBodies/LCPSolver quadprog )
+append_files (Sources "cc" quadprog )
 # Locate OpenGL
 find_package (OpenGL REQUIRED)
 if (OPENGL_FOUND)

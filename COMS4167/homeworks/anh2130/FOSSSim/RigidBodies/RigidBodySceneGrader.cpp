@@ -191,7 +191,7 @@ void RigidBodySceneGrader::checkSpinKineticEnergyComputation( int rbidx, const s
   {
     std::cout << outputmod::startgreen << "Grading message: " << outputmod::endgreen;
     std::cout << "Spin kinetic energy not computed correctly for rigid body " << rbidx;
-    std::cout << "   Provided Tcm = " << Tusr << "   Expected Tcm = " << Torcl << std::endl;
+    std::cout << "   Provided Tspin = " << Tusr << "   Expected Tspin = " << Torcl << std::endl;
   }
 }
 

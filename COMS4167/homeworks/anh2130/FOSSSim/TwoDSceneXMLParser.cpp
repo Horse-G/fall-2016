@@ -153,7 +153,7 @@ void TwoDSceneXMLParser::loadRigidBodySimulation( bool simulate_comparison, bool
 
   // Load the rigid body colors
   std::vector<renderingutils::Color>& rbcolors = scene_renderer->getRigidBodyColors();
-  for( int i = 0; i < (int) rigidbodies.size(); ++i ) rbcolors.push_back(renderingutils::Color(0.0,0.0,0.0));
+  for( int i = 0; i < (int) rigidbodies.size(); ++i ) rbcolors.push_back( rigidbodies[i].isFixed() ? renderingutils::Color(153./255.,0./255.,26./255.) : renderingutils::Color(0.0,0.0,0.0));
   loadRigidBodyColors( node, rbcolors );
 
   // Generate renderes for forces, etc
@@ -179,9 +179,14 @@ void TwoDSceneXMLParser::loadRigidBodySimulation( bool simulate_comparison, bool
     svg_renderers.push_back(new SVGRigidBodySpringForceRenderer(*rbspringforces[i],rbspringcolors[i]));
   }  
   TwoDSceneSVGRenderer* svg_renderer = new TwoDSceneSVGRenderer(display_controller,512,512,bgcolor,rbcolors,svg_renderers);
-  
+
+  // Load the rigid body collision detector and response method
+  RigidBodyCollisionDetector* collision_detector = NULL;
+  RigidBodyCollisionResolver* collision_resolver = NULL;
+  loadRigidBodyCollisionHandling( node, &collision_detector, &collision_resolver );
+
   // Create the executable scene
-  *execsim = new RigidBodySimulation(scene,comparison_scene,stepper,scene_renderer,oglrenderers,svg_renderer);
+  *execsim = new RigidBodySimulation(scene,comparison_scene,stepper,scene_renderer,oglrenderers,svg_renderer,collision_detector,collision_resolver);
 }
 
 void TwoDSceneXMLParser::loadXMLFile( const std::string& filename, std::vector<char>& xmlchars, rapidxml::xml_document<>& doc )
@@ -462,6 +467,17 @@ void TwoDSceneXMLParser::loadRigidBodies( rapidxml::xml_node<>* node, const std:
       exit(1);
     }
     
+    // Determine if the rigid body is fixed
+    bool fixed = false;
+    if( nd->first_attribute("fixed") )
+    {
+      std::string attribute(nd->first_attribute("fixed")->value());
+      if( !stringutils::extractFromString(attribute,fixed) )
+      {
+        std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse value of fixed attribute for rigidbody " << body << ". Value must be a boolean. Exiting." << std::endl;
+        exit(1);
+      }      
+    }
     
     // Create the rigid body
     VectorXs bodiesverts(2*vrtidxs.size());
@@ -469,7 +485,7 @@ void TwoDSceneXMLParser::loadRigidBodies( rapidxml::xml_node<>* node, const std:
     VectorXs bodiesmasses(vrtidxs.size());
     for( std::vector<int>::size_type i = 0; i < vrtidxs.size(); ++i ) bodiesmasses(i) = masses[vrtidxs[i]];
 
-    rigidbodies.push_back(RigidBody(v,omega,bodiesverts,bodiesmasses,radius));
+    rigidbodies.push_back(RigidBody(v,omega,bodiesverts,bodiesmasses,radius,fixed));
     
     ++body;
   }  
@@ -520,6 +536,52 @@ void TwoDSceneXMLParser::loadRigidBodyIntegrator( rapidxml::xml_node<>* node, Ri
     std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Failed to parse 'dt' attribute for rigidbodyintegrator. Value must be numeric. Exiting." << std::endl;
     exit(1);
   }  
+}
+
+void TwoDSceneXMLParser::loadRigidBodyCollisionHandling( rapidxml::xml_node<>* node, RigidBodyCollisionDetector** collision_detector, RigidBodyCollisionResolver** collision_resolver )
+{
+  assert( node != NULL );
+  assert( *collision_detector == NULL );
+  assert( *collision_resolver == NULL );
+
+  rapidxml::xml_node<>* nd = node->first_node("rigidbodycollisionhandling");
+  if( nd == NULL ) return;
+
+  // Load the detection method
+  rapidxml::xml_attribute<>* detectionnode = nd->first_attribute("detection"); 
+  if( detectionnode == NULL ) 
+  {
+    std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m No rigidbodycollisionhandling 'detection' attribute specified. Exiting." << std::endl;
+    exit(1);
+  }
+  std::string detectiontype(detectionnode->value());
+  
+  if( detectiontype == "all-pairs" ) *collision_detector = new RigidBodyAllPairsCollisionDetector;
+  else
+  {
+    std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Invalid rigidbodycollisionhandling 'detection' attribute specified. Valid option is all-pairs. Exiting." << std::endl;
+    exit(1);
+  }
+
+
+  // Load the response method
+  rapidxml::xml_attribute<>* responsenode = nd->first_attribute("response"); 
+  if( responsenode == NULL ) 
+  {
+    std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m No rigidbodycollisionhandling 'response' attribute specified. Exiting." << std::endl;
+    exit(1);
+  }
+  std::string responsetype(responsenode->value());
+  
+  if( responsetype == "lcp" ) *collision_resolver = new RigidBodyLCPCollisionResolver;
+  else if( responsetype == "velocity-projection" ) *collision_resolver = new RigidBodyVelocityProjectionCollisionResolver;
+  else if( responsetype == "gr-lcp" ) *collision_resolver = new RigidBodyGRLCPCollisionResolver;
+  else if( responsetype == "gr-velocity-projection" ) *collision_resolver = new RigidBodyGRVelocityProjectionCollisionResolver;
+  else
+  {
+    std::cerr << "\033[31;1mERROR IN XMLSCENEPARSER:\033[m Invalid rigidbodycollisionhandling 'response' attribute specified. Valid options are lcp and velocity-projection. Exiting." << std::endl;
+    exit(1);
+  }
 }
 
 void TwoDSceneXMLParser::loadRigidBodySpringForces( rapidxml::xml_node<>* node, std::vector<RigidBodySpringForce*>& rbforces )

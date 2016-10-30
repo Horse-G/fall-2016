@@ -23,10 +23,10 @@ void ContinuousTimeCollisionHandler::handleCollisions(TwoDScene &scene, Collisio
       VectorXs n(2);
       double time;
       if(ctch.detectParticleParticle(scene, oldpos, idx1, idx2, n, time))
-	{
-	  ctch.addParticleParticleImpulse(idx1, idx2, n, time);
-	  ctch.respondParticleParticle(scene, oldpos, idx1, idx2, n, time, dt);
-	}
+      {
+        ctch.addParticleParticleImpulse(idx1, idx2, n, time);
+        ctch.respondParticleParticle(scene, oldpos, idx1, idx2, n, time, dt);
+      }
     }
 
     virtual void ParticleEdgeCallback(int vidx, int eidx)
@@ -34,10 +34,10 @@ void ContinuousTimeCollisionHandler::handleCollisions(TwoDScene &scene, Collisio
       VectorXs n(2);
       double time;
       if(ctch.detectParticleEdge(scene, oldpos, vidx, eidx, n, time))
-	{
-	  ctch.addParticleEdgeImpulse(vidx, eidx, n, time);
-	  ctch.respondParticleEdge(scene, oldpos, vidx, eidx, n, time, dt);
-	}
+      {
+        ctch.addParticleEdgeImpulse(vidx, eidx, n, time);
+        ctch.respondParticleEdge(scene, oldpos, vidx, eidx, n, time, dt);
+      }
     }
 
     virtual void ParticleHalfplaneCallback(int vidx, int hidx)
@@ -45,10 +45,10 @@ void ContinuousTimeCollisionHandler::handleCollisions(TwoDScene &scene, Collisio
       VectorXs n(2);
       double time;
       if(ctch.detectParticleHalfplane(scene, oldpos, vidx, hidx, n, time))
-	{
-	  ctch.addParticleHalfplaneImpulse(vidx, hidx, n, time);
-	  ctch.respondParticleHalfplane(scene, oldpos, vidx, hidx, n, time, dt);
-	}
+      {
+        ctch.addParticleHalfplaneImpulse(vidx, hidx, n, time);
+        ctch.respondParticleHalfplane(scene, oldpos, vidx, hidx, n, time, dt);
+      }
     }
 
     TwoDScene &scene;
