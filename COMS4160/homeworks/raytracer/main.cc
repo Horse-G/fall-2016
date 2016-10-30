@@ -1,7 +1,7 @@
 // Filename:    main.cc
 // Author:      Adam Hadar, anh2130
 // Purpose:     The main function for a simple raytracer.
-// Edited:      2016-10-27
+// Edited:      2016-10-30
 
 #include "common.h"
 #include "geometry.h"
@@ -31,25 +31,51 @@ int main(int argc, char** argv)
     // try necessary for OpenEXR API
     try{
         // memory allocation
-        Imf::Array2D<Imf::Rgba> img_pixels;
-        s_scene                 scene;
-        t_scalar                v_px, v_py;
-    
+        Imf::Array2D<Imf::Rgba>  img_pixels;
+        s_scene                  scene;
+        std::vector<s_viewport*> viewports;
+        t_scalar                 v_px, v_py;
+
+        t_uint i;
+        v_px = 0.0;
+        v_py = 0.0;
+
         // parse the scene file
-        input_scene(scene, argv[1]);
-        #ifdef PRINT
-        print_scene_verbose();
-        #endif
+        input_scene(scene, viewports, argv[1]);
+        //print_scene_verbose();
     
-        // size image to scene specs
-        // had to do the resize here, because try/catch was giving an error
-        v_px = scene.get_vpx();
-        v_py = scene.get_vpy();
+        // generate image dimensions
+        //    makes a very wide image
+        for(i = 0; i < viewports.size(); ++i)
+        {
+            t_scalar i_px = viewports[i]->get_px();
+            t_scalar i_py = viewports[i]->get_py();
+            
+            v_px += i_px;
+            if(i_py > v_py)
+                v_py = i_py;
+        }
         img_pixels.resizeErase(v_py, v_px);
-        // do the raytrace
-        raytrace_do(img_pixels, v_px, v_py, scene);
+
+        // do the raytrace for each viewport
+        t_scalar px_start = 0.0;
+        t_scalar py_start = 0.0;
+        for(i = 0; i < viewports.size(); ++i)
+        {
+            t_scalar px_end = viewports[i]->get_px();
+            t_scalar py_end = viewports[i]->get_py();
+            raytrace_do(img_pixels, px_start, px_start + px_end, py_start, py_start + py_end, scene, *viewports[i]);
+            px_start += px_end;
+            // py_start += 
+        }
+        
         //write to file
         output_image(argv[2], img_pixels, v_px, v_py);
+
+        for(i = 0; i < viewports.size(); ++i)
+        {
+            delete viewports[i];
+        }
     }
     catch(const std::exception& e)
     {

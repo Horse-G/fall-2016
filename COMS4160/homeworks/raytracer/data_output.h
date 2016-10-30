@@ -1,7 +1,7 @@
 // Filename:    data_output.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     The data output for a simple raytracer.
-// Edited:      2016-10-27
+// Edited:      2016-10-30
 
 //******************************************************************************
 // SUBROUTINE_OUTPUT_IMAGE
@@ -14,14 +14,13 @@ void output_image(const char* file_name, Imf::Array2D<Imf::Rgba> &image, const t
     return;
 }
 
-#ifdef PRINT
 //******************************************************************************
 // SUBROUTINE_OUTPUT_SCENE
 //******************************************************************************
-void output_scene(const s_scene& sc)
+void output_scene(const s_scene& sc, const std::vector<s_viewport*>& vps)
 {
     std::cout
-        <<"Camera Count:             " <<sc._viewports.size()          <<std::endl
+        <<"Camera Count:             " <<vps.size()          <<std::endl
         <<"Surfaces Count:           " <<sc._surfaces.size()           <<std::endl
         <<"Materials Count:          " <<sc._materials.size()          <<std::endl
         <<"Point Lights Count:       " <<sc._lights_point.size()       <<std::endl
@@ -32,23 +31,23 @@ void output_scene(const s_scene& sc)
 //******************************************************************************
 // SUBROUTINE_OUTPUT_SCENE_VERBOSE
 //******************************************************************************
-void output_scene_verbose(const s_scene& sc)
+void output_scene_verbose(const s_scene& sc, const std::vector<s_viewport*>& vps)
 {
     // memory allocation
     t_uint i;
 
     // camera list
-    for (i = 0; i < sc._viewports.size(); ++i)
+    for (i = 0; i < vps.size(); ++i)
     {
         std::cout
             <<"camera {" <<std::endl
-            <<OUT_TAB <<"eye "   <<sc._viewports[i]->get_eye() <<std::endl
-            <<OUT_TAB <<"u "     <<sc._viewports[i]->get_u() <<std::endl
-            <<OUT_TAB <<"v "     <<sc._viewports[i]->get_v() <<std::endl
-            <<OUT_TAB <<"w "     <<sc._viewports[i]->get_w() <<std::endl
-            <<OUT_TAB <<"fl "    <<sc._viewports[i]->get_fl() <<std::endl
-            <<OUT_TAB <<"ix,iy " <<sc._viewports[i]->get_ix() <<"," <<sc._viewports[i]->get_iy() <<std::endl
-            <<OUT_TAB <<"px,py " <<sc._viewports[i]->get_px() <<"," <<sc._viewports[i]->get_py() <<std::endl
+            <<"    " <<"eye "   <<vps[i]->get_eye() <<std::endl
+            <<"    " <<"u "     <<vps[i]->get_u()   <<std::endl
+            <<"    " <<"v "     <<vps[i]->get_v()   <<std::endl
+            <<"    " <<"w "     <<vps[i]->get_w()   <<std::endl
+            <<"    " <<"fl "    <<vps[i]->get_fl()  <<std::endl
+            <<"    " <<"ix,iy " <<vps[i]->get_ix() <<"," <<vps[i]->get_iy() <<std::endl
+            <<"    " <<"px,py " <<vps[i]->get_px() <<"," <<vps[i]->get_py() <<std::endl
             <<"}"<< std::endl;
     }
     // surface list
@@ -62,32 +61,32 @@ void output_scene_verbose(const s_scene& sc)
             {
                 c_surf_plane* tmp = static_cast<c_surf_plane*>(sc._surfaces[i]);
                 std::cout
-                    <<OUT_TAB <<"type     " <<"plane"             <<std::endl
-                    <<OUT_TAB <<"normal   " <<tmp->get_normal()   <<std::endl
-                    <<OUT_TAB <<"distance " <<tmp->get_distance() <<std::endl;
+                    <<"    " <<"type     " <<"plane"             <<std::endl
+                    <<"    " <<"normal   " <<tmp->get_normal()   <<std::endl
+                    <<"    " <<"distance " <<tmp->get_distance() <<std::endl;
             }
             case TRIANGLE:
             {
                 c_surf_triangle* tmp = static_cast<c_surf_triangle*>(sc._surfaces[i]);
                 std::cout
-                    <<OUT_TAB <<"type     " <<"triangle"        <<std::endl
-                    <<OUT_TAB <<"v1       " <<tmp->get_v1()     <<std::endl
-                    <<OUT_TAB <<"v2       " <<tmp->get_v2()     <<std::endl
-                    <<OUT_TAB <<"v3       " <<tmp->get_v3()     <<std::endl
-                    <<OUT_TAB <<"normal   " <<tmp->get_normal() <<std::endl;
+                    <<"    " <<"type     " <<"triangle"        <<std::endl
+                    <<"    " <<"v1       " <<tmp->get_v1()     <<std::endl
+                    <<"    " <<"v2       " <<tmp->get_v2()     <<std::endl
+                    <<"    " <<"v3       " <<tmp->get_v3()     <<std::endl
+                    <<"    " <<"normal   " <<tmp->get_normal() <<std::endl;
             }
             case SPHERE:
             {
                 c_surf_sphere* tmp = static_cast<c_surf_sphere*>(sc._surfaces[i]);
                 std::cout
-                    <<OUT_TAB <<"type     " <<"sphere"          <<std::endl
-                    <<OUT_TAB <<"origin   " <<tmp->get_origin() <<std::endl
-                    <<OUT_TAB <<"radius   " <<tmp->get_radius() <<std::endl;
+                    <<"    " <<"type     " <<"sphere"          <<std::endl
+                    <<"    " <<"origin   " <<tmp->get_origin() <<std::endl
+                    <<"    " <<"radius   " <<tmp->get_radius() <<std::endl;
             }
             default:
             {
                 std::cout
-                    <<OUT_TAB <<"illegal surface" <<std::endl;
+                    <<"    " <<"illegal surface" <<std::endl;
                 break;
             }
         }
@@ -97,33 +96,32 @@ void output_scene_verbose(const s_scene& sc)
     for(i = 0; i < sc._materials.size(); ++i)
         std::cout
             <<"material " <<i+1 << " {" <<std::endl
-            <<OUT_TAB <<"diffuse    " <<sc._materials[i]->get_diff() <<std::endl
-            <<OUT_TAB <<"specular   " <<sc._materials[i]->get_spec() <<std::endl
-            <<OUT_TAB <<"reflection " <<sc._materials[i]->get_refl() <<std::endl
-            <<OUT_TAB <<"phong      " <<sc._materials[i]->get_phng() <<std::endl
+            <<"    " <<"diffuse    " <<sc._materials[i]->get_diff() <<std::endl
+            <<"    " <<"specular   " <<sc._materials[i]->get_spec() <<std::endl
+            <<"    " <<"reflection " <<sc._materials[i]->get_refl() <<std::endl
+            <<"    " <<"phong      " <<sc._materials[i]->get_phng() <<std::endl
             <<"}" <<std::endl;
     // ambient light
     std::cout
         <<"light 1 ambient {" <<std::endl
-        <<OUT_TAB <<"color " <<sc._light_ambient.get_color() <<std::endl
+        <<"    " <<"color " <<sc._light_ambient.get_radiance() <<std::endl
         <<"}" <<std::endl;
     // point light list
     for(i = 0; i < sc._lights_point.size(); ++i)
         std::cout
             <<"light " <<i+2 <<" point {" <<std::endl
-            <<OUT_TAB << "point " <<sc._lights_point[i]->get_point() <<std::endl
-            <<OUT_TAB << "color " <<sc._lights_point[i]->get_color() <<std::endl
+            <<"    " << "point " <<sc._lights_point[i]->get_point()    <<std::endl
+            <<"    " << "color " <<sc._lights_point[i]->get_radiance() <<std::endl
             <<"}" <<std::endl;
     
     // directional light list
     for(i = 0; i < sc._lights_directional.size(); ++i)
         std::cout
             <<"light " <<i+2+sc._lights_point.size() << " directional {" <<std::endl
-            <<OUT_TAB << "vector " <<sc._lights_directional[i]->get_direction() <<std::endl
-            <<OUT_TAB << "color  " <<sc._lights_directional[i]->get_color() <<std::endl
+            <<"    " << "vector " <<sc._lights_directional[i]->get_direction() <<std::endl
+            <<"    " << "color  " <<sc._lights_directional[i]->get_radiance()  <<std::endl
             <<"}" <<std::endl;
     return;
 }
-#endif
 
 //// EOF ////

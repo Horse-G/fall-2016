@@ -1,7 +1,7 @@
 // Filename:    color.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Declarations for color in a simple raytracer.
-// Edited:      2016-10-27
+// Edited:      2016-10-30
 
 #ifndef COLOR_H
 #define COLOR_H
@@ -34,7 +34,7 @@ struct s_spd_radiance
     s_spd_radiance operator -(const s_spd_radiance&) const;
     s_spd_radiance operator *(const s_spd_radiance&) const;
     s_spd_radiance& operator +=(const s_spd_radiance&);
-    
+
     // scalar operations
     //   - multiplication
     //   - division
@@ -42,6 +42,7 @@ struct s_spd_radiance
     s_spd_radiance operator *(const t_scalar&) const;
     s_spd_radiance operator /(const t_scalar&) const;
     bool operator >(const t_scalar&) const;
+    s_spd_radiance& operator /=(const t_scalar&);
 
     // input/output
     friend std::ostream& operator<<(std::ostream& os, const s_spd_radiance& spdr)

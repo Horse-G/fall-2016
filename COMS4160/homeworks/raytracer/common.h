@@ -1,7 +1,7 @@
 // Filename:    common.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     The main header for a simple raytracer.
-// Edited:      2016-10-27
+// Edited:      2016-10-30
 
 //******************************************************************************
 // C_STD_LIBRARIES
@@ -26,33 +26,14 @@
 //******************************************************************************
 // CONSTANTS_/_TYPES
 //******************************************************************************
-#define EPSILON          1e-7
-#define EP_SHADOW        1e-6
-#define EP_REFL          1e-4
-#define BLACKNESS        s_intersect(std::numeric_limits<t_scalar>::infinity(),s_geo_point(0.0,0.0,0.0),s_geo_vector(0.0,0.0,0.0),0,PLANE)
-#define NO_MATERIAL      new c_mat_default(s_spd_radiance(0.0,0.0,0.0))
-#define DEFAULT_MATERIAL new c_mat_blinn_phong(s_spd_radiance(0.0,0.0,1.0), s_spd_radiance(0.0,0.0,1.0), 5.0, s_spd_radiance(0.0,0.0,0.0))
-#define DEFAULT_AMBIENT  c_light_ambient(s_spd_radiance(0.0,0.0,0.0))
-#define OUT_TAB          "    "
-typedef unsigned int     t_uint;
-typedef double           t_scalar;
-enum t_surface           {PLANE, TRIANGLE, SPHERE};
-enum t_light             {AMBIENT, POINT, DIRECTIONAL};
-enum t_ray               {PRIMARY, SHADOW, REFLECTION, REFRACTION};
+#define EPSILON      1e-7
+#define EP_SHADOW    1e-4
+#define EP_REFL      1e-4
+typedef unsigned int t_uint;
+typedef double       t_scalar;
+enum t_surface       {PLANE, TRIANGLE, SPHERE};
+enum t_material      {BLINN_PHONG, DEFAULT, CELSHADED};
+enum t_light         {AMBIENT, POINT, DIRECTIONAL};
+enum t_ray           {PRIMARY, SHADOW, REFLECTION, REFRACTION};
 
-//******************************************************************************
-// CUSTOM_LIBRARIES
-//******************************************************************************
-/*
-#include "geometry.h"
-#include "intersection.h"
-#include "surfaces.h"
-#include "color.h"
-#include "lights.h"
-#include "materials.h"
-#include "viewport.h"
-#include "scene.h"
-#include "io.h"
-#include "raytrace.h"
-*/
 //// EOF ////

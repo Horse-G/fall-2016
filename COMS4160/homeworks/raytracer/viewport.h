@@ -1,7 +1,7 @@
 // Filename:    viewport.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Declaration of a viewport for a simple raytracer.
-// Edited:      2016-10-27
+// Edited:      2016-10-30
 
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
@@ -25,6 +25,8 @@ struct s_viewport
 
     // destructor
     ~s_viewport(void);
+
+    s_spd_radiance filter(const s_spd_radiance&) const;
 
     // get contents
     s_geo_point get_eye(void) const;

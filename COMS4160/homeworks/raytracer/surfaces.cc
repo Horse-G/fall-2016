@@ -1,7 +1,7 @@
 // Filename:    surfaces.cc
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definitions of surfaces for a simple raytracer.
-// Edited:      2016-10-27
+// Edited:      2016-10-30
 
 #include "common.h"
 #include "geometry.h"
@@ -58,12 +58,15 @@ s_intersect c_surf_plane::is_intersect(const s_geo_ray& gr)
 {
     t_scalar t;
     t_scalar dN = gr.get_direction() % _normal;
-        
-    if(dN <= 0.0)
-        return s_intersect();
+    
+    //if(abs(dN) < EPSILON)
+    //    return s_intersect(); 
+    //if(dN <= 0.0)
+    //   return s_intersect();
 
     t = (_distance - gr.get_origin() % _normal)/dN;
-        
+    if(dN < 0.0)
+        return s_intersect(t, gr.pos(t), -_normal, 0, _type);
     return s_intersect(t, gr.pos(t), _normal, _material, _type);
 }
 
@@ -80,7 +83,7 @@ c_surf_triangle::c_surf_triangle(const s_geo_point& gp1, const s_geo_point& gp2,
     _v[0] = gp1;
     _v[1] = gp2;
     _v[2] = gp3;
-    _normal = ((_v[1] - _v[0]) * (_v[2] - _v[1])).norm();
+    _normal = -((_v[1] - _v[0]) * (_v[2] - _v[1])).norm();
     _material = u;
     _type = TRIANGLE;
 }
@@ -134,7 +137,11 @@ s_intersect c_surf_triangle::is_intersect(const s_geo_ray& gr)
         return s_intersect();
     t = (e2 % Q) * inv_det;
     if(t > EPSILON)
+    {
+        if (_normal % gr.get_direction() < 0.0)
+            return s_intersect(t, gr.pos(t), -_normal, 0, _type);
         return s_intersect(t, gr.pos(t), _normal, _material, _type);
+    }
     return s_intersect();
 }
 

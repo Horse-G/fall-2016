@@ -1,10 +1,11 @@
 // Filename:    viewport.cc
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definition of a viewport for a simple raytracer.
-// Edited:      2016-10-27
+// Edited:      2016-10-30
 
 #include "common.h"
 #include "geometry.h"
+#include "color.h"
 #include "viewport.h"
 
 //******************************************************************************
@@ -42,6 +43,23 @@ s_viewport::s_viewport(
 
 // destructor
 s_viewport::~s_viewport(void){}
+
+s_spd_radiance s_viewport::filter(const s_spd_radiance& spdr) const
+{
+    /*
+    t_scalar min = std::numeric_limits<t_scalar>::infinity();
+    t_scalar max = 0.0;
+    if(spdr.get_r() < min) min = spdr.get_r();
+    if(spdr.get_r() > max) max = spdr.get_r();
+    if(spdr.get_g() < min) min = spdr.get_g();
+    if(spdr.get_g() > max) max = spdr.get_g();
+    if(spdr.get_b() < min) min = spdr.get_b();
+    if(spdr.get_b() > max) max = spdr.get_b();
+    t_scalar sum = min+max;
+    return s_spd_radiance(sum - spdr.get_r(), sum - spdr.get_g(), sum - spdr.get_b());
+    */
+    return spdr;
+}
 
 // get contents
 s_geo_point s_viewport::get_eye(void) const

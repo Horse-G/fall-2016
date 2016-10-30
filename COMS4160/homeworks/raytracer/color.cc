@@ -1,7 +1,7 @@
 // Filename:    color.cc
 // Author:      Adam Hadar, anh2130
 // Purpose:     Definitions for materials in a simple raytracer.
-// Edited:      2016-10-27
+// Edited:      2016-10-30
 
 #include "common.h"
 #include "color.h"
@@ -77,7 +77,14 @@ s_spd_radiance s_spd_radiance::operator /(const t_scalar& s) const
 }
 bool s_spd_radiance::operator >(const t_scalar& s) const
 {
-    return _rgb[0] > s && _rgb[1] > s && _rgb[2] > s;
+    return _rgb[0] > s || _rgb[1] > s || _rgb[2] > s;
+}
+s_spd_radiance& s_spd_radiance:: operator /=(const t_scalar& s)
+{
+    _rgb[0] /= s;
+    _rgb[1] /= s;
+    _rgb[2] /= s;
+    return *this;
 }
 
 //// EOF ////

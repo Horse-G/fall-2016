@@ -1,7 +1,7 @@
 // Filename:    data_input.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     The data input for a simple raytracer.
-// Edited:      2016-10-27
+// Edited:      2016-10-30
 
 //******************************************************************************
 // SUBROUTINE_INPUT_OBJ
@@ -58,7 +58,7 @@ void input_obj(const std::string file_name, std::vector<t_uint>& tris, std::vect
 //******************************************************************************
 // SUBROUTINE_INPUT_SCENE
 //******************************************************************************
-void input_scene(s_scene &sc, const char* file_name)
+void input_scene(s_scene &sc, std::vector<s_viewport*>& vp, const char* file_name)
 {
     // memory allocation
     // I didn't want to allocate unique blocks of memory for each case, so I reuse the
@@ -75,7 +75,7 @@ void input_scene(s_scene &sc, const char* file_name)
     //   and there will be a warning if the material count doesn't increase
     ct_cameras = 0;
     ct_lights = 0;
-    ct_materials = 0;
+    ct_materials = 1;
 
     // parse file
     std::ifstream in(file_name);
@@ -106,11 +106,11 @@ void input_scene(s_scene &sc, const char* file_name)
                 file_name = "";
                 iss >>file_name;
                 input_obj(file_name, triangles, vertices);
-                for(t_uint i = 0; i < triangles.size()/3.0; ++i)
+                for(t_uint i = 0; i < triangles.size(); i = i + 3)
                 {
-                    gp1 = vertices[triangles[3*i]];
-                    gp2 = vertices[triangles[3*i + 1]];
-                    gp3 = vertices[triangles[3*i + 2]];
+                    gp1 = vertices[triangles[i]];
+                    gp2 = vertices[triangles[i + 1]];
+                    gp3 = vertices[triangles[i + 2]];
                     sc._surfaces.push_back(new c_surf_triangle(gp1,gp2,gp3,ct_materials));
                 }
                 break;
@@ -178,7 +178,7 @@ void input_scene(s_scene &sc, const char* file_name)
             {
                 // TODO only the first camera is used
                 iss >>gp1 >>gv1 >>s1 >>s2 >>s3 >>u1 >>u2;
-                sc._viewports.push_back(new s_viewport(gp1,gv1,s1,s2,s3,u1,u2));
+                vp.push_back(new s_viewport(gp1,gv1,s1,s2,s3,u1,u2));
                 ct_cameras++;
                 break;
             }
@@ -202,7 +202,7 @@ void input_scene(s_scene &sc, const char* file_name)
     in.close();
     assert(ct_cameras > 0);
     assert(ct_lights > 0);
-    if(ct_materials <= 0)
+    if(ct_materials <= 1)
     {
         std::cerr <<"Warning: no materials declared" <<std::endl;
     }
