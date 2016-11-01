@@ -1,7 +1,7 @@
 // Filename:    rigging.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     Declaration of a viewport for a simple raytracer.
-// Edited:      2016-10-30
+// Edited:      2016-11-01
 
 #ifndef RIGGING_H
 #define RIGGING_H
@@ -14,7 +14,7 @@ struct s_rig_vps
 {
     private:
     std::vector<c_viewport*> _list;
-    t_uint                   _count;
+    t_uint                   _count, _width, _height;
 
     public:
     // constructors
@@ -22,7 +22,8 @@ struct s_rig_vps
     // destructor
     ~s_rig_vps(void);
 
-    void set_dimensions(t_scalar&, t_scalar&) const;
+    void set_dimensions(t_scalar&, t_scalar&);
+    void generate_image(Imf::Array2D<Imf::Rgba>&, const s_scene&) const;
 
     // get contents
     c_viewport* get_vp(const t_uint&) const;

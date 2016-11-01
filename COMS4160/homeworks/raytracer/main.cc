@@ -1,7 +1,7 @@
 // Filename:    main.cc
 // Author:      Adam Hadar, anh2130
 // Purpose:     The main function for a simple raytracer.
-// Edited:      2016-10-30
+// Edited:      2016-11-01
 
 #include "common.h"
 #include "geometry.h"
@@ -15,7 +15,6 @@
 #include "rigging.h"
 #include "data_input.h"
 #include "data_output.h"
-#include "raytrace.h"
 
 //******************************************************************************
 // ROUTINE_MAIN
@@ -30,14 +29,14 @@ int main(int argc, char** argv)
         return 1;
     }
     // try necessary for OpenEXR API
-    try{
+    try
+    {
         // memory allocation
         Imf::Array2D<Imf::Rgba>  img_pixels;
         s_scene                  scene;
         s_rig_vps                rig;
         t_scalar                 v_px, v_py;
 
-        t_uint i;
         v_px = 0.0;
         v_py = 0.0;
 
@@ -50,17 +49,7 @@ int main(int argc, char** argv)
         img_pixels.resizeErase(v_py, v_px);
 
         // do the raytrace for each viewport
-        t_scalar px_start = 0.0;
-        t_scalar py_start = 0.0;
-        for(i = 0; i < rig.get_count(); ++i)
-        {
-            c_viewport* i_vp = rig.get_vp(i);
-            t_scalar px_end = i_vp->get_px();
-            t_scalar py_end = i_vp->get_py();
-            raytrace_do(img_pixels, px_start, px_start + px_end, py_start, py_start + py_end, scene, *i_vp);
-            px_start += px_end;
-            // py_start += 
-        }
+        rig.generate_image(img_pixels, scene);
         
         //write to file
         output_image(argv[2], img_pixels, v_px, v_py);

@@ -1,7 +1,7 @@
 // Filename:    data_input.h
 // Author:      Adam Hadar, anh2130
 // Purpose:     The data input for a simple raytracer.
-// Edited:      2016-10-30
+// Edited:      2016-11-01
 
 //******************************************************************************
 // SUBROUTINE_INPUT_OBJ
@@ -177,7 +177,20 @@ void input_scene(s_scene &sc, s_rig_vps& rig, const char* file_name)
             case 'c':
             {
                 iss >>gp1 >>gv1 >>s1 >>s2 >>s3 >>u1 >>u2;
-                rig._list.push_back(new c_vp_default(gp1,gv1,s1,s2,s3,u1,u2));
+                switch(ct_cameras)
+                {
+                    case 1:
+                        rig._list.push_back(new c_vp_red(gp1,gv1,s1,s2,s3,u1,u2));
+                        break;
+                    case 2:
+                        rig._list.push_back(new c_vp_green(gp1,gv1,s1,s2,s3,u1,u2));
+                        break;
+                    case 3:
+                        rig._list.push_back(new c_vp_blue(gp1,gv1,s1,s2,s3,u1,u2));
+                        break;
+                    default:
+                        rig._list.push_back(new c_vp_default(gp1,gv1,s1,s2,s3,u1,u2));
+                }
                 ct_cameras++;
                 break;
             }
