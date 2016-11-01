@@ -34,7 +34,7 @@ runTests(varargin, fun_handles);
 function honesty()
 % Type your full name and uni (both in string) to state your agreement 
 % to the Code of Academic Integrity.
-signAcademicHonestyPolicy('Peter Paker', 'pp1917');
+signAcademicHonestyPolicy('Adam Hadar', 'anh2130');
 
 %--------------------------------------------------------------------------
 % Tests for Challenge 1: Panoramic Photo App
@@ -47,33 +47,25 @@ function challenge1a()
 orig_img = imread('portrait.png'); 
 warped_img = imread('portrait_transformed.png');
 
-% Choose 4 corresponding points (use ginput)
-%src_pts_nx2  = [xs1 ys1; xs2 ys2; xs3 ys3; xs4 ys4];
-%dest_pts_nx2 = [xd1 yd1; xd2 yd2; xd3 yd3; xd4 yd4];
+%figure;
+%imshow(orig_img);
+%src_pts_nx2 = ginput(4);
+%imshow(warped_img);
+%dest_pts_nx2 = ginput(4);
+
+src_pts_nx2  = [525.5936 327.8408; 411.7360 311.3614; 347.3165 314.3577; 386.2678 573.5337];
+dest_pts_nx2 = [459.6760 291.8858; 335.3315 279.9007; 273.9082 285.8933; 303.8708 528.5899];
 
 H_3x3 = computeHomography(src_pts_nx2, dest_pts_nx2);
-% src_pts_nx2 and dest_pts_nx2 are the coordinates of corresponding points 
-% of the two images, respectively. src_pts_nx2 and dest_pts_nx2 
-% are nx2 matrices, where the first column contains
-% the x coodinates and the second column contains the y coordinates.
-%
-% H, a 3x3 matrix, is the estimated homography that 
-% transforms src_pts_nx2 to dest_pts_nx2. 
 
+%imshow(orig_img);
+%test_pts_nx2 = ginput(4);
+%close(figure);
 
-% Choose another set of points on orig_img for testing.
-% test_pts_nx2 should be an nx2 matrix, where n is the number of points, the
-% first column contains the x coordinates and the second column contains
-% the y coordinates.
+test_pts_nx2 = [369.7884 366.7921; 318.8521 546.5674; 495.6311 405.7434; 398.2528 675.4064];
 
-%test_pts_nx2 = [xt1 yt1; xt2 yt2; xt3 yt3; xt4 yt4];
-
-% Apply homography
 dest_pts_nx2 = applyHomography(H_3x3, test_pts_nx2);
-% test_pts_nx2 and dest_pts_nx2 are the coordinates of corresponding points 
-% of the two images, and H is the homography.
 
-% Verify homography 
 result_img = showCorrespondence(orig_img, warped_img, test_pts_nx2, dest_pts_nx2);
 
 imwrite(result_img, 'homography_result.png');
@@ -86,8 +78,10 @@ bg_img = im2double(imread('Osaka.png')); %imshow(bg_img);
 portrait_img = im2double(imread('portrait_small.png')); %imshow(portrait_img);
 
 % Estimate homography
-% portrait_pts = [xp1 yp1; xp2 yp2; xp3 yp3; xp4 yp4];
-% bg_pts = [xb1 yb1; xb2 yb2; xb3 yb3; xb4 yb4];
+
+% going for the corners
+portrait_pts = [0 0; 327 0; 327 400; 0 400]; % straight from image dimensions
+bg_pts = [100 18; 277 70; 285 425; 84 439];  % ran the code multiple times until this seemed close enough
 
 H_3x3 = computeHomography(portrait_pts, bg_pts);
 
@@ -99,7 +93,7 @@ dest_canvas_width_height = [size(bg_img, 2), size(bg_img, 1)];
 mask = ~mask;
 % Superimpose the image
 result = bg_img .* cat(3, mask, mask, mask) + dest_img;
-%figure, imshow(result);
+figure, imshow(result);
 imwrite(result, 'Van_Gogh_in_Osaka.png');
 
 %%  
@@ -108,22 +102,16 @@ function challenge1c()
 
 imgs = imread('mountain_left.png'); imgd = imread('mountain_center.png');
 [xs, xd] = genSIFTMatches(imgs, imgd);
-% xs and xd are the centers of matched frames
-% xs and xd are nx2 matrices, where the first column contains the x
-% coordinates and the second column contains the y coordinates
 
 before_img = showCorrespondence(imgs, imgd, xs, xd);
-%figure, imshow(before_img);
 imwrite(before_img, 'before_ransac.png');
 
 % Use RANSAC to reject outliers
-%ransac_n = ??; % Max number of iteractions
-%ransac_eps = ??; Acceptable alignment error 
-
+ransac_n = 50; % relatively high, I think
+ransac_eps = 1; % size of pixel
 [inliers_id, H_3x3] = runRANSAC(xs, xd, ransac_n, ransac_eps);
 
 after_img = showCorrespondence(imgs, imgd, xs(inliers_id, :), xd(inliers_id, :));
-%figure, imshow(after_img);
 imwrite(after_img, 'after_ransac.png');
 
 %%
@@ -132,13 +120,12 @@ function challenge1d()
 
 [fish, fish_map, fish_mask] = imread('escher_fish.png');
 [horse, horse_map, horse_mask] = imread('escher_horsemen.png');
-blended_result = blendImagePair(fish, fish_mask, horse, horse_mask,...
-    'blend');
-%figure, imshow(blended_result);
+blended_result = uint8(blendImagePair(fish, fish_mask, horse, horse_mask,'blend'));
+figure, imshow(blended_result);
 imwrite(blended_result, 'blended_result.png');
 
-overlay_result = blendImagePair(fish, fish_mask, horse, horse_mask, 'overlay');
-%figure, imshow(overlay_result);
+overlay_result = uint8(blendImagePair(fish, fish_mask, horse, horse_mask, 'overlay'));
+figure, imshow(overlay_result);
 imwrite(overlay_result, 'overlay_result.png');
 
 %%
@@ -150,11 +137,28 @@ imgc = im2single(imread('mountain_center.png'));
 imgl = im2single(imread('mountain_left.png'));
 imgr = im2single(imread('mountain_right.png'));
 
-% You are free to change the order of input arguments
 stitched_img = stitchImg(imgc, imgl, imgr);
-%figure, imshow(stitched_img);
+figure, imshow(stitched_img);
 imwrite(stitched_img, 'mountain_panorama.png');
 
 %%
 function challenge1f()
-% Your own panorama
+% resize all the images because they are way to big for the computation:
+% 3264x2448 -> 816x612
+invShrinkH = inv(reshape([.25 0 0 0 .25 0 0 0 1], [3,3]));
+dim = [816 612];
+[~,imgc] = backwardWarpImg(im2single(imread('1f_center.JPG')), invShrinkH, dim);
+[~,imgr1] = backwardWarpImg(im2single(imread('1f_right_1.JPG')), invShrinkH, dim);
+[~,imgr2] = backwardWarpImg(im2single(imread('1f_right_2.JPG')), invShrinkH, dim);
+[~,imgl1] = backwardWarpImg(im2single(imread('1f_left_1.JPG')), invShrinkH, dim);
+[~,imgl2] = backwardWarpImg(im2single(imread('1f_left_2.JPG')), invShrinkH, dim);
+
+stitched_3_1 = stitchImg(imgc, imgl1, imgr1);
+figure, imshow(stitched_3_1);
+imwrite(stitched_3_1, '1f_stitched_3_1.png');
+stitched_3_2 = stitchImg(imgc, imgl2, imgr2);
+figure, imshow(stitched_3_2);
+imwrite(stitched_3_2, '1f_stitched_3_2.png');
+stitched_4 = stitchImg(imgc, imgl1, imgr1, imgr2);
+figure, imshow(stitched_4);
+imwrite(stitched_4, '1f_stitched_4.png');

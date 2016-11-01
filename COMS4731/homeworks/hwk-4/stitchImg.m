@@ -1,1 +1,60 @@
 function stitched_img = stitchImg(varargin)
+    % expects first image is center, and either the rest are evenly split
+    % on both sides, or the right side has one more
+    stitched_img = varargin{1};
+    N = 250;
+    epsilon = 1;
+    
+    half = floor((nargin-1)/2);
+    for i=[half:-1:2, half+1:nargin]
+        i_img = varargin{i};
+        i_img_x = size(i_img,2);
+        i_img_y = size(i_img,1);
+        
+        % first have to generate the new bounding image
+        [Xs, Xd] = genSIFTMatches(i_img, stitched_img);
+        [~, H] = runRANSAC(Xs, Xd, N, epsilon);
+        temp_corners = applyHomography(H, [1, 1; i_img_x, 1; i_img_x, i_img_y; 1, i_img_y]);
+        x_min = floor(min(temp_corners(:,1)));
+        x_max = ceil(max(temp_corners(:,1)));
+        y_min = floor(min(temp_corners(:,2)));
+        y_max = ceil(max(temp_corners(:,2)));
+        
+        % resizing, and done in such a way as to reduce memory cost
+        ii_x = size(stitched_img,2);
+        ii_y = size(stitched_img,1);
+        start_x = 1;
+        start_y = 1;
+        if x_max > ii_x
+            ii_x = x_max;
+        end
+        if x_min < 0
+            start_x = -x_min;
+            ii_x = ii_x + start_x;
+        end
+        if y_max > ii_y
+            ii_y = y_max;
+        end
+        if y_min < 0
+            start_y = -y_min;
+            ii_y = ii_y + start_y;
+        end
+        
+        i_stitched = zeros(ii_y,ii_x,3);
+        y_range = start_y:(start_y+size(stitched_img,1) - 1);
+        x_range = start_x:(start_x+size(stitched_img,2) - 1);
+        i_stitched(y_range, x_range, :) = stitched_img;
+        stitched_img = i_stitched;
+        
+        % now do homography/ransac again to fit into image
+        [Xs, Xd] = genSIFTMatches(i_img, stitched_img);
+        [~, H] = runRANSAC(Xs, Xd, N, epsilon);
+        [i_mask, i_img] = backwardWarpImg(i_img, inv(H), [size(stitched_img,2), size(stitched_img,1)]);
+        
+        % gets rid of a NaN error
+        stitched_img(isnan(stitched_img)) = 0;
+        stitched_mask = stitched_img(:,:,1) | stitched_img(:,:,2) | stitched_img(:,:,3);
+
+        stitched_img = blendImagePair(i_img, i_mask, stitched_img, stitched_mask, 'blend');
+    end
+end
